@@ -1,0 +1,67 @@
+[
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\Character\\\\BaseCharacter.cpp",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\Character\\\\BaseCharacter.h",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\GlobalDefinitions.cpp",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\GlobalDefinitions.h",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\PlayerStates\\\\BaseState.cpp",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\PlayerStates\\\\BaseState.h",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\ProjectGrivenka.Build.cs",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\ProjectGrivenka.cpp",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\ProjectGrivenka.h",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\ProjectGrivenkaCharacter.cpp",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\ProjectGrivenkaCharacter.h",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\ProjectGrivenkaGameMode.cpp",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	},
+	{
+		"file": "C:\\\\Users\\\\masgo\\\\Devs\\\\ProjectGrivenka\\\\Source\\\\ProjectGrivenka\\\\ProjectGrivenkaGameMode.h",
+		"command": "cl.exe @\"C:\\Users\\masgo\\Devs\\ProjectGrivenka\\.vscode\\compileCommands_ProjectGrivenka\\ProjectGrivenka.182.rsp\"",
+		"directory": "C:\\Program Files\\Epic Games\\UE_4.26\\Engine\\Source"
+	}
+]
