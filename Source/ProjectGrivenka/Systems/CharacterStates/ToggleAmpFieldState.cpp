@@ -4,20 +4,23 @@
 #include "ToggleAmpFieldState.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
+#include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 
 void UToggleAmpFieldState::RaiseAmpField()
 {
 	this->StatesComp->CrossStateData.IsAmpActivated = true;
-	this->CharacterContext.EventBus->EffectRemoveDelegate.Broadcast(FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Defaults.Regen.Amp"));
+	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CharacterContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Defaults.Regen.Amp"));
+	}
 	this->EndAmpAction();
 }
 
 void UToggleAmpFieldState::LowerAmpField()
 {
 	this->StatesComp->CrossStateData.IsAmpActivated = false;
-	FRPGEffectInitDelegate* EffectInitDelegate = this->CharacterContext.EventBus->EffectApplyObservers.Find(EEffectDelegates::EDL_START_AMP_REGEN);
-	if (EffectInitDelegate) EffectInitDelegate->Broadcast(1, this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor);
+	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_InitEffectByRegenName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_AmpRegen");
+	}
 	this->EndAmpAction();
 }
 

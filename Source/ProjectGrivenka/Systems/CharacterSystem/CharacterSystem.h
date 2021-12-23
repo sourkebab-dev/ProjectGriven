@@ -61,17 +61,15 @@ public:
 
 	#pragma region Effects Initiators
 	UFUNCTION(BlueprintCallable)
-	void InitFXByPrefab(AActor* EffectReceiver, AActor* EffectInstigator, class UEffectPrefab* InEffectPrefab);
+	void InitEffectByPrefab(AActor* EffectInstigator, class UEffectPrefab* InEffectPrefab, float InOverrideValue = 0.0f, bool IsValueOverridden = false);
 	UFUNCTION(BlueprintCallable)
-	void InitFXReceiveHit(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FVector InDamageDirection, TEnumAsByte<enum EDamageImpactType> InImpactType);
+	void InitEffectByPrefabName(AActor* EffectInstigator, FName InPrefabName, float InOverrideValue = 0.0f, bool IsValueOverridden = false);
 	UFUNCTION(BlueprintCallable)
-	void InitFXDepleteStamina(float InValue, AActor* EffectReceiver, AActor* EffectInstigator);
+	void InitEffectByRegenName(AActor* EffectInstigator, FName InPrefabName);
 	UFUNCTION(BlueprintCallable)
-	void InitFXStartAmpRegen(float InValue, AActor* EffectReceiver, AActor* EffectInstigator);
+	void InitEffectDepleteStamina(AActor* EffectInstigator, float InValue);
 	UFUNCTION(BlueprintCallable)
-	void InitFXSetWeaponDamage(float InValue, AActor* EffectReceiver, AActor* EffectInstigator);
-	UFUNCTION(BlueprintCallable)
-	void InitFXSetWeaponMovingValues(float InValue, AActor* EffectReceiver, AActor* EffectInstigator);
+	void InitEffectReceiveHit(AActor* EffectInstigator, FVector InDamageDirection, TEnumAsByte<enum EDamageImpactType> InImpactType);
 	#pragma endregion
 		
 };

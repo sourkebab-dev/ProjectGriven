@@ -62,6 +62,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	class UInteractSystem* GetInteractSystemComp();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Interact(AActor* InteractionInstigator);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	AActor* GetInteractableItem();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	bool CheckIsInteractable(AActor* InteractionInstigator);

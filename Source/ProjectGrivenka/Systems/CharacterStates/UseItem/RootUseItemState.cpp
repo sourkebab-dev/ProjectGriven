@@ -7,9 +7,7 @@
 #include "ToggleUseItemState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/Items/BaseItem.h"
-#include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
 
 //sponge: need to accomodate cases for actors without inventory comp
@@ -42,10 +40,8 @@ void URootUseItemState::AxisHandler_Implementation(EActionList Action, float Axi
 void URootUseItemState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
 {
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
-	if (this->CharacterContext.EventBus->Observers.Find(EContextDelegates::CDL_COMMIT_ITEM)) {
-		this->CharacterContext.EventBus->Observers.Find(EContextDelegates::CDL_COMMIT_ITEM)->Broadcast();
-	}
-	
+
+	ICharacterInventoryAvailable::Execute_CommitItem(this->CharacterContext.CharacterActor);
 	switch (ICharacterInventoryAvailable::Execute_GetCommitedItem(this->CharacterContext.CharacterActor)->ItemInfo.UsageType)
 	{
 		case EItemUsageType::IUT_ONEOFF:

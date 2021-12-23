@@ -27,6 +27,9 @@ public:
 	void Init() override;
 
 	UFUNCTION(BlueprintCallable)
+	void DisableWeaponDamageColliders();
+
+	UFUNCTION(BlueprintCallable)
 	virtual void LoadEquipments(FPersisted_CharacterCompleteData CharacterData);
 
 	UFUNCTION(BlueprintCallable)

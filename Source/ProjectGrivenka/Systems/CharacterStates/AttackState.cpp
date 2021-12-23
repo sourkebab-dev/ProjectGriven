@@ -3,7 +3,6 @@
 
 #include "AttackState.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemDefinitions.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
@@ -73,9 +72,9 @@ void UAttackState::OnStateExit_Implementation()
 	this->CharacterContext.CharacterAnim->SetRootMotionMode(ERootMotionMode::RootMotionFromMontagesOnly);
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->ChargeTimer);
 
-
-	FContextSimpleDelegate* SimpleDelegate = this->CharacterContext.EventBus->Observers.Find(EContextDelegates::CDL_WEAPON_COLLIDE_DISABLE);
-	if (SimpleDelegate) SimpleDelegate->Broadcast();
+	if (this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>()) {
+		IEquipmentSystemAvailable::Execute_DisableWeaponDamageColliders(this->CharacterContext.CharacterActor);
+	}
 }
 
 void UAttackState::DoAttack(TEnumAsByte<EAttackMovementType> AttackType) {
@@ -97,11 +96,12 @@ void UAttackState::DoAttack(TEnumAsByte<EAttackMovementType> AttackType) {
 
 
 	//Change Moving Values Attribute SPONGE: maybe need to reset after exit attack state?
-	float StaminaConsumption = IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->CharacterContext.CharacterActor, NewAttack);
-	FRPGEffectInitDelegate* EffectInitDelegate = this->CharacterContext.EventBus->EffectApplyObservers.Find(EEffectDelegates::EDL_MOVING_VALUES);
-	if (EffectInitDelegate) EffectInitDelegate->Broadcast(NewAttack.MovingValues, this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor);
-	EffectInitDelegate = this->CharacterContext.EventBus->EffectApplyObservers.Find(EEffectDelegates::EDL_DEPLETE_STAMINA);
-	if (EffectInitDelegate) EffectInitDelegate->Broadcast(StaminaConsumption, this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor);
+	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		float StaminaConsumption = this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>() 
+			? IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->CharacterContext.CharacterActor, NewAttack) : 0;
+		ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_WeaponMovingValues", NewAttack.MovingValues, true);
+		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, StaminaConsumption);
+	}
 
 
 	this->CurrentAttack = NewAttack;

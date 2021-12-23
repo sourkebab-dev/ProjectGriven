@@ -12,9 +12,6 @@ void UInteractSystem::Init()
 	if (!this->CompContext.EventBus) {
 		UE_LOG(LogTemp, Error, TEXT("Eventbus Initiation Failure"), *GetNameSafe(this)); return;
 	}
-	FInstigatedDelegate InstigatedDelegate;
-	this->CompContext.EventBus->AddInstigatedEvtSubscriber(InstigatedDelegate, EInstigatedDelegate::CDL_INTERACTED);
-	InstigatedDelegate.AddUObject(this, &UInteractSystem::Interact);
 	if (!this->CompContext.CharacterActor->Implements<UInteractable>()) {
 		UE_LOG(LogTemp, Error, TEXT("InteractSystem Initiation Failure"), *GetNameSafe(this)); return;
 	}

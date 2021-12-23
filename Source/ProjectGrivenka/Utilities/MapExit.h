@@ -28,8 +28,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	UFUNCTION(BlueprintCallable)
-	void Interact(AActor* InteractInstigator);
+	void Interact_Implementation(AActor* InteractInstigator);
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CheckIsInteractable(AActor* InteractInstigator);
 	virtual bool CheckIsInteractable_Implementation(AActor* InteractInstigator) override;

@@ -26,6 +26,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	class UEquipmentSystem* GetEquipmentSystemComp();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void DisableWeaponDamageColliders();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void GetNextMainAttack(enum EAttackMovementType InMovementType, FAttackValues InCurrentAttackValues, FAttackValues& OutNextAttack);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	float GetCurrentAttackStaminaUsage(FAttackValues InCurrentAttackValues);

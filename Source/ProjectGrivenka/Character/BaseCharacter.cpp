@@ -86,7 +86,7 @@ void ABaseCharacter::RemoveInteractable(UPrimitiveComponent* OverlappedComp, AAc
 	}
 }
 
-void ABaseCharacter::Interact(AActor* InteractInstigator)
+void ABaseCharacter::Interact_Implementation(AActor* InteractInstigator)
 {
 	//this->GetDialogueSystemComp()->StartDefaultDialogue();
 }

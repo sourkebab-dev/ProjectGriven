@@ -24,22 +24,8 @@ void UCharacterSystem::Init()
 {
 	Super::Init();
 	if (!this->CompContext.EventBus) return;
-	FRPGEffectInitDelegate StaminaDelegate;  
-	StaminaDelegate.AddUObject(this, &UCharacterSystem::InitFXDepleteStamina);
-	FRPGEffectInitDelegate MovingValuesDelegate;
-	MovingValuesDelegate.AddUObject(this, &UCharacterSystem::InitFXSetWeaponMovingValues);
-	FRPGEffectInitDelegate AmpRegenDelegate;
-	AmpRegenDelegate.AddUObject(this, &UCharacterSystem::InitFXStartAmpRegen);
-	FRPGEffectInitDelegate SetWeapDmgDelegate;
-	SetWeapDmgDelegate.AddUObject(this, &UCharacterSystem::InitFXSetWeaponDamage);
-
-	this->CompContext.EventBus->AddEffectInitSubscriber(StaminaDelegate, EEffectDelegates::EDL_DEPLETE_STAMINA);
-	this->CompContext.EventBus->AddEffectInitSubscriber(MovingValuesDelegate, EEffectDelegates::EDL_MOVING_VALUES);
-	this->CompContext.EventBus->AddEffectInitSubscriber(AmpRegenDelegate, EEffectDelegates::EDL_START_AMP_REGEN);
-	this->CompContext.EventBus->AddEffectInitSubscriber(SetWeapDmgDelegate, EEffectDelegates::EDL_WEAPON_DAMAGE);
-	this->CompContext.EventBus->EffectRemoveDelegate.AddUObject(this, &UCharacterSystem::RemoveEffectsByTag);
-	this->CompContext.EventBus->DamagedDelegate.AddUObject(this, &UCharacterSystem::InitFXReceiveHit);
-	this->CompContext.EventBus->ItemUsageDelegate.AddUObject(this, &UCharacterSystem::InitFXByPrefab);
+	//this->CompContext.EventBus->DamagedDelegate.AddUObject(this, &UCharacterSystem::InitFXReceiveHit);
+	//this->CompContext.EventBus->ItemUsageDelegate.AddUObject(this, &UCharacterSystem::InitFXByPrefab);
 	if (this->PrefabData) this->InitializeAttributes(this->PrefabData->CharacterData.Attributes);
 }
 
@@ -236,57 +222,48 @@ void UCharacterSystem::SetAttributeValue(TEnumAsByte<EAttributeCode> InAttribute
 	}
 }
 
-void UCharacterSystem::InitFXByPrefab(AActor* EffectReceiver, AActor* EffectInstigator, UEffectPrefab* InEffectPrefab)
+void UCharacterSystem::InitEffectByPrefab(AActor* EffectInstigator, UEffectPrefab* InEffectPrefab, float InOverrideValue, bool IsValueOverridden)
 {
 	UBaseEffect* EffectIns = NewObject<UBaseEffect>();
 	FEffectInfo EffectInfo = InEffectPrefab->EffectInfo;
-	EffectIns->Init(EffectInstigator, EffectReceiver, EffectInfo);
+	if (IsValueOverridden) EffectInfo.EffectProcesses[0].Value = InOverrideValue;
+	EffectIns->Init(EffectInstigator, this->GetOwner(), EffectInfo);
 	this->AddEffect(EffectIns);
 }
 
-void UCharacterSystem::InitFXReceiveHit(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FVector InDamageDirection, TEnumAsByte<enum EDamageImpactType> InImpactType)
+void UCharacterSystem::InitEffectByPrefabName(AActor* EffectInstigator, FName InPrefabName, float InOverrideValue, bool IsValueOverridden)
 {
-	UWeaponDamage* HitDamage = NewObject<UWeaponDamage>();
-	HitDamage->Init(NewEffectInstigator, NewEffectReceiver, FEffectInfo());
-	this->AddEffect(HitDamage);
+	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
+	UEffectPrefab* EffectPrefab = AssetsData->EffectPrefab->EffectAssets.FindRef(InPrefabName);
+	if (!EffectPrefab) return;
+	FEffectInfo EffectInfo = EffectPrefab->EffectInfo;
+	if (IsValueOverridden) EffectInfo.EffectProcesses[0].Value = InOverrideValue;
+	UBaseEffect* NewEffect = NewObject<UBaseEffect>();
+	NewEffect->Init(EffectInstigator, this->GetOwner(), EffectInfo);
+	this->AddEffect(NewEffect);
 }
 
-void UCharacterSystem::InitFXDepleteStamina(float InValue, AActor* EffectReceiver, AActor* EffectInstigator)
-{
-	UDepleteStamina* SpendStamina = NewObject<UDepleteStamina>();
-	SpendStamina->InitOverloaded(EffectInstigator, EffectReceiver, InValue);
-	this->AddEffect(SpendStamina);
-}
-
-void UCharacterSystem::InitFXStartAmpRegen(float InValue, AActor* EffectReceiver, AActor* EffectInstigator)
+void UCharacterSystem::InitEffectByRegenName(AActor* EffectInstigator, FName InPrefabName)
 {
 	UAttributeRegenOvertime* AmpRegen = NewObject<UAttributeRegenOvertime>();
-	AmpRegen->InitOverloaded(EffectInstigator, EffectReceiver, "Util_AmpRegen");
+	AmpRegen->InitOverloaded(EffectInstigator, this->GetOwner(), InPrefabName);
 	this->AddEffect(AmpRegen);
 }
 
-void UCharacterSystem::InitFXSetWeaponDamage(float InValue, AActor* EffectReceiver, AActor* EffectInstigator)
+void UCharacterSystem::InitEffectDepleteStamina(AActor* EffectInstigator, float InValue)
 {
-	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
-	UEffectPrefab* EffectPrefab = AssetsData->EffectPrefab->EffectAssets.FindRef("Util_WeaponDamage");
-	if (!EffectPrefab) return;
-	FEffectInfo EffectInfo = EffectPrefab->EffectInfo;
-	EffectInfo.EffectProcesses[0].Value = InValue;
-	UBaseEffect* WeaponDamage = NewObject<UBaseEffect>();
-	WeaponDamage->Init(this->GetOwner(), this->GetOwner(), EffectInfo);
-	this->AddEffect(WeaponDamage);
+	UDepleteStamina* SpendStamina = NewObject<UDepleteStamina>();
+	SpendStamina->InitOverloaded(EffectInstigator, this->GetOwner(), InValue);
+	this->AddEffect(SpendStamina);
 }
 
-void UCharacterSystem::InitFXSetWeaponMovingValues(float InValue, AActor* EffectReceiver, AActor* EffectInstigator)
+void UCharacterSystem::InitEffectReceiveHit(AActor* EffectInstigator, FVector InDamageDirection, TEnumAsByte<enum EDamageImpactType> InImpactType)
 {
-	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
-	UEffectPrefab* EffectPrefab = AssetsData->EffectPrefab->EffectAssets.FindRef("Util_WeaponMovingValues");
-	if (!EffectPrefab) return;
-	FEffectInfo EffectInfo = EffectPrefab->EffectInfo;
-	EffectInfo.EffectProcesses[0].Value = InValue;
-	UBaseEffect* WeaponMoveValues = NewObject<UBaseEffect>();
-	WeaponMoveValues->Init(EffectInstigator, EffectReceiver, EffectInfo);
-	this->AddEffect(WeaponMoveValues);
+	UWeaponDamage* HitDamage = NewObject<UWeaponDamage>();
+	HitDamage->Init(EffectInstigator, this->GetOwner(), FEffectInfo());
+	this->AddEffect(HitDamage);
 }
+
+
 
 

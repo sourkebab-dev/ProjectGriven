@@ -4,7 +4,6 @@
 #include "MotionState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemDefinitions.h"
@@ -15,7 +14,6 @@ void UMotionState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Stamina) > 0 : true;
 
 	if (Action == EActionList::ActionDodge && EventType == IE_Pressed && IsStaminaAllowed) {
-		GLog->Log("kekeke");
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Dodge"), EActionList::ActionDodge, IE_Pressed);
 	}
 

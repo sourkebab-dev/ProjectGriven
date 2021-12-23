@@ -5,7 +5,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
 
 void UDodgeState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
@@ -54,8 +53,9 @@ void UDodgeState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAction
 	this->CharacterContext.CharacterMovementComp->MaxAcceleration = 3000;
 	this->CharacterContext.CharacterMovementComp->MaxWalkSpeed = 999999;
 
-	FRPGEffectInitDelegate* EffectInitDelegate = this->CharacterContext.EventBus->EffectApplyObservers.Find(EEffectDelegates::EDL_DEPLETE_STAMINA);
-	if (EffectInitDelegate) EffectInitDelegate->Broadcast(10, this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor);
+	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, 10);
+	}
 
 
 	this->StatesComp->CrossStateData.IsLungeAvailable = false;

@@ -7,18 +7,11 @@
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/Utilities/BaseGameInstance.h"
 #include "ProjectGrivenka/Utilities/UIManager.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 
 
 void UCharacterInventory::Init()
 {
-	Super::Init();
-	FContextSimpleDelegate CommitDelegate, UseItemDelegate;
-	this->CompContext.EventBus->AddSubscriber(CommitDelegate, EContextDelegates::CDL_COMMIT_ITEM);
-	this->CompContext.EventBus->AddSubscriber(UseItemDelegate, EContextDelegates::CDL_USEITEM);
-	CommitDelegate.AddUObject(this, &UCharacterInventory::CommitItem);
-	UseItemDelegate.AddUObject(this, &UCharacterInventory::UseSelectedItemBelt);
-	
+	Super::Init();	
 }
 
 void UCharacterInventory::SyncItemBeltUI()

@@ -81,8 +81,7 @@ public:
 	UFUNCTION()
 	virtual void RemoveInteractable(UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
-	UFUNCTION(BlueprintCallable)
-	void Interact(AActor* InteractInstigator);
+	void Interact_Implementation(AActor* InteractInstigator);
 	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool CheckIsInteractable(AActor* InteractInstigator);

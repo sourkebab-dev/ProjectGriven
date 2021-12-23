@@ -6,7 +6,6 @@
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemDefinitions.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 
 void ULungeAttackState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
 {
@@ -47,11 +46,13 @@ void ULungeAttackState::OnStateEnter_Implementation(FGameplayTagContainer InPrev
 	}
 
 	this->StatesComp->CrossStateData.IsLungeAvailable = false;
-	float StaminaConsumption = IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->CharacterContext.CharacterActor, NewAttack);
-	FRPGEffectInitDelegate* EffectInitDelegate = this->CharacterContext.EventBus->EffectApplyObservers.Find(EEffectDelegates::EDL_MOVING_VALUES);
-	if (EffectInitDelegate) EffectInitDelegate->Broadcast(NewAttack.MovingValues, this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor);
-	EffectInitDelegate = this->CharacterContext.EventBus->EffectApplyObservers.Find(EEffectDelegates::EDL_DEPLETE_STAMINA);
-	if (EffectInitDelegate) EffectInitDelegate->Broadcast(StaminaConsumption, this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor);	
+
+	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		float StaminaConsumption = this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>()
+			? IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->CharacterContext.CharacterActor, NewAttack) : 0;
+		ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_WeaponMovingValues", NewAttack.MovingValues, true);
+		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, StaminaConsumption);
+	}
 }
 
 void ULungeAttackState::OnStateExit_Implementation()
@@ -61,6 +62,7 @@ void ULungeAttackState::OnStateExit_Implementation()
 	this->StatesComp->CrossStateData.IsComboActive = true;
 	this->StatesComp->CrossStateData.IsInterruptable = true;
 	this->CharacterContext.CharacterAnim->StopAllMontages(0.25);
-	FContextSimpleDelegate* ContextDelegates = this->CharacterContext.EventBus->Observers.Find(EContextDelegates::CDL_WEAPON_COLLIDE_DISABLE);
-	if (ContextDelegates) ContextDelegates->Broadcast();
+	if (this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>()) {
+		IEquipmentSystemAvailable::Execute_DisableWeaponDamageColliders(this->CharacterContext.CharacterActor);
+	}
 }

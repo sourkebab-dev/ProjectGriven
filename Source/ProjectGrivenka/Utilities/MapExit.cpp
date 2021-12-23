@@ -19,7 +19,7 @@ void AMapExit::BeginPlay()
 	Super::BeginPlay();	
 }
 
-void AMapExit::Interact(AActor* InteractInstigator)
+void AMapExit::Interact_Implementation(AActor* InteractInstigator)
 {
 	if (this->MapExitType == EMapExitType::Normal) {
 		UGameplayStatics::OpenLevel(this->GetWorld(), this->MapTargetName);

@@ -4,14 +4,16 @@
 #include "EquipmentSystem.h"
 #include "GameplayTagContainer.h"
 #include "ProjectGrivenka/Equipments/Weapons/BaseWeapon.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
+#include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 
 void UEquipmentSystem::Init()
 {
 	Super::Init();
-	//Sponge: should bind this to a function that calls weapon disabled pon currently used wapon 
-	FContextSimpleDelegate SimpleDelegate;
-	this->CompContext.EventBus->AddSubscriber(SimpleDelegate, EContextDelegates::CDL_WEAPON_COLLIDE_DISABLE);
+}
+
+void UEquipmentSystem::DisableWeaponDamageColliders()
+{
+	this->WeaponR->DisableCollision();
 }
 
 
@@ -26,7 +28,9 @@ void UEquipmentSystem::LoadEquipments(FPersisted_CharacterCompleteData Character
 
 		//remove equipped weapon
 		if (this->WeaponR) {
-			this->CompContext.EventBus->EffectRemoveDelegate.Broadcast(FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Weapon"));
+			if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+				ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CompContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Weapon"));
+			}
 			this->WeaponR->Destroy();
 		}
 
@@ -42,8 +46,9 @@ void UEquipmentSystem::LoadEquipments(FPersisted_CharacterCompleteData Character
 
 
 		//Add to Weapon Damage Stat
-		FRPGEffectInitDelegate* EffectInitDelegate = this->CompContext.EventBus->EffectApplyObservers.Find(EEffectDelegates::EDL_WEAPON_DAMAGE);
-		if (EffectInitDelegate) EffectInitDelegate->Broadcast(Weapon->RawDamage, this->CompContext.CharacterActor, this->CompContext.CharacterActor);
+		if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+			ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CompContext.CharacterActor, this->CompContext.CharacterActor, "Util_WeaponDamage", Weapon->RawDamage, true);
+		}
 	}
 }
 

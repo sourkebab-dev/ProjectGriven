@@ -40,8 +40,8 @@ void UInteractState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAct
 
 	FOnMontageEnded EndInteractDelegate;
 	//Note: CDL_Interact will be triggered by notify states for latent interaction
-	if (this->InteractionInfo.IsLatent && this->CharacterContext.EventBus->Observers.Find(EContextDelegates::CDL_INTERACT)) {
-		this->CharacterContext.EventBus->Observers.Find(EContextDelegates::CDL_INTERACT)->AddUObject(this,&UInteractState::StartInteraction);
+	if (this->InteractionInfo.IsLatent ) {
+		this->CharacterContext.EventBus->InteractionDelegate.AddDynamic(this, &UInteractState::StartInteraction);
 	}
 	else {
 		this->StartInteraction();
@@ -61,27 +61,17 @@ void UInteractState::OnStateExit_Implementation()
 {
 	this->InteractionInfo = FInteractionInfo();
 	this->CharacterContext.CharacterAnim->StopAllMontages(0.25);
-	if (this->InteractionInfo.IsLatent && this->CharacterContext.EventBus->Observers.Find(EContextDelegates::CDL_INTERACT)) {
-		this->CharacterContext.EventBus->Observers.Find(EContextDelegates::CDL_INTERACT)->RemoveAll(this);
+
+	if(this->InteractionInfo.IsLatent) {
+		this->CharacterContext.EventBus->InteractionDelegate.RemoveDynamic(this, &UInteractState::StartInteraction);
 	}
 }
 
 void UInteractState::StartInteraction()
 {
-
 	AActor* InteractableItem = IInteractable::Execute_GetInteractableItem(this->CharacterContext.CharacterActor);
-	if (!InteractableItem) {
-		this->EndInteraction();
-		return;
-	}
-	FCharacterContext InteractableCtx;
-	IContextAvailable::Execute_GetContext(InteractableItem, InteractableCtx);
-	if (!InteractableCtx.EventBus || !this->CharacterContext.EventBus->InstigatedObservers.Find(EInstigatedDelegate::CDL_INTERACTED)) {
-		this->EndInteraction();
-		return;
-	}
-
-	InteractableCtx.EventBus->InstigatedObservers.Find(EInstigatedDelegate::CDL_INTERACTED)->Broadcast(this->CharacterContext.CharacterActor);
+	if (!InteractableItem) { this->EndInteraction(); return; }
+	IInteractable::Execute_Interact(InteractableItem, this->CharacterContext.CharacterActor);
 }
 
 void UInteractState::EndInteraction()

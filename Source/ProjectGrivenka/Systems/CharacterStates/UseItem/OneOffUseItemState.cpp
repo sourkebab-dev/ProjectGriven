@@ -4,7 +4,6 @@
 #include "OneOffUseItemState.h"
 #include "RootUseItemState.h"
 #include "ProjectGrivenka/Items/BaseItem.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 

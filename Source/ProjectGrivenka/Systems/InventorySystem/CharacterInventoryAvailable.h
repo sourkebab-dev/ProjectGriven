@@ -26,6 +26,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	class UCharacterInventory* GetCharacterInventoryComp();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void CommitItem();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	int GetSelectedItemCount();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	class ABaseItem* GetCommitedItem();

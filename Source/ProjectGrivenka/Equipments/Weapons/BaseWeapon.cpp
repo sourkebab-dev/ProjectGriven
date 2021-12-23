@@ -78,7 +78,7 @@ void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 			FCharacterContext DamagableCtx;
 			IContextAvailable::Execute_GetContext(OtherActor, DamagableCtx);
 			//Sponge: need to find out how to get the hit direction & impact type
-			DamagableCtx.EventBus->DamagedDelegate.Broadcast(this->GetOwner(), OtherActor, FVector::ForwardVector, EDamageImpactType::DI_MEDIUM);
+			DamagableCtx.EventBus->DamagedDelegate.Broadcast(this->GetOwner(), FVector::ForwardVector, EDamageImpactType::DI_MEDIUM);
 		}
 	}
 

@@ -17,6 +17,6 @@ void ABaseConsumableItem::OnUse()
 	if (!this->GetOwner()->Implements<UContextAvailable>() || !EffectReceiverActor) { GLog->Log("owner invalid"); return; }
 
 	for (int i = 0; i < this->ItemInfo.Effects.Num(); i++) {
-		CharCtx.EventBus->ItemUsageDelegate.Broadcast(EffectReceiverActor, EffectReceiverActor, this->ItemInfo.Effects[i]);
+		CharCtx.EventBus->ItemUsageDelegate.Broadcast(EffectReceiverActor, this->ItemInfo.Effects[i]);
 	}
 }
