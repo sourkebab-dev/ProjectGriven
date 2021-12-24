@@ -40,27 +40,17 @@ void ABaseWeapon::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-void ABaseWeapon::LoadData_Implementation(FPersisted_CharacterCompleteData CharacterData)
+void ABaseWeapon::LoadData(FWeaponInfo InWeaponInfo)
 {
-	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
-	if (!AssetsData || !AssetsData->WeaponPrefabs || CharacterData.Equipments.WeaponInfo.VariantId.IsNone()) return;
-	UWeaponPrefabs* WeaponPrefab = AssetsData->WeaponPrefabs->WeaponAssets.FindRef(CharacterData.Equipments.WeaponInfo.VariantId);
-	if (!WeaponPrefab) {
-		GLog->Log("Weapon Variant not found");
-		return;
-	}
-	FWeaponInfo WeaponVariantInfo = WeaponPrefab->WeaponInfo;
-
-
-
-	this->EquipmentMesh->SetSkeletalMesh(WeaponVariantInfo.GeneralInfo.EquipmentMesh);
-	this->ElementType = WeaponVariantInfo.ElementType;
-	this->ElementalDamage = WeaponVariantInfo.ElementalDamage;
-	this->RawStaminaCost = WeaponVariantInfo.RawStaminaCost;
-	this->RawDamage = WeaponVariantInfo.RawDamage;
-	this->FortitudeDamage = WeaponVariantInfo.FortitudeDamage;
-	this->VariantId = CharacterData.Equipments.WeaponInfo.VariantId;
-	this->WeaponTypeClass = CharacterData.Equipments.WeaponInfo.BaseClass;
+	this->EquipmentMesh->SetSkeletalMesh(InWeaponInfo.GeneralInfo.EquipmentMesh);
+	this->ElementType = InWeaponInfo.ElementType;
+	this->ElementalDamage = InWeaponInfo.ElementalDamage;
+	this->RawStaminaCost = InWeaponInfo.RawStaminaCost;
+	this->RawDamage = InWeaponInfo.RawDamage;
+	this->FortitudeDamage = InWeaponInfo.FortitudeDamage;
+	this->WeaponTypeClass = InWeaponInfo.GeneralInfo.EquipmentBaseClass;
+	//Sponge: Should i save variant id to weaponinfo?
+	//this->VariantId = InEquipmentInfo.VariantId;
 }
 #pragma endregion
 

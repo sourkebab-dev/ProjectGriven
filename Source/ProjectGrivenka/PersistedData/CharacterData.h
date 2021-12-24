@@ -3,11 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
+#include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
+#include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "CharacterData.generated.h"
 
 
 USTRUCT(BlueprintType)
-struct FPersisted_CharacterAppearance
+struct FPersistedCharacterAppearance
 {
     GENERATED_BODY()
 
@@ -17,108 +20,15 @@ struct FPersisted_CharacterAppearance
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName MaterialId;
 
-	//SPONGE: something is not allowing me to save a subclass of ABaseCharacter (undeclared identifier)
-	//had to forward declare i dunno why 
-	//Note: turns out it's a circular dependency issue
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class ABaseCharacter> CharClass;
+	TSubclassOf<AActor> CharClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<UAnimInstance> AnimClass;
 };
 
 USTRUCT(BlueprintType)
-struct FPersisted_CharacterAttributes
-{
-	GENERATED_BODY()
-
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Amp")
-		float MaxAmp;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Amp")
-		float Amp;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Amp")
-		float AmpRecoverRate;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-		float MaxHealth;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-		float Health;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-		float HealthRecoverRate;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
-		float MaxStamina;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
-		float Stamina;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
-		float StaminaRecoverRate;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fortitude")
-		float MaxFortitude;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fortitude")
-		float Fortitude;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fortitude")
-		float FortitudeRecoverRate;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
-		float Defense;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-		float WeaponDamage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-		float WeaponMovingValues;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
-		float ElemFireDefense;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
-		float ElemIceDefense;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
-		float ElemElectricDefense;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
-		float ElemPoisonDefense;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
-		float ElemEnergyDefense;
-};
-
-USTRUCT(BlueprintType)
-struct FPersisted_EquipmentInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGuid EquipmentId;
-
-	//Note: Base Class members will be overriden by variant info
-	//SPonge: maybe put baseclass inside variant? also should probably add an equipment type
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class ABaseEquipment> BaseClass;	
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName VariantId;
-};
-
-
-USTRUCT(BlueprintType)
-struct FPersisted_CharacterEquipments
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPersisted_EquipmentInfo WeaponInfo;
-};
-
-USTRUCT(BlueprintType)
-struct FPersisted_CharacterItems
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int SlotIndex;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int Count;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName ItemId;
-
-};
-
-USTRUCT(BlueprintType)
-struct FPersisted_CharacterBehavior
+struct FPersistedCharacterBehavior
 {
 	GENERATED_BODY()
 
@@ -126,17 +36,9 @@ struct FPersisted_CharacterBehavior
 	TSubclassOf<class ABaseAIController> AIClass;
 };
 
-USTRUCT(BlueprintType)
-struct FPersisted_CharacterInventory
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FPersisted_CharacterItems> Items;
-};
 
 USTRUCT(BlueprintType)
-struct FPersisted_CharacterInfo
+struct FPersistedCharacterInfo
 {
 	GENERATED_BODY()
 
@@ -152,25 +54,26 @@ struct FPersisted_CharacterInfo
 
 
 USTRUCT(BlueprintType)
-struct FPersisted_CharacterCompleteData
+struct FPersistedCharacterData 
 {
 	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPersisted_CharacterInfo Info;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPersisted_CharacterAppearance Appearance;
+	FPersistedCharacterInfo Info;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPersisted_CharacterAttributes Attributes;
+	FPersistedCharacterAppearance Appearance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPersisted_CharacterEquipments Equipments;
+	FPersistedCharacterBehavior Behavior;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPersisted_CharacterInventory Inventory;
+	FPersistedAttributes Attributes;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPersisted_CharacterBehavior Behavior;
+	FPersistedEquipments Equipments;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FPersistedInventory Inventory;
+
 };

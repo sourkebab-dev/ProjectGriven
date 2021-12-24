@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CharacterInventoryAvailable.h"
 #include "ProjectGrivenka/ContextUtilities/BaseContextableComponent.h"
-#include "ProjectGrivenka/PersistedData/CharacterData.h"
 #include "CharacterInventory.generated.h"
 
 //Sponge: Need to handle, inventory stacking, change from inventory to itembelt, item use till 0 handle in itembelt, inventory available slot optimizations
@@ -15,7 +15,7 @@ class PROJECTGRIVENKA_API UCharacterInventory : public UBaseContextableComponent
 
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FPersisted_CharacterItems> InventoryList;
+	FPersistedInventory InventoryList;
 
 	//int points to index in inventorylist
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -37,7 +37,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void SetSelectedItem(int Idx);
 	UFUNCTION(BlueprintCallable)
-	virtual FPersisted_CharacterItems GetSelectedItemInventory();
+	virtual FItemInfo GetSelectedItemInventory();
 	UFUNCTION(BlueprintCallable)
 	virtual void UseSelectedItemBelt();
 	UFUNCTION(BlueprintCallable)

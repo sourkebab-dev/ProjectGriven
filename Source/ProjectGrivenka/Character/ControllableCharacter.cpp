@@ -72,7 +72,7 @@ void AControllableCharacter::BeginPlay()
 	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
 	if (!GameInstance) return;
 	//SPONGE: i should probably put this on other place (maybe everytime this gets controlled by a player controller)
-	GameInstance->UIManager->EquipmentChangeDelegate.AddDynamic(this, &AControllableCharacter::OnUIEquipmentChange);
+	//GameInstance->UIManager->EquipmentChangeDelegate.AddDynamic(this, &AControllableCharacter::OnUIEquipmentChange);
 }
 
 void AControllableCharacter::PossessedBy(AController* NewController)
@@ -141,10 +141,10 @@ void AControllableCharacter::SaveData_Implementation()
 	//GameInstance->Crew[CharIndex].Equipments.WeaponInfo.VariantId = this->CharacterContext.EquipmentSystemComp->GetEquippedWeapon()->VariantId;
 }
 
-void AControllableCharacter::LoadData_Implementation(FPersisted_CharacterCompleteData CharacterData)
+void AControllableCharacter::LoadData_Implementation()
 {
-	Super::LoadData_Implementation(CharacterData);
-	this->CharacterId = CharacterData.Info.CharacterId;
+	Super::LoadData_Implementation();
+	//this->CharacterId = CharacterData.Info.CharacterId;
 }
 
 void AControllableCharacter::PossessCharacter()
@@ -161,6 +161,7 @@ void AControllableCharacter::PossessCharacter()
 	GameInstance->SetControlledCrewId(this->CharacterId);
 }
 
+/*
 void AControllableCharacter::OnUIEquipmentChange(FGuid InCharGuid, FPersisted_EquipmentInfo InEquipmentInfo)
 {
 	if (!this->CharacterId.IsValid() || InCharGuid != this->CharacterId) return;
@@ -168,3 +169,5 @@ void AControllableCharacter::OnUIEquipmentChange(FGuid InCharGuid, FPersisted_Eq
 	CharData.Equipments.WeaponInfo = InEquipmentInfo;
 	//this->CharacterContext.EquipmentSystemComp->LoadEquipments(CharData);
 ;}
+
+*/

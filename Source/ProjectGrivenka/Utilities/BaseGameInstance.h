@@ -24,7 +24,7 @@ class PROJECTGRIVENKA_API UBaseGameInstance : public UGameInstance
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player & Crew")
-	TArray<FPersisted_CharacterCompleteData> Crew;	
+	TArray<FPersistedCharacterData> Crew;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TArray<FEquipmentBoxItem> EquipmentBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")

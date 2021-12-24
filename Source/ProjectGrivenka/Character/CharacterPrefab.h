@@ -17,6 +17,6 @@ class PROJECTGRIVENKA_API UCharacterPrefab : public UDataAsset
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Data")
-	FPersisted_CharacterCompleteData CharacterData;
+	FPersistedCharacterData CharacterData;
 
 };

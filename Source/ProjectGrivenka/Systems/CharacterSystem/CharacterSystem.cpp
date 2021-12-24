@@ -3,7 +3,6 @@
 
 #include "CharacterSystem.h"
 #include "CharacterSystemAttributes.h"
-#include "CharacterSystemAvailable.h"
 #include "BaseEffect.h"
 #include "EffectPrefab.h"
 #include "Effects/AttributeRegenOvertime.h"
@@ -29,7 +28,7 @@ void UCharacterSystem::Init()
 	if (this->PrefabData) this->InitializeAttributes(this->PrefabData->CharacterData.Attributes);
 }
 
-void UCharacterSystem::InitializeAttributes(FPersisted_CharacterAttributes PersistedAttributes)
+void UCharacterSystem::InitializeAttributes(FPersistedAttributes PersistedAttributes)
 {
 	this->Attributes->InitHealth(PersistedAttributes.Health);
 	this->Attributes->InitMaxHealth(PersistedAttributes.MaxHealth);

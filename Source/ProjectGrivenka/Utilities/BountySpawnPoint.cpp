@@ -19,7 +19,7 @@ void ABountySpawnPoint::BeginPlay()
 	
 }
 
-void ABountySpawnPoint::SpawnBounty_Implementation(FPersisted_CharacterCompleteData CharacterData)
+void ABountySpawnPoint::SpawnBounty_Implementation(FPersistedCharacterData CharacterData)
 {
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -27,7 +27,7 @@ void ABountySpawnPoint::SpawnBounty_Implementation(FPersisted_CharacterCompleteD
 	if (!Bounty) { GLog->Log("bounte failed to spawn"); return; }
 
 	//Sponge: Multi character spawn?
-	Bounty->LoadData_Implementation(CharacterData);
+	Bounty->LoadData_Implementation();
 }
 
 

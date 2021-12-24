@@ -78,7 +78,7 @@ void UUIManager::RemoveLootDisplay()
 	if (this->LootListUIIns) this->LootListUIIns->RemoveFromViewport();
 }
 
-void UUIManager::EmitChangeEquipment(FPersisted_EquipmentInfo EquipmentInfo)
+void UUIManager::EmitChangeEquipment(FPersistedEquipmentItem EquipmentInfo)
 {
 	if (!this->GameIns) return;
 	this->EquipmentChangeDelegate.Broadcast(this->GameIns->GetControlledCrewId(), EquipmentInfo);

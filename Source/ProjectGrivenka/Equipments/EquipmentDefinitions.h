@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "ProjectGrivenka/PersistedData/CharacterData.h"
+#include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
 #include "EquipmentDefinitions.generated.h"
 
@@ -13,6 +13,9 @@ USTRUCT(BlueprintType)
 struct FEquipmentInfo
 {
     GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TSubclassOf<class ABaseEquipment> EquipmentBaseClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FName EquipmentName;
@@ -58,7 +61,7 @@ struct FEquipmentBoxItem
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment Abstraction")
-    FPersisted_EquipmentInfo EquipmentAbstraction;
+    FPersistedEquipmentItem EquipmentAbstraction;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
     int BoxIndex;

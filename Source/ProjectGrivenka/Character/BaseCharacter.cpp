@@ -107,8 +107,9 @@ void ABaseCharacter::SaveData_Implementation()
 {
 }
 
-void ABaseCharacter::LoadData_Implementation(FPersisted_CharacterCompleteData CharacterData)
+void ABaseCharacter::LoadData_Implementation()
 {
+	/*
 	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
 	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	if (!GameInstance || !AssetsData) return;
@@ -135,6 +136,7 @@ void ABaseCharacter::LoadData_Implementation(FPersisted_CharacterCompleteData Ch
 	//AI Load
 	//SPONGE: MIGHT NEED TO PUT ON BASENPC INSTEAD
 	this->SpawnDefaultController();
+	*/
 }
 
 #pragma region Character Functional Shit

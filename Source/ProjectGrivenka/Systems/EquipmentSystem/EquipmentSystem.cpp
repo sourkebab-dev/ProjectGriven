@@ -3,6 +3,7 @@
 
 #include "EquipmentSystem.h"
 #include "GameplayTagContainer.h"
+#include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/Equipments/Weapons/BaseWeapon.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 
@@ -17,39 +18,36 @@ void UEquipmentSystem::DisableWeaponDamageColliders()
 }
 
 
-void UEquipmentSystem::LoadEquipments(FPersisted_CharacterCompleteData CharacterData)
+void UEquipmentSystem::LoadEquipments(FPersistedEquipments InPersistedEquipments)
 {
 	//Weapon Load
-	if (CharacterData.Equipments.WeaponInfo.BaseClass) {
-		if (!CharacterData.Equipments.WeaponInfo.BaseClass->IsChildOf(ABaseWeapon::StaticClass())) {
-			GLog->Log("Weapon Class is Invalid");
-			return;
-		}
-
-		//remove equipped weapon
-		if (this->WeaponR) {
-			if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-				ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CompContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Weapon"));
+	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
+	UWeaponPrefabs* WeaponPrefab = AssetsData->WeaponPrefabs->WeaponAssets.FindRef(InPersistedEquipments.WeaponInfo.VariantId);
+	if (WeaponPrefab) {
+		TSubclassOf<ABaseEquipment> WeaponClass = WeaponPrefab->WeaponInfo.GeneralInfo.EquipmentBaseClass;
+		if (WeaponClass && WeaponClass->IsChildOf(ABaseWeapon::StaticClass())) {
+			if (this->WeaponR) {
+				if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+					ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CompContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Weapon"));
+				}
+				this->WeaponR->Destroy();
 			}
-			this->WeaponR->Destroy();
-		}
 
+			FActorSpawnParameters SpawnParams = FActorSpawnParameters();
+			SpawnParams.Owner = this->GetOwner();
+			ABaseWeapon* Weapon = this->GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass, SpawnParams);
+			FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
+			Weapon->AttachToComponent(this->CompContext.SkeletalMeshComp, TransformRules, "WeaponSlot");
+			this->WeaponR = Weapon;
+			this->WeaponR->LoadData(WeaponPrefab->WeaponInfo);
 
-		FActorSpawnParameters SpawnParams = FActorSpawnParameters();
-		SpawnParams.Owner = this->GetOwner();
-		ABaseWeapon* Weapon = this->GetWorld()->SpawnActor<ABaseWeapon>(CharacterData.Equipments.WeaponInfo.BaseClass, SpawnParams);
-		FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
-		Weapon->AttachToComponent(this->CompContext.SkeletalMeshComp, TransformRules, "WeaponSlot");
-		this->WeaponR = Weapon;
-		this->WeaponR->LoadData_Implementation(CharacterData);
-
-
-
-		//Add to Weapon Damage Stat
-		if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-			ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CompContext.CharacterActor, this->CompContext.CharacterActor, "Util_WeaponDamage", Weapon->RawDamage, true);
+			if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+				ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CompContext.CharacterActor, this->CompContext.CharacterActor, "Util_WeaponDamage", Weapon->RawDamage, true);
+			}
 		}
 	}
+
+
 }
 
 float UEquipmentSystem::CalculateAttackStaminaCost(FAttackValues InCurrentAttack)

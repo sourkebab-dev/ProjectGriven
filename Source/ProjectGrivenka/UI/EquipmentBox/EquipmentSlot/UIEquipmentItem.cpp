@@ -26,21 +26,14 @@ void UUIEquipmentItem::NativeDestruct()
 
 void UUIEquipmentItem::SetSlotInfo(FEquipmentBoxItem ItemInfo)
 {
-	if (!ItemInfo.EquipmentAbstraction.BaseClass) return;
+	if (ItemInfo.EquipmentAbstraction.VariantId.IsNone()) return;
 	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	UTexture2D* SlotIcon;
-	if (!ItemInfo.EquipmentAbstraction.VariantId.IsNone() && AssetsData) {
-		UWeaponPrefabs* WeaponPrefab = AssetsData->WeaponPrefabs->WeaponAssets.FindRef(ItemInfo.EquipmentAbstraction.VariantId);
-		if (!WeaponPrefab) return;
-		FWeaponInfo WeapInfo = WeaponPrefab->WeaponInfo;
-		SlotIcon = WeapInfo.GeneralInfo.EquipmentIcon;
-		GLog->Log(SlotIcon->GetFullName());
-	}
-	else {
-		ABaseEquipment* Equipment = ItemInfo.EquipmentAbstraction.BaseClass.GetDefaultObject();
-		SlotIcon = Equipment->EquipmentIcon;
-		GLog->Log("B");
-	}
+	UWeaponPrefabs* WeaponPrefab = AssetsData->WeaponPrefabs->WeaponAssets.FindRef(ItemInfo.EquipmentAbstraction.VariantId);
+	if (!WeaponPrefab) return;
+	FWeaponInfo WeapInfo = WeaponPrefab->WeaponInfo;
+	SlotIcon = WeapInfo.GeneralInfo.EquipmentIcon;
+	GLog->Log(SlotIcon->GetFullName());
 
 	if (SlotIcon) this->SlotImage->SetBrushFromTexture(SlotIcon, true);
 	this->SlotInfo = ItemInfo;

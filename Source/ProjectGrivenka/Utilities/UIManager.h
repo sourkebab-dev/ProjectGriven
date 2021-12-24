@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "ProjectGrivenka/PersistedData/CharacterData.h"
 #include "ProjectGrivenka/Items/ItemDefinitions.h"
 #include "ProjectGrivenka/Systems/LootSystem/LootSystemDefinitions.h"
 #include "ProjectGrivenka/Systems/DialogueSystem/DialogueSystemDefinitions.h"
+#include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 #include "UIManager.generated.h"
 
 /**
  * 
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipmentChangeDelegate, FGuid, CharacterId, FPersisted_EquipmentInfo, EquipmentInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipmentChangeDelegate, FGuid, CharacterId, FPersistedEquipmentItem, EquipmentInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogueProceedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDialogueReplyDelegate, FName, ReplyId);
 
@@ -84,7 +84,7 @@ public:
 	void RemoveLootDisplay();
 
 	UFUNCTION(BlueprintCallable)
-	void EmitChangeEquipment(FPersisted_EquipmentInfo EquipmentInfo);
+	void EmitChangeEquipment(FPersistedEquipmentItem EquipmentInfo);
 
 	UFUNCTION(BlueprintCallable)
 	void EmitProceedDialogue();

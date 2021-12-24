@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "ProjectGrivenka/ContextUtilities/BaseContextableComponent.h"
-#include "ProjectGrivenka/PersistedData/CharacterData.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
+#include "EquipmentSystemAvailable.h"
 #include "EquipmentSystem.generated.h"
 
 
@@ -30,7 +30,7 @@ public:
 	void DisableWeaponDamageColliders();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void LoadEquipments(FPersisted_CharacterCompleteData CharacterData);
+	virtual void LoadEquipments(FPersistedEquipments InPersistedEquipments);
 
 	UFUNCTION(BlueprintCallable)
 	virtual ABaseWeapon* GetEquippedWeapon() { return WeaponR; };

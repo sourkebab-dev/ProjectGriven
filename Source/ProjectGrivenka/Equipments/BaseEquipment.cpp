@@ -28,7 +28,7 @@ void ABaseEquipment::SaveData_Implementation()
 {
 }
 
-void ABaseEquipment::LoadData_Implementation(FPersisted_CharacterCompleteData CharacterData)
+void ABaseEquipment::LoadData_Implementation(FPersistedEquipmentItem InEquipmentInfo)
 {
 }
 

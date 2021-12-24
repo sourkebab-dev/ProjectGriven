@@ -16,16 +16,10 @@ void UCharacterInventory::Init()
 
 void UCharacterInventory::SyncItemBeltUI()
 {
-	int InventoryIdx = this->ItemBelt[this->SelectedItemBeltIdx];
-	if (this->ItemBelt.IsValidIndex(this->SelectedItemBeltIdx) && this->InventoryList.IsValidIndex(this->ItemBelt[this->SelectedItemBeltIdx])) {
-		UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
-		UItemPrefab* ItemPrefab = AssetsData->ItemPrefab->ItemAssets.FindRef(this->InventoryList[InventoryIdx].ItemId);
-		if (!ItemPrefab) return;
-		FItemInfo ItemInfo = ItemPrefab->ItemInfo;
-		UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
-		GameInstance->UIManager->SetActiveItemImage(ItemInfo);
-	}
-
+	FItemInfo SelectedItemInfo = this->GetSelectedItemInventory();
+	if (SelectedItemInfo.ItemId.IsNone()) return;
+	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
+	GameInstance->UIManager->SetActiveItemImage(SelectedItemInfo);
 }
 
 void UCharacterInventory::SetSelectedItem(int Idx)
@@ -44,43 +38,44 @@ void UCharacterInventory::SetSelectedItem(int Idx)
 
 }
 
-FPersisted_CharacterItems UCharacterInventory::GetSelectedItemInventory()
+// Sponge: this should return item prefab
+FItemInfo UCharacterInventory::GetSelectedItemInventory()
 {
-	if (!this->ItemBelt.IsValidIndex(this->SelectedItemBeltIdx)) return FPersisted_CharacterItems();
+	if (!this->ItemBelt.IsValidIndex(this->SelectedItemBeltIdx)) return FItemInfo();
+	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	int InventoryIdx = this->ItemBelt[this->SelectedItemBeltIdx];
-	return this->InventoryList.IsValidIndex(InventoryIdx) ? this->InventoryList[InventoryIdx] : FPersisted_CharacterItems();
+	if (!this->InventoryList.Items.IsValidIndex(InventoryIdx)) return FItemInfo();
+	UItemPrefab* ItemPrefab = AssetsData->ItemPrefab->ItemAssets.FindRef(this->InventoryList.Items[InventoryIdx].ItemId);
+	return ItemPrefab ? ItemPrefab->ItemInfo : FItemInfo();
 }
 
 void UCharacterInventory::UseSelectedItemBelt()
 {
 	if (!this->ItemBelt.IsValidIndex(this->CommitedItemBeltIdx)) return;
 	int InventoryIdx = this->ItemBelt[this->CommitedItemBeltIdx];
-	if (!this->InventoryList.IsValidIndex(InventoryIdx)) return;
+	if (!this->InventoryList.Items.IsValidIndex(InventoryIdx)) return;
 	this->UsedItem->OnUse();
-	this->InventoryList[InventoryIdx].Count -= 1;
+	this->InventoryList.Items[InventoryIdx].Count -= 1;
 }
 
 void UCharacterInventory::CommitItem()
 {
 	//Sponge: should probably subtract inventory count
-	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	if (this->UsedItem) this->UsedItem->Destroy();
-	if (this->ItemBelt.IsValidIndex(this->SelectedItemBeltIdx) && this->InventoryList.IsValidIndex(this->ItemBelt[this->SelectedItemBeltIdx])) {
-		int InventoryIdx = this->ItemBelt[this->SelectedItemBeltIdx];
-		UItemPrefab* ItemPrefab = AssetsData->ItemPrefab->ItemAssets.FindRef(this->InventoryList[InventoryIdx].ItemId);
-		if (!ItemPrefab) return;
-		FItemInfo ItemInfo = ItemPrefab->ItemInfo;
+	FItemInfo SelectedItemInfo = this->GetSelectedItemInventory();
+	if (!SelectedItemInfo.ItemId.IsNone()) {
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		SpawnParameters.Owner = this->GetOwner();
 		if (!this->GetOwner()) return;
 		this->CommitedItemBeltIdx = this->SelectedItemBeltIdx;
-		this->UsedItem = this->CompContext.CharacterActor->GetWorld()->SpawnActor<ABaseItem>(ItemInfo.ItemBaseClass, SpawnParameters);
-		this->UsedItem->LoadInfo(ItemInfo);
+		this->UsedItem = this->CompContext.CharacterActor->GetWorld()->SpawnActor<ABaseItem>(SelectedItemInfo.ItemBaseClass, SpawnParameters);
+		this->UsedItem->LoadInfo(SelectedItemInfo);
 
 		//SPONGE: move item to hand ?
 		FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
 		this->UsedItem->AttachToComponent(this->CompContext.SkeletalMeshComp, TransformRules, "WeaponSlot");
+
 	}
 	else {
 		this->SelectedItemBeltIdx = 0;
@@ -91,14 +86,14 @@ void UCharacterInventory::CommitItem()
 int UCharacterInventory::GetAvailableSlotIdx(FName InItemId, int InItemCount)
 {
 	//sponge: should add stacking feature
-	if (this->InventoryList.Num() == 40) { GLog->Log("Inventory Full"); return -1; }
+	if (this->InventoryList.Items.Num() == 40) { GLog->Log("Inventory Full"); return -1; }
 	int AvailableIndex = 0;
 	int MaxSlotIdx = 0;
-	TMap<int, FPersisted_CharacterItems> InventoryMap;
-	for (int i = 0; i < this->InventoryList.Num(); i++) {
-		InventoryMap.Add(this->InventoryList[i].SlotIndex, this->InventoryList[i]);
-		if (MaxSlotIdx < this->InventoryList[i].SlotIndex) {
-			MaxSlotIdx = this->InventoryList[i].SlotIndex;
+	TMap<int, FPersistedInventoryItems> InventoryMap;
+	for (int i = 0; i < this->InventoryList.Items.Num(); i++) {
+		InventoryMap.Add(this->InventoryList.Items[i].SlotIndex, this->InventoryList.Items[i]);
+		if (MaxSlotIdx < this->InventoryList.Items[i].SlotIndex) {
+			MaxSlotIdx = this->InventoryList.Items[i].SlotIndex;
 		}
 	}
 
@@ -116,10 +111,10 @@ void UCharacterInventory::AddItemToInventory(FName InItemId, int InItemCount)
 {
 	int AvailableIndex = this->GetAvailableSlotIdx(InItemId, InItemCount);
 	if (AvailableIndex < 0) return;
-	FPersisted_CharacterItems InvSlotInfo;
+	FPersistedInventoryItems InvSlotInfo;
 	InvSlotInfo.SlotIndex = AvailableIndex;
 	InvSlotInfo.ItemId = InItemId;
 	InvSlotInfo.Count = InItemCount;
-	int NewInvIdx = this->InventoryList.Add(InvSlotInfo);
+	int NewInvIdx = this->InventoryList.Items.Add(InvSlotInfo);
 	this->ItemBelt.Add(NewInvIdx);
 }

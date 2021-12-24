@@ -60,13 +60,12 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void SaveData_Implementation() override;
-	virtual void LoadData_Implementation(FPersisted_CharacterCompleteData CharacterData) override;
+	virtual void LoadData_Implementation() override;
 	
 	UFUNCTION(BlueprintCallable)
 	void PossessCharacter();
 #pragma region Event handlers
-	UFUNCTION(BlueprintCallable)
-	virtual void OnUIEquipmentChange(FGuid InCharGuid, FPersisted_EquipmentInfo InEquipmentInfo);
+	//virtual void OnUIEquipmentChange(FGuid InCharGuid, FPersisted_EquipmentInfo InEquipmentInfo);
 #pragma endregion
 
 protected:

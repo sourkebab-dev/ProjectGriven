@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "ProjectGrivenka/Equipments/BaseEquipment.h"
-#include "ProjectGrivenka/PersistedData/CharacterData.h"
 #include "Animation/AnimMontage.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
+#include "ProjectGrivenka/Equipments/EquipmentDefinitions.h"
 #include "BaseWeapon.generated.h"
 
 //SPONGE: equipments need to have something that stores its initter which matches the fpersisted values
@@ -79,7 +79,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void LoadData_Implementation(FPersisted_CharacterCompleteData CharacterData) override;
+	virtual void LoadData(FWeaponInfo InWeaponInfo);
 
 	virtual float CalculateAttackStaminaCost(FAttackValues InCurrentAttack);
 

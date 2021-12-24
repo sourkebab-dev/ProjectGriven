@@ -14,7 +14,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLatentActionDelegate);
 
 UCLASS()
-class PROJECTGRIVENKA_API ABaseCharacter : public ACharacter, public IPersistable, public IInteractable, public IDialogueSystemAvailable, public IContextAvailable
+class PROJECTGRIVENKA_API ABaseCharacter : public ACharacter, public IInteractable, public IDialogueSystemAvailable, public IContextAvailable
 {
 	GENERATED_BODY()
 
@@ -72,8 +72,8 @@ public:
 	virtual void SaveData_Implementation();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void LoadData(FPersisted_CharacterCompleteData CharacterData);
-	virtual void LoadData_Implementation(FPersisted_CharacterCompleteData CharacterData);
+	void LoadData();
+	virtual void LoadData_Implementation();
 
 	UFUNCTION()
 	virtual void SaveInteractable(UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

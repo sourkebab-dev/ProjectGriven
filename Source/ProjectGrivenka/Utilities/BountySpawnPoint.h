@@ -22,7 +22,7 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void SpawnBounty(FPersisted_CharacterCompleteData CharacterData);
-	virtual void SpawnBounty_Implementation(FPersisted_CharacterCompleteData CharacterData);
+	void SpawnBounty(FPersistedCharacterData CharacterData);
+	virtual void SpawnBounty_Implementation(FPersistedCharacterData CharacterData);
 
 };

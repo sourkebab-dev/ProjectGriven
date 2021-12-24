@@ -20,14 +20,14 @@ void APlayerSpawnPoint::BeginPlay()
 	
 }
 
-void APlayerSpawnPoint::SpawnPlayer_Implementation(FPersisted_CharacterCompleteData CharacterData)
+void APlayerSpawnPoint::SpawnPlayer_Implementation(FPersistedCharacterData CharacterData)
 {
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	AControllableCharacter* PlayerCharacter = this->GetWorld()->SpawnActor<AControllableCharacter>(CharacterData.Appearance.CharClass, this->GetActorLocation(), this->GetActorRotation(), SpawnInfo);
 	if (!PlayerCharacter) {GLog->Log("Plauyer failed to spawn"); return;}
 	//Sponge: Multi character spawn?
-	PlayerCharacter->LoadData_Implementation(CharacterData);
+	PlayerCharacter->LoadData_Implementation();
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(PlayerCharacter);
 	GLog->Log("Spawned Player");
 }

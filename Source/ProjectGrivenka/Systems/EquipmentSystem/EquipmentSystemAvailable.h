@@ -7,6 +7,28 @@
 #include "ProjectGrivenka/GlobalDefinitions.h"
 #include "EquipmentSystemAvailable.generated.h"
 
+
+USTRUCT(BlueprintType)
+struct FPersistedEquipmentItem
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGuid EquipmentId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName VariantId;
+};
+
+USTRUCT(BlueprintType)
+struct FPersistedEquipments
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FPersistedEquipmentItem WeaponInfo;
+};
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UEquipmentSystemAvailable : public UInterface

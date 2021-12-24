@@ -4,12 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "ProjectGrivenka/PersistedData/CharacterData.h"
 #include "ProjectGrivenka/PersistedData/Persistable.h"
 #include "BaseEquipment.generated.h"
 
 UCLASS()
-class PROJECTGRIVENKA_API ABaseEquipment : public AActor, public IPersistable
+class PROJECTGRIVENKA_API ABaseEquipment : public AActor
 {
 	GENERATED_BODY()
 	
@@ -38,8 +37,8 @@ public:
 	void SaveData();
 	virtual void SaveData_Implementation();
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void LoadData(FPersisted_CharacterCompleteData CharacterData);
-	virtual void LoadData_Implementation(FPersisted_CharacterCompleteData CharacterData);
+	void LoadData(FPersistedEquipmentItem InEquipmentInfo);
+	virtual void LoadData_Implementation(FPersistedEquipmentItem InEquipmentInfo);
 
 
 	FORCEINLINE class USkeletalMeshComponent* GetEquipmentMesh() const { return EquipmentMesh; }

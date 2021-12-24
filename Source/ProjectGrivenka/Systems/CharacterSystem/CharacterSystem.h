@@ -6,7 +6,7 @@
 #include "GameplayTagContainer.h"
 #include "ProjectGrivenka/ContextUtilities/BaseContextableComponent.h"
 #include "CharacterSystemDefinitions.h"
-#include "ProjectGrivenka/PersistedData/CharacterData.h"
+#include "CharacterSystemAvailable.h"
 #include "CharacterSystem.generated.h"
 
 
@@ -34,7 +34,7 @@ protected:
 public:	
 	void Init();
 	UFUNCTION(BlueprintCallable)
-	void InitializeAttributes(FPersisted_CharacterAttributes PersistedAttributes);
+	void InitializeAttributes(FPersistedAttributes PersistedAttributes);
 	UFUNCTION(BlueprintCallable)
 	void AddEffect(class UBaseEffect* InEffect);
 	UFUNCTION(BlueprintCallable)

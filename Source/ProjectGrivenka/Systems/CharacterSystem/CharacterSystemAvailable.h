@@ -5,7 +5,55 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "CharacterSystemDefinitions.h"
+#include "ProjectGrivenka/GlobalDefinitions.h"
 #include "CharacterSystemAvailable.generated.h"
+
+USTRUCT(BlueprintType)
+struct FPersistedAttributes
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Amp")
+	float MaxAmp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Amp")
+	float Amp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Amp")
+	float AmpRecoverRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float MaxHealth;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float Health;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	float HealthRecoverRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float MaxStamina;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float Stamina;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float StaminaRecoverRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fortitude")
+	float MaxFortitude;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fortitude")
+	float Fortitude;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fortitude")
+	float FortitudeRecoverRate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
+	float Defense;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	float WeaponDamage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	float WeaponMovingValues;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
+	float ElemFireDefense;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
+	float ElemIceDefense;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
+	float ElemElectricDefense;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
+	float ElemPoisonDefense;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
+	float ElemEnergyDefense;
+};
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, BlueprintType)

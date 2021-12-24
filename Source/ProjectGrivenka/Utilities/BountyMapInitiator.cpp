@@ -40,12 +40,11 @@ void ABountyMapInitiator::BeginPlay()
 
 	APlayerSpawnPoint* PlayerSpawnPoint = Cast<APlayerSpawnPoint>(PlayerSpawnPoints[0]);
 	//SPONGE: uses crew 1 as a placeholder, need to remove later once crew system is fully persisted
-	FPersisted_CharacterCompleteData CurrentChar = GameInstance->Crew[1];
+	FPersistedCharacterData CurrentChar = GameInstance->Crew[1];
 	for (int i = 0; i < GameInstance->Crew.Num(); i++) {
 		if (GameInstance->GetControlledCrewId() == GameInstance->Crew[i].Info.CharacterId) {
 			CurrentChar = GameInstance->Crew[i];
 			GLog->Log("test equipment peristance on spawn");
-			GLog->Log(GameInstance->Crew[i].Equipments.WeaponInfo.BaseClass->GetFullName());
 		}
 	}
 
