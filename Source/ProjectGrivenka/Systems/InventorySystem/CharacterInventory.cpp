@@ -14,6 +14,11 @@ void UCharacterInventory::Init()
 	Super::Init();	
 }
 
+void UCharacterInventory::LoadData(FPersistedInventory InInventory)
+{
+	this->InventoryList = InInventory;
+}
+
 void UCharacterInventory::SyncItemBeltUI()
 {
 	FItemInfo SelectedItemInfo = this->GetSelectedItemInventory();

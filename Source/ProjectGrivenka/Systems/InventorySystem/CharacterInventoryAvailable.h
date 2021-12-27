@@ -50,6 +50,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	class UCharacterInventory* GetCharacterInventoryComp();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void LoadInventory(FPersistedInventory InInventory);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void CommitItem();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	int GetSelectedItemCount();

@@ -4,6 +4,7 @@
 #include "PlayerSpawnPoint.h"
 #include "kismet/GameplayStatics.h"
 #include "ProjectGrivenka/Character/ControllableCharacter.h"
+#include "ProjectGrivenka/PersistedData/Persistable.h"
 
 // Sets default values
 APlayerSpawnPoint::APlayerSpawnPoint()
@@ -24,11 +25,11 @@ void APlayerSpawnPoint::SpawnPlayer_Implementation(FPersistedCharacterData Chara
 {
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	AControllableCharacter* PlayerCharacter = this->GetWorld()->SpawnActor<AControllableCharacter>(CharacterData.Appearance.CharClass, this->GetActorLocation(), this->GetActorRotation(), SpawnInfo);
-	if (!PlayerCharacter) {GLog->Log("Plauyer failed to spawn"); return;}
-	//Sponge: Multi character spawn?
-	PlayerCharacter->LoadData_Implementation();
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(PlayerCharacter);
+	AActor* PlayerCharacter = this->GetWorld()->SpawnActor<AActor>(CharacterData.Appearance.CharClass, this->GetActorLocation(), this->GetActorRotation(), SpawnInfo);
+	if (!PlayerCharacter || !PlayerCharacter->Implements<UPersistable>()) {GLog->Log("Player failed to spawn"); return;}
+	IPersistable::Execute_LoadPersistance(PlayerCharacter);
+	//UGameplayStatics::GetPlayerController(GetWorld(), 0)->UnPossess();
+	//UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(PlayerCharacter);
 	GLog->Log("Spawned Player");
 }
 

@@ -17,6 +17,19 @@ struct FContextMovement
     FVector WorldSpaceTargetDir;
 };
 
+USTRUCT(BlueprintType)
+struct FContextInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGuid InstanceGuid;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName InstanceName;
+};
+
+
 UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UContextStore : public UObject
 {
@@ -25,4 +38,7 @@ class PROJECTGRIVENKA_API UContextStore : public UObject
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FContextMovement MovementModule;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FContextInfo InfoModule;
 };

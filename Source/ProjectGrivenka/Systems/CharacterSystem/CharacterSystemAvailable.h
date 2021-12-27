@@ -75,6 +75,9 @@ public:
 	class UCharacterSystem* GetCharacterSystemComp();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void LoadAttributes(FPersistedAttributes InAttributes);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void InitEffectByPrefab(AActor* EffectInstigator, class UEffectPrefab* InEffectPrefab, float InOverrideValue = 0.0f, bool IsValueOverridden = false );
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

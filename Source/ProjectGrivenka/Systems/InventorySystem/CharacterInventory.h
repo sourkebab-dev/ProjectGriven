@@ -33,6 +33,8 @@ public:
 public:	
 	void Init() override;
 	UFUNCTION(BlueprintCallable)
+	void LoadData(FPersistedInventory InInventory);
+	UFUNCTION(BlueprintCallable)
 	virtual void SyncItemBeltUI();
 	UFUNCTION(BlueprintCallable)
 	virtual void SetSelectedItem(int Idx);

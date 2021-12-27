@@ -24,9 +24,9 @@ class PROJECTGRIVENKA_API IPersistable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void LoadData();
+	void LoadPersistance();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void SaveData();
+	void SavePersistance();
 
 };
