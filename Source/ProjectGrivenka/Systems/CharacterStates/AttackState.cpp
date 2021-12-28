@@ -13,7 +13,6 @@ void UAttackState::Init_Implementation(FCharacterContext InContext, UCharacterSt
 }
 
 //SPONGE: SHOULD ADD OBJ MEMBER ACCESS VALIDATIONS
-//SPONGE: NEED TO MOVE CURRENT ATTACK BACK TO ATTACK STATE
 bool UAttackState::StateValidation_Implementation() {
 	return this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()
 		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Stamina) > 0 : true;
@@ -138,7 +137,6 @@ void UAttackState::StartAttackCharge(){
 	this->isHolding = true;
 	this->PooledChargingTime = 0.0;
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->ChargeTimer, this, &UAttackState::OnAttackCharging, this->CharacterContext.CharacterActor->GetWorld()->GetDeltaSeconds(), true, -1.0f);
-	//Sponge: need to do somethign with isbound checks
 	FAttackValues TempAtk;
 	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_HEAVY, this->CurrentAttack, TempAtk);
 	this->CharacterContext.CharacterAnim->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);

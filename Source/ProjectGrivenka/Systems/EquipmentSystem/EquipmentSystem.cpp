@@ -46,6 +46,9 @@ void UEquipmentSystem::LoadEquipments(FPersistedEquipments InPersistedEquipments
 			}
 		}
 	}
+	else {
+		GLog->Log("Prefab not found");
+	}
 
 
 }
