@@ -24,9 +24,9 @@ void UControlSystem::Init()
 }
 
 void UControlSystem::ControlSystemSetup(AController* NewController)
-{
-	if (!NewController->IsPlayerController() || !this->GetOwner()->InputComponent) return;
-	UInputComponent* InputComp = this->GetOwner()->InputComponent;
+{	
+	if (!NewController || !NewController->IsPlayerController() || (!this->GetOwner()->InputComponent && !NewController->InputComponent)) return;
+	UInputComponent* InputComp = this->GetOwner()->InputComponent ? this->GetOwner()->InputComponent : NewController->InputComponent;
 	InputComp->BindAction("Interact", IE_Pressed, this, &UControlSystem::ControlInteract);
 	InputComp->BindAction("Attack", IE_Pressed, this, &UControlSystem::ControlAttack);
 	InputComp->BindAction("HeavyAttack", IE_Pressed, this, &UControlSystem::ControlHeavyAttackCharge);
@@ -48,8 +48,8 @@ void UControlSystem::UpdateWorldSpaceVectors() {
 
 void UControlSystem::ControlSystemDisable(AController* OldController)
 {
-	if (!OldController->IsPlayerController() || !this->GetOwner()->InputComponent) return;
-	UInputComponent* InputComp = this->GetOwner()->InputComponent;
+	if (!OldController || !OldController->IsPlayerController() || (!this->GetOwner()->InputComponent && !OldController->InputComponent)) return;
+	UInputComponent* InputComp = this->GetOwner()->InputComponent ? this->GetOwner()->InputComponent : OldController->InputComponent;
 	InputComp->RemoveActionBinding("Interact", IE_Pressed);
 	InputComp->RemoveActionBinding("Attack", IE_Pressed);
 	InputComp->RemoveActionBinding("HeavyAttack", IE_Pressed);

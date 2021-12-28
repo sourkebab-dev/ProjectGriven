@@ -4,7 +4,7 @@
 #include "PlayerSpawnPoint.h"
 #include "kismet/GameplayStatics.h"
 #include "ProjectGrivenka/Character/ControllableCharacter.h"
-#include "ProjectGrivenka/PersistedData/Persistable.h"
+#include "ProjectGrivenka/Systems/CharacterPersistanceSystem/ICharacterPersistanceSystem.h"
 
 // Sets default values
 APlayerSpawnPoint::APlayerSpawnPoint()
@@ -26,11 +26,11 @@ void APlayerSpawnPoint::SpawnPlayer_Implementation(FPersistedCharacterData Chara
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	AActor* PlayerCharacter = this->GetWorld()->SpawnActor<AActor>(CharacterData.Appearance.CharClass, this->GetActorLocation(), this->GetActorRotation(), SpawnInfo);
-	if (!PlayerCharacter || !PlayerCharacter->Implements<UPersistable>()) {GLog->Log("Player failed to spawn"); return;}
-	IPersistable::Execute_LoadPersistance(PlayerCharacter);
-	//UGameplayStatics::GetPlayerController(GetWorld(), 0)->UnPossess();
-	//UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(PlayerCharacter);
+	if (!PlayerCharacter || !PlayerCharacter->Implements<UICharacterPersistanceSystem>()) {GLog->Log("Player failed to spawn"); return;}
 	GLog->Log("Spawned Player");
+	IICharacterPersistanceSystem::Execute_LoadPersistance(PlayerCharacter, CharacterData);
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->UnPossess();
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(Cast<APawn>(PlayerCharacter));
 }
 
 

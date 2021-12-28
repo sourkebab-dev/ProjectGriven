@@ -37,7 +37,10 @@ void UCharacterPersistanceSystem::LoadData(FPersistedCharacterData InCharacterDa
 
 	this->CompContext.SkeletalMeshComp->SetSkeletalMesh(SKMeshStruct->Mesh);
 	this->CompContext.SkeletalMeshComp->SetMaterial(0, MaterialStruct->Material.MaterialInterface);
-	this->CompContext.SkeletalMeshComp->SetAnimInstanceClass(InCharacterData.Appearance.AnimClass);
+
+	if (InCharacterData.Appearance.AnimClass) {
+		this->CompContext.SkeletalMeshComp->SetAnimInstanceClass(InCharacterData.Appearance.AnimClass);
+	}
 
 
 	//AI Load
