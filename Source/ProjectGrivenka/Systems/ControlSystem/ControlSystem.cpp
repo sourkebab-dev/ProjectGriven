@@ -29,8 +29,7 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	UInputComponent* InputComp = this->GetOwner()->InputComponent ? this->GetOwner()->InputComponent : NewController->InputComponent;
 	InputComp->BindAction("Interact", IE_Pressed, this, &UControlSystem::ControlInteract);
 	InputComp->BindAction("Attack", IE_Pressed, this, &UControlSystem::ControlAttack);
-	InputComp->BindAction("HeavyAttack", IE_Pressed, this, &UControlSystem::ControlHeavyAttackCharge);
-	InputComp->BindAction("HeavyAttack", IE_Released, this, &UControlSystem::ControlHeavyAttackRelease);
+	InputComp->BindAction("Attack", IE_Released, this, &UControlSystem::ControlAttackRelease);
 	InputComp->BindAction("Dodge", IE_Pressed, this, &UControlSystem::ControlDodge);
 	InputComp->BindAction("ToggleAmpField", IE_Pressed, this, &UControlSystem::ControlToggleAmpField);
 	InputComp->BindAction("VentAmp", IE_Pressed, this, &UControlSystem::ControlVentAmp);
@@ -52,8 +51,7 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 	UInputComponent* InputComp = this->GetOwner()->InputComponent ? this->GetOwner()->InputComponent : OldController->InputComponent;
 	InputComp->RemoveActionBinding("Interact", IE_Pressed);
 	InputComp->RemoveActionBinding("Attack", IE_Pressed);
-	InputComp->RemoveActionBinding("HeavyAttack", IE_Pressed);
-	InputComp->RemoveActionBinding("HeavyAttack", IE_Released);
+	InputComp->RemoveActionBinding("Attack", IE_Released);
 	InputComp->RemoveActionBinding("Dodge", IE_Pressed);
 	InputComp->RemoveActionBinding("ToggleAmpField", IE_Pressed);
 	InputComp->RemoveActionBinding("VentAmp", IE_Pressed);
@@ -119,14 +117,9 @@ void UControlSystem::ControlAttack()
 	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
 }
 
-void UControlSystem::ControlHeavyAttackCharge()
+void UControlSystem::ControlAttackRelease()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionHeavyAttack, IE_Pressed);
-}
-
-void UControlSystem::ControlHeavyAttackRelease()
-{
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionHeavyAttack, IE_Released);
+	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
 }
 
 void UControlSystem::ControlToggleAmpField()

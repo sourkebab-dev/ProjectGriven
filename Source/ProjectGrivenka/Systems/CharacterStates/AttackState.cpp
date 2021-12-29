@@ -7,10 +7,6 @@
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 
-void UAttackState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
-{
-	Super::Init_Implementation(InContext, InStatesComp);
-}
 
 //SPONGE: SHOULD ADD OBJ MEMBER ACCESS VALIDATIONS
 bool UAttackState::StateValidation_Implementation() {
@@ -23,18 +19,23 @@ void UAttackState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 	bool IsStaminaAllowed = this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>() 
 		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor,EAttributeCode::ATT_Stamina) > 0 : true;
 
-	if (Action == EActionList::ActionAttack && EventType == IE_Pressed && !this->isHolding && this->StatesComp->CrossStateData.IsComboActive && IsStaminaAllowed) {
+	if (Action == EActionList::ActionAttack && EventType == IE_Pressed && IsStaminaAllowed && this->StatesComp->CrossStateData.IsComboActive) {
+		this->StartAttack();
+	}
+
+	if (Action == EActionList::ActionAttack && EventType == IE_Released && IsStaminaAllowed && this->StatesComp->CrossStateData.IsComboActive) {
 		this->StatesComp->CrossStateData.IsInterruptable = true;
 		this->StatesComp->CrossStateData.IsComboActive = false;
-		this->DoAttack(EAttackMovementType::AM_DEFAULT);
-	}
 
-	if (Action == EActionList::ActionHeavyAttack && EventType == IE_Pressed && IsStaminaAllowed) {
-		this->StartAttackCharge();
-	}
-
-	if (Action == EActionList::ActionHeavyAttack && EventType == IE_Released && IsStaminaAllowed) {
-		this->isHolding = false;
+		if (this->isCharged) {
+			this->QueueNextAttack(EAttackMovementType::AM_CHARGED);
+		}
+		else if (this->isHeavy) {
+			this->QueueNextAttack(EAttackMovementType::AM_HEAVY);
+		}
+		else {
+			this->QueueNextAttack(EAttackMovementType::AM_DEFAULT);
+		}
 	}
 
 	if (Action == EActionList::ActionDodge && EventType == IE_Pressed && this->StatesComp->CrossStateData.IsInterruptable ) {
@@ -46,43 +47,44 @@ void UAttackState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 void UAttackState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
 {
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
-	if (NewEnterAction == EActionList::ActionHeavyAttack && NewEnterEvent == IE_Pressed) {
-		this->StartAttackCharge();
-	}
-	else if (NewEnterAction == EActionList::ActionAttack && NewEnterEvent == IE_Pressed) {
-		this->StatesComp->CrossStateData.IsInterruptable = true;
-		this->StatesComp->CrossStateData.IsComboActive = false;
-		this->DoAttack(EAttackMovementType::AM_DEFAULT);
-	}
+	this->StartAttack();
+
 }
 
 void UAttackState::OnStateExit_Implementation()
 {
 	//UGrivenkaDataSingleton* CommonData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	//this->CharacterInstance->SetRotationRate(CommonData->CommonRotationRate.NormalRotationRate);
+
+
+	//Note: Unbind ended/blendingout delegate if interrupted by state changes
+	FAnimMontageInstance* AnimMontageInstance = this->CharacterContext.CharacterAnim->GetActiveInstanceForMontage(this->CurrentAttack.AttackMontage);
+	if (AnimMontageInstance) {
+		AnimMontageInstance->OnMontageEnded.Unbind();
+		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
+	}
+
 	this->StatesComp->CrossStateData.IsComboActive = true;
 	this->StatesComp->CrossStateData.IsInterruptable = true;
-	this->isCharged = false;
-	this->isHolding = false;
-	this->PooledChargingTime = 0.0f;
-	this->HeavyAttackStartSectionLength = 0.0;
-	this->ChargedAttackStartSectionLength = 0.0;
 	this->CharacterContext.CharacterAnim->StopAllMontages(0.25);
 	this->CharacterContext.CharacterAnim->SetRootMotionMode(ERootMotionMode::RootMotionFromMontagesOnly);
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HeavyTimer);
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->ChargeTimer);
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->QueueTimer);
 
 	if (this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>()) {
 		IEquipmentSystemAvailable::Execute_DisableWeaponDamageColliders(this->CharacterContext.CharacterActor);
 	}
 }
 
-void UAttackState::DoAttack(TEnumAsByte<EAttackMovementType> AttackType) {
-	
-
-	if (AttackType == EAttackMovementType::AM_HEAVY || AttackType == EAttackMovementType::AM_CHARGED) {
-		this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->ChargeTimer);
-	}
-
+void UAttackState::StartAttack()
+{
+	this->CharacterContext.CharacterAnim->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HeavyTimer);
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->ChargeTimer);
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->QueueTimer);
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->HeavyTimer, this, &UAttackState::OnHeavyAttackActivated, HEAVYATTACKTRESHOLD, false, -1.0f);
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->ChargeTimer, this, &UAttackState::OnChargeAttackActivated, CHARGEATTACKTRESHOLD, false, -1.0f);
 	//sponge: should get from other later (maybe unarmed combat?)
 	if (!this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>()) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
@@ -90,79 +92,83 @@ void UAttackState::DoAttack(TEnumAsByte<EAttackMovementType> AttackType) {
 	}
 
 	FAttackValues NewAttack;
-	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, AttackType, this->CurrentAttack, NewAttack);
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_DEFAULT, this->CurrentAttack, NewAttack);
+	this->CharacterContext.CharacterAnim->Montage_Play(NewAttack.AttackMontage);
+
+}
+
+void UAttackState::OnHeavyAttackActivated()
+{
+	this->isHeavy = true;
+
+	FAttackValues NewAttack;
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_HEAVY, this->CurrentAttack, NewAttack);
+	this->CharacterContext.CharacterAnim->Montage_Play(NewAttack.AttackMontage);
+}
+
+void UAttackState::OnChargeAttackActivated()
+{
+	this->isCharged = true;
+
+	FAttackValues NewAttack;
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_CHARGED, this->CurrentAttack, NewAttack);
+	this->CharacterContext.CharacterAnim->Montage_Play(NewAttack.AttackMontage);
+	this->CharacterContext.CharacterAnim->Montage_JumpToSection("Start", NewAttack.AttackMontage);
+
+}
+
+void UAttackState::QueueNextAttack(TEnumAsByte<EAttackMovementType> AttackType)
+{
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HeavyTimer);
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->ChargeTimer);
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->QueueTimer);
+
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, AttackType, this->CurrentAttack, this->CurrentAttack);
+	float StartTime = 0.0f;
+	float EndTime = 0.0f;
+	float CurrentPosition = this->CharacterContext.CharacterAnim->Montage_GetPosition(this->CurrentAttack.AttackMontage);
+	this->CurrentAttack.AttackMontage->GetSectionStartAndEndTime(this->CurrentAttack.AttackMontage->GetSectionIndex("Charge"), StartTime, EndTime);
+	float WaitTime = CurrentPosition < StartTime ? StartTime - CurrentPosition : 0;
+	if (WaitTime) {
+		this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->QueueTimer, this, &UAttackState::DoAttack, WaitTime, false, -1.0f);
+	}
+	else {
+		this->DoAttack();
+	}
+}
+
+
+void UAttackState::DoAttack() {
 	this->CharacterContext.CharacterAnim->SetRootMotionMode(ERootMotionMode::RootMotionFromMontagesOnly);
-
-
 	//Change Moving Values Attribute SPONGE: maybe need to reset after exit attack state?
 	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-		float StaminaConsumption = this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>() 
-			? IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->CharacterContext.CharacterActor, NewAttack) : 0;
-		ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_WeaponMovingValues", NewAttack.MovingValues, true);
+		float StaminaConsumption = this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>()
+			? IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->CharacterContext.CharacterActor, this->CurrentAttack) : 0;
+		ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_WeaponMovingValues", this->CurrentAttack.MovingValues, true);
 		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, StaminaConsumption);
 	}
 
 
-	this->CurrentAttack = NewAttack;
 	float MontageLength = this->CharacterContext.CharacterAnim->Montage_Play(this->CurrentAttack.AttackMontage);
 	if (MontageLength) {
-		if (AttackType == EAttackMovementType::AM_CHARGED || AttackType == EAttackMovementType::AM_HEAVY) {
-			this->CharacterContext.CharacterAnim->Montage_JumpToSection("Attack", this->CurrentAttack.AttackMontage);
-		}
+		this->CharacterContext.CharacterAnim->Montage_JumpToSection("Attack", this->CurrentAttack.AttackMontage);
 		FOnMontageEnded EndAttackDelegate;
-		EndAttackDelegate.BindUFunction(this, "OnAttackEnd");
+		EndAttackDelegate.BindUObject(this, &UAttackState::OnAttackEnd);
 		this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->CurrentAttack.AttackMontage);
 		this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentAttack.AttackMontage);
 	}
-	
+
+
+	this->isHeavy = false;
+	this->isCharged = false;
 }
 
 void UAttackState::OnAttackEnd(UAnimMontage* Montage, bool bInterrupted) {
-	
 	if (!bInterrupted) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
-	} else {
+	}
+	else {
 		//UGrivenkaDataSingleton* CommonData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 		//this->CharacterInstance->SetRotationRate(CommonData->CommonRotationRate.NormalRotationRate);
 	}
-}
-
-
-void UAttackState::StartAttackCharge(){
-	
-	if (!this->StatesComp->CrossStateData.IsComboActive) return;
-	this->StatesComp->CrossStateData.IsInterruptable = true;
-	this->StatesComp->CrossStateData.IsComboActive = false;
-	this->isCharged = false;
-	this->isHolding = true;
-	this->PooledChargingTime = 0.0;
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->ChargeTimer, this, &UAttackState::OnAttackCharging, this->CharacterContext.CharacterActor->GetWorld()->GetDeltaSeconds(), true, -1.0f);
-	FAttackValues TempAtk;
-	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_HEAVY, this->CurrentAttack, TempAtk);
-	this->CharacterContext.CharacterAnim->SetRootMotionMode(ERootMotionMode::IgnoreRootMotion);
-	this->CharacterContext.CharacterAnim->Montage_Play(TempAtk.AttackMontage);
-	int SecIdx = TempAtk.AttackMontage->GetSectionIndex("Default");
-	int SecIdxCharge = TempAtk.AttackMontage->GetSectionIndex("Charge");
-	this->HeavyAttackStartSectionLength = TempAtk.AttackMontage->GetSectionLength(SecIdx) + TempAtk.AttackMontage->GetSectionLength(SecIdxCharge);
-	
-}
-
-//sponge: should probably not use tick like this, maybe use timer & events instead
-void UAttackState::OnAttackCharging() {
-	this->PooledChargingTime += this->CharacterContext.CharacterActor->GetWorld()->GetDeltaSeconds();
-	//process attack based on section length (finish section before launching attack)
-	if (!this->isHolding && !this->isCharged && this->PooledChargingTime >= this->HeavyAttackStartSectionLength) {
-		this->DoAttack(EAttackMovementType::AM_HEAVY);
-	} else if (this->PooledChargingTime >= 1.0f && !this->isCharged) {
-		this->isCharged = true;
-		FAttackValues TempAtk;
-		IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_CHARGED, this->CurrentAttack, TempAtk);
-		this->CharacterContext.CharacterAnim->Montage_Play(TempAtk.AttackMontage);
-		this->CharacterContext.CharacterAnim->Montage_JumpToSection("Start", TempAtk.AttackMontage);
-		int SecIdx = TempAtk.AttackMontage->GetSectionIndex("Start");
-		int SecIdxCharge = TempAtk.AttackMontage->GetSectionIndex("Charge");
-		this->ChargedAttackStartSectionLength = TempAtk.AttackMontage->GetSectionLength(SecIdx) + TempAtk.AttackMontage->GetSectionLength(SecIdxCharge);
-	} else if (this->isCharged && !this->isHolding && this->PooledChargingTime >= this->ChargedAttackStartSectionLength) {
-		this->DoAttack(EAttackMovementType::AM_CHARGED);
-	} 
 }

@@ -17,7 +17,7 @@ bool ULungeAttackState::StateValidation_Implementation() {
 		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Stamina) > 0 : true;
 }
 
-void ULungeAttackState::OnFinishLunge()
+void ULungeAttackState::OnFinishLunge(UAnimMontage* Montage, bool bInterrupted)
 {
 	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
 }
@@ -39,10 +39,9 @@ void ULungeAttackState::OnStateEnter_Implementation(FGameplayTagContainer InPrev
 	UAnimMontage* LungeMontage = NewAttack.AttackMontage;
 	float MontageLength = this->CharacterContext.CharacterAnim->Montage_Play(LungeMontage);
 	if (MontageLength) {
-		FOnMontageEnded EndAttackDelegate;
-		EndAttackDelegate.BindUFunction(this, "OnFinishLunge");
-		this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, LungeMontage);
-		this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, LungeMontage);
+		this->LungeEndDelegate.BindUObject(this, &ULungeAttackState::OnFinishLunge);
+		this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(this->LungeEndDelegate, LungeMontage);
+		this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(this->LungeEndDelegate, LungeMontage);
 	}
 
 	this->StatesComp->CrossStateData.IsLungeAvailable = false;
@@ -59,6 +58,17 @@ void ULungeAttackState::OnStateExit_Implementation()
 {
 	//UGrivenkaDataSingleton* CommonData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	//this->CharacterInstance->SetRotationRate(CommonData->CommonRotationRate.NormalRotationRate);
+
+	//Note: Unbind ended/blendingout delegate if interrupted by state changes
+	FAttackValues NewAttack;
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_LUNGE, FAttackValues(), NewAttack);
+	UAnimMontage* LungeMontage = NewAttack.AttackMontage;
+	FAnimMontageInstance* AnimMontageInstance = this->CharacterContext.CharacterAnim->GetActiveInstanceForMontage(LungeMontage);
+	if (AnimMontageInstance) {
+		AnimMontageInstance->OnMontageEnded.Unbind();
+		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
+	}
+
 	this->StatesComp->CrossStateData.IsComboActive = true;
 	this->StatesComp->CrossStateData.IsInterruptable = true;
 	this->CharacterContext.CharacterAnim->StopAllMontages(0.25);

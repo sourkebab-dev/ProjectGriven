@@ -15,7 +15,9 @@ class PROJECTGRIVENKA_API ULungeAttackState : public UBaseState
 	GENERATED_BODY()
 
 	UFUNCTION()
-	void OnFinishLunge();
+	void OnFinishLunge(UAnimMontage* Montage, bool bInterrupted);
+
+	FOnMontageEnded LungeEndDelegate;
 
 public:
 	virtual void Init_Implementation(FCharacterContext InContext, class UCharacterStatesSystem* InStatesComp) override;
@@ -23,5 +25,4 @@ public:
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
 	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;
 	virtual void OnStateExit_Implementation() override;
-
 };

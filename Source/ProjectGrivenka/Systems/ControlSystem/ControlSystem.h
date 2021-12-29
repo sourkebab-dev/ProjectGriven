@@ -23,8 +23,7 @@ protected:
 	void ControlMoveForward(float Value);
 	void ControlMoveRight(float Value);
 	void ControlAttack();
-	void ControlHeavyAttackCharge();
-	void ControlHeavyAttackRelease();
+	void ControlAttackRelease();
 	void ControlToggleAmpField();
 	void ControlUseItem();
 	void ControlVentAmp();
