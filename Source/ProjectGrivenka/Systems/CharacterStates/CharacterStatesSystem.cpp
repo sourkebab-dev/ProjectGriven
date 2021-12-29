@@ -16,6 +16,27 @@ void UCharacterStatesSystem::Init()
 	if (!this->CompContext.EventBus) return;
 	this->CompContext.EventBus->StateActionDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentActionHandler);
 	this->CompContext.EventBus->StateAxisDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentAxisHandler);
+	this->CompContext.EventBus->AnimDelegate.AddDynamic(this, &UCharacterStatesSystem::AnimEventsHandler);
+}
+
+void UCharacterStatesSystem::AnimEventsHandler(EAnimEvt InAnimEvent)
+{
+	switch (InAnimEvent) {
+		case EAnimEvt::ACTIVATE_COMBO:
+			this->CrossStateData.IsComboActive = true;
+			break;
+		case EAnimEvt::DISABLE_COMBO:
+			this->CrossStateData.IsComboActive = false;
+			break;
+		case EAnimEvt::ACTIVATE_INTERRUPTION:
+			this->CrossStateData.IsInterruptable = true;
+			break;
+		case EAnimEvt::DISABLE_INTERRUPTION:
+			this->CrossStateData.IsInterruptable = false;
+			break;
+		default:
+			break;
+	}
 }
 
 void UCharacterStatesSystem::CurrentActionHandler(EActionList Action, EInputEvent InputEvent)

@@ -9,7 +9,21 @@
 #include "GameplayTagContainer.h"
 #include "EventBus.generated.h"
 
+UENUM(BlueprintType)
+enum EAnimEvt {
+	ACTIVATE_INTERRUPTION,
+	DISABLE_INTERRUPTION,
+	ACTIVATE_COMBO,
+	DISABLE_COMBO,
+	FULL_ROTATION,
+	SLOW_ROTATION,
+	OFF_ROTATION,
+	START_DODGE,
+	END_DODGE
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLatentInteractionDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAnimDelegate, EAnimEvt, EventType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FDamagedDelegate, AActor*, DamageInstigator,  FVector, DamageDirection, EDamageImpactType, ImpactType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemUsageDelegate, AActor*, UsageInstigator, class UEffectPrefab*, EffectPrefab);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStateAxisDelegate, EActionList, InActionType, float, InValue);
@@ -43,4 +57,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FUnpossessionDelegate UnpossesionDelegate;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FAnimDelegate AnimDelegate;
 };

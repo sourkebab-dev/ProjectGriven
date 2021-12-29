@@ -147,9 +147,9 @@ void UAttackState::StartAttackCharge(){
 	
 }
 
+//sponge: should probably not use tick like this, maybe use timer & events instead
 void UAttackState::OnAttackCharging() {
 	this->PooledChargingTime += this->CharacterContext.CharacterActor->GetWorld()->GetDeltaSeconds();
-
 	//process attack based on section length (finish section before launching attack)
 	if (!this->isHolding && !this->isCharged && this->PooledChargingTime >= this->HeavyAttackStartSectionLength) {
 		this->DoAttack(EAttackMovementType::AM_HEAVY);

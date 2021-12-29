@@ -55,6 +55,8 @@ public:
 	void Init() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
+	virtual void AnimEventsHandler(enum EAnimEvt InAnimEvent);
+	UFUNCTION(BlueprintCallable)
 	virtual void CurrentActionHandler(EActionList Action, EInputEvent InputEvent);
 	UFUNCTION(BlueprintCallable)
 	virtual void CurrentAxisHandler(EActionList Action, float AxisValue);

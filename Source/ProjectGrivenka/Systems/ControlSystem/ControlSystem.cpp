@@ -126,7 +126,7 @@ void UControlSystem::ControlHeavyAttackCharge()
 
 void UControlSystem::ControlHeavyAttackRelease()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionHeavyAttack, IE_Pressed);
+	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionHeavyAttack, IE_Released);
 }
 
 void UControlSystem::ControlToggleAmpField()
