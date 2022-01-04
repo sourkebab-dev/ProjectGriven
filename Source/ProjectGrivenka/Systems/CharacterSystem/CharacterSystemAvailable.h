@@ -41,8 +41,6 @@ struct FPersistedAttributes
 	float Defense;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	float WeaponDamage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	float WeaponMovingValues;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
 	float ElemFireDefense;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")

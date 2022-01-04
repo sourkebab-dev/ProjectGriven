@@ -4,8 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "ProjectGrivenka/GlobalDefinitions.h"
 #include "ContextStore.generated.h"
 
+
+USTRUCT(BlueprintType)
+struct FContextCombat
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FAttackValues CurrentAttack;
+
+};
 
 
 USTRUCT(BlueprintType)
@@ -36,6 +47,9 @@ class PROJECTGRIVENKA_API UContextStore : public UObject
 	GENERATED_BODY()
 
 public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FContextCombat CombatModule;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FContextMovement MovementModule;
 

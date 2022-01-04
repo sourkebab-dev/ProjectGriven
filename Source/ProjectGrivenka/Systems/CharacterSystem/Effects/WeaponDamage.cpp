@@ -2,17 +2,19 @@
 
 
 #include "WeaponDamage.h"
+#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
+#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 
 
-
-void UWeaponDamage::Init(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FEffectInfo InEffectInfo) {
+void UWeaponDamage::InitOverloaded(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FAttackValues InAttackValue) {
 	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	UEffectPrefab* EffectPrefab = AssetsData->EffectPrefab->EffectAssets.FindRef("Util_WeaponHit");
 	if (!EffectPrefab) return;
 	FEffectInfo TempEffectInfo = EffectPrefab->EffectInfo;
+	this->AttackValue = InAttackValue;
 	Super::Init(NewEffectInstigator, NewEffectReceiver, TempEffectInfo);
 }
 
@@ -23,9 +25,12 @@ void UWeaponDamage::OnExecuteEffect() {
 
 	UCharacterSystem* InstigatorComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectInstigator);
 	UCharacterSystem* ReceiverComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectReceiver);
+	FCharacterContext InstigatorCtx;
+	IContextAvailable::Execute_GetContext(this->EffectInstigator, InstigatorCtx);
+
 
 	float WeaponDamage = InstigatorComp->GetAttributeCurrentValue(EAttributeCode::ATT_WeaponDamage);
-	float MovingValues = InstigatorComp->GetAttributeCurrentValue(EAttributeCode::ATT_WeaponMovingValues);
+	float MovingValues = this->AttackValue.MovingValues;
 
 	float ReceiverDefense = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Defense);
 	float ReceiverHealth = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Health);

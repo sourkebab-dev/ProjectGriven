@@ -13,10 +13,25 @@ void UCharacterStatesSystem::Init()
 {
 	Super::Init();
 	this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
+	this->InitializePersistantStates();
 	if (!this->CompContext.EventBus) return;
 	this->CompContext.EventBus->StateActionDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentActionHandler);
 	this->CompContext.EventBus->StateAxisDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentAxisHandler);
 	this->CompContext.EventBus->AnimDelegate.AddDynamic(this, &UCharacterStatesSystem::AnimEventsHandler);
+}
+
+void UCharacterStatesSystem::InitializePersistantStates()
+{
+	//sponge: might remove function when parallel/multiple states is implemented
+	for (TSubclassOf<UBaseState> StateClass : this->GrantedActions) {
+		UBaseState* DefaultObj = Cast<UBaseState>(StateClass->GetDefaultObject());
+		if (!DefaultObj) continue;
+		if (DefaultObj->IsPersistant) {
+			UBaseState* TempState = DuplicateObject(DefaultObj, this);
+			TempState->Init(this->CompContext, this);
+			this->PersistantStates.Add(TempState);
+		}
+	}
 }
 
 void UCharacterStatesSystem::AnimEventsHandler(EAnimEvt InAnimEvent)
@@ -58,34 +73,34 @@ void UCharacterStatesSystem::TickComponent(float DeltaTime, ELevelTick TickType,
 	this->CurrentState->Tick(DeltaTime);
 }
 
-void UCharacterStatesSystem::AssignStateByTag(FGameplayTag InTag, UBaseState* OutState)
-{
-	for (TSubclassOf<UBaseState> StateClass : this->GrantedActions) {
-		UBaseState* DefaultObj = Cast<UBaseState>(StateClass->GetDefaultObject());
-		if (!DefaultObj) continue;
-		if (InTag.MatchesAnyExact(DefaultObj->ActionTag)) {
-			UBaseState* TempState = DuplicateObject(DefaultObj, this);
-			TempState->Init(this->CompContext, this);
-			OutState = TempState;
-		}
-	}
-}
-
 void UCharacterStatesSystem::ChangeState(FGameplayTag ChangeTo, EActionList NewEnterAction, EInputEvent NewEnterEvent)
 {
 	if (this->BlockedTags.HasTagExact(ChangeTo)) return;
 
 	UBaseState* ChangeToObj = nullptr;
 
-	for (TSubclassOf<UBaseState> StateClass : this->GrantedActions) {
-		UBaseState* DefaultObj = Cast<UBaseState>(StateClass->GetDefaultObject());
-		if (!DefaultObj) continue;
-		if (ChangeTo.MatchesAnyExact(DefaultObj->ActionTag)) {
-			UBaseState* TempState = DuplicateObject(DefaultObj, this);
-			TempState->Init(this->CompContext, this);
-			ChangeToObj = TempState;
+	//Get persistant state if available
+	for (UBaseState* State : this->PersistantStates)
+	{
+		if (ChangeTo.MatchesAnyExact(State->ActionTag)) {
+			ChangeToObj = State;
+			break;
 		}
 	}
+
+	if (!ChangeToObj) {
+		for (TSubclassOf<UBaseState> StateClass : this->GrantedActions) {
+			UBaseState* DefaultObj = Cast<UBaseState>(StateClass->GetDefaultObject());
+			if (!DefaultObj) continue;
+			if (ChangeTo.MatchesAnyExact(DefaultObj->ActionTag)) {
+				UBaseState* TempState = DuplicateObject(DefaultObj, this);
+				TempState->Init(this->CompContext, this);
+				ChangeToObj = TempState;
+				break;
+			}
+		}
+	}
+
 
 	if (!ChangeToObj || !ChangeToObj->StateValidation()) return;
 

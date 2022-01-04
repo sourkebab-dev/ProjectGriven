@@ -50,9 +50,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<class UBaseState>> GrantedActions;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UBaseState*> PersistantStates;
+
 public:	
 
 	void Init() override;
+	void InitializePersistantStates();
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
 	virtual void AnimEventsHandler(enum EAnimEvt InAnimEvent);
@@ -60,8 +64,6 @@ public:
 	virtual void CurrentActionHandler(EActionList Action, EInputEvent InputEvent);
 	UFUNCTION(BlueprintCallable)
 	virtual void CurrentAxisHandler(EActionList Action, float AxisValue);
-	UFUNCTION(BlueprintCallable)
-	virtual void AssignStateByTag(FGameplayTag InTag, class UBaseState* OutState);
 	UFUNCTION(BlueprintCallable)
 	virtual void ChangeState(FGameplayTag ChangeTo, EActionList NewEnterAction, EInputEvent NewEnterEvent);
 	UFUNCTION(BlueprintCallable)

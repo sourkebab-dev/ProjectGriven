@@ -23,7 +23,7 @@ void UCharacterSystem::Init()
 {
 	Super::Init();
 	if (!this->CompContext.EventBus) return;
-	//this->CompContext.EventBus->DamagedDelegate.AddUObject(this, &UCharacterSystem::InitFXReceiveHit);
+	this->CompContext.EventBus->DamagedDelegate.AddDynamic(this, &UCharacterSystem::InitEffectReceiveHit);
 	//this->CompContext.EventBus->ItemUsageDelegate.AddUObject(this, &UCharacterSystem::InitFXByPrefab);
 	if (this->PrefabData) this->InitializeAttributes(this->PrefabData->CharacterData.Attributes);
 }
@@ -43,7 +43,6 @@ void UCharacterSystem::InitializeAttributes(FPersistedAttributes PersistedAttrib
 	this->Attributes->InitMaxFortitude(PersistedAttributes.MaxFortitude);
 	this->Attributes->InitFortitudeRecoverRate(PersistedAttributes.FortitudeRecoverRate);
 	this->Attributes->InitWeaponDamage(PersistedAttributes.WeaponDamage);
-	this->Attributes->InitWeaponMovingValues(PersistedAttributes.WeaponMovingValues);
 	this->Attributes->InitDefense(PersistedAttributes.Defense);
 	this->Attributes->InitElemFireDefense(PersistedAttributes.ElemFireDefense);
 	this->Attributes->InitElemIceDefense(PersistedAttributes.ElemIceDefense);
@@ -183,8 +182,6 @@ float UCharacterSystem::GetAttributeCurrentValue(TEnumAsByte<EAttributeCode> InA
 			return this->Attributes->GetFortitudeRecoverRate();
 		case EAttributeCode::ATT_WeaponDamage:
 			return this->Attributes->GetWeaponDamage();
-		case EAttributeCode::ATT_WeaponMovingValues:
-			return this->Attributes->GetWeaponMovingValues();
 		case EAttributeCode::ATT_Defense:
 			return this->Attributes->GetDefense();
 		default:
@@ -209,9 +206,6 @@ void UCharacterSystem::SetAttributeValue(TEnumAsByte<EAttributeCode> InAttribute
 			break;
 		case EAttributeCode::ATT_WeaponDamage:
 			this->Attributes->SetWeaponDamage(Value);
-			break;
-		case EAttributeCode::ATT_WeaponMovingValues:
-			this->Attributes->SetWeaponMovingValues(Value);
 			break;
 		case EAttributeCode::ATT_Defense:
 			this->Attributes->SetDefense(Value);
@@ -256,10 +250,10 @@ void UCharacterSystem::InitEffectDepleteStamina(AActor* EffectInstigator, float 
 	this->AddEffect(SpendStamina);
 }
 
-void UCharacterSystem::InitEffectReceiveHit(AActor* EffectInstigator, FVector InDamageDirection, TEnumAsByte<enum EDamageImpactType> InImpactType)
+void UCharacterSystem::InitEffectReceiveHit(AActor* EffectInstigator, FAttackValues InAttackValues)
 {
 	UWeaponDamage* HitDamage = NewObject<UWeaponDamage>();
-	HitDamage->Init(EffectInstigator, this->GetOwner(), FEffectInfo());
+	HitDamage->InitOverloaded(EffectInstigator, this->GetOwner(), InAttackValues);
 	this->AddEffect(HitDamage);
 }
 

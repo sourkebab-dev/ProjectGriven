@@ -17,11 +17,16 @@ class PROJECTGRIVENKA_API UBaseState : public UObject
 {
 	GENERATED_BODY()
 public:
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FCharacterContext CharacterContext;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UCharacterStatesSystem* StatesComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTagContainer ActionTag;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTagContainer BlockedTag;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsPersistant;
 	FGameplayTagContainer PrevActionTag;
 	TEnumAsByte<EActionList> EnterAction;
 	TEnumAsByte<EInputEvent> EnterEvent;
@@ -49,6 +54,4 @@ public:
 	void OnStateExit();
 	virtual void OnStateExit_Implementation();
 protected:
-	FCharacterContext CharacterContext;
-	class UCharacterStatesSystem* StatesComp;
 };

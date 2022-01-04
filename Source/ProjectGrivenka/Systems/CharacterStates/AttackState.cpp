@@ -2,6 +2,7 @@
 
 
 #include "AttackState.h"
+#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemDefinitions.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
@@ -58,12 +59,13 @@ void UAttackState::OnStateExit_Implementation()
 
 
 	//Note: Unbind ended/blendingout delegate if interrupted by state changes
-	FAnimMontageInstance* AnimMontageInstance = this->CharacterContext.CharacterAnim->GetActiveInstanceForMontage(this->CurrentAttack.AttackMontage);
+	FAnimMontageInstance* AnimMontageInstance = this->CharacterContext.CharacterAnim->GetActiveInstanceForMontage(this->CharacterContext.Store->CombatModule.CurrentAttack.AttackMontage);
 	if (AnimMontageInstance) {
 		AnimMontageInstance->OnMontageEnded.Unbind();
 		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
 	}
 
+	this->CharacterContext.Store->CombatModule.CurrentAttack = FAttackValues();
 	this->StatesComp->CrossStateData.IsComboActive = true;
 	this->StatesComp->CrossStateData.IsInterruptable = true;
 	this->CharacterContext.CharacterAnim->StopAllMontages(0.25);
@@ -92,7 +94,7 @@ void UAttackState::StartAttack()
 	}
 
 	FAttackValues NewAttack;
-	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_DEFAULT, this->CurrentAttack, NewAttack);
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_DEFAULT, this->CharacterContext.Store->CombatModule.CurrentAttack, NewAttack);
 	this->CharacterContext.CharacterAnim->Montage_Play(NewAttack.AttackMontage);
 
 }
@@ -102,7 +104,7 @@ void UAttackState::OnHeavyAttackActivated()
 	this->isHeavy = true;
 
 	FAttackValues NewAttack;
-	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_HEAVY, this->CurrentAttack, NewAttack);
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_HEAVY, this->CharacterContext.Store->CombatModule.CurrentAttack, NewAttack);
 	this->CharacterContext.CharacterAnim->Montage_Play(NewAttack.AttackMontage);
 }
 
@@ -111,7 +113,7 @@ void UAttackState::OnChargeAttackActivated()
 	this->isCharged = true;
 
 	FAttackValues NewAttack;
-	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_CHARGED, this->CurrentAttack, NewAttack);
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_CHARGED, this->CharacterContext.Store->CombatModule.CurrentAttack, NewAttack);
 	this->CharacterContext.CharacterAnim->Montage_Play(NewAttack.AttackMontage);
 	this->CharacterContext.CharacterAnim->Montage_JumpToSection("Start", NewAttack.AttackMontage);
 
@@ -123,11 +125,11 @@ void UAttackState::QueueNextAttack(TEnumAsByte<EAttackMovementType> AttackType)
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->ChargeTimer);
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->QueueTimer);
 
-	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, AttackType, this->CurrentAttack, this->CurrentAttack);
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, AttackType, this->CharacterContext.Store->CombatModule.CurrentAttack, this->CharacterContext.Store->CombatModule.CurrentAttack);
 	float StartTime = 0.0f;
 	float EndTime = 0.0f;
-	float CurrentPosition = this->CharacterContext.CharacterAnim->Montage_GetPosition(this->CurrentAttack.AttackMontage);
-	this->CurrentAttack.AttackMontage->GetSectionStartAndEndTime(this->CurrentAttack.AttackMontage->GetSectionIndex("Charge"), StartTime, EndTime);
+	float CurrentPosition = this->CharacterContext.CharacterAnim->Montage_GetPosition(this->CharacterContext.Store->CombatModule.CurrentAttack.AttackMontage);
+	this->CharacterContext.Store->CombatModule.CurrentAttack.AttackMontage->GetSectionStartAndEndTime(this->CharacterContext.Store->CombatModule.CurrentAttack.AttackMontage->GetSectionIndex("Charge"), StartTime, EndTime);
 	float WaitTime = CurrentPosition < StartTime ? StartTime - CurrentPosition : 0;
 	if (WaitTime) {
 		this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->QueueTimer, this, &UAttackState::DoAttack, WaitTime, false, -1.0f);
@@ -143,19 +145,18 @@ void UAttackState::DoAttack() {
 	//Change Moving Values Attribute SPONGE: maybe need to reset after exit attack state?
 	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
 		float StaminaConsumption = this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>()
-			? IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->CharacterContext.CharacterActor, this->CurrentAttack) : 0;
-		ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_WeaponMovingValues", this->CurrentAttack.MovingValues, true);
+			? IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->CharacterContext.CharacterActor, this->CharacterContext.Store->CombatModule.CurrentAttack) : 0;
 		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, StaminaConsumption);
 	}
 
 
-	float MontageLength = this->CharacterContext.CharacterAnim->Montage_Play(this->CurrentAttack.AttackMontage);
+	float MontageLength = this->CharacterContext.CharacterAnim->Montage_Play(this->CharacterContext.Store->CombatModule.CurrentAttack.AttackMontage);
 	if (MontageLength) {
-		this->CharacterContext.CharacterAnim->Montage_JumpToSection("Attack", this->CurrentAttack.AttackMontage);
+		this->CharacterContext.CharacterAnim->Montage_JumpToSection("Attack", this->CharacterContext.Store->CombatModule.CurrentAttack.AttackMontage);
 		FOnMontageEnded EndAttackDelegate;
 		EndAttackDelegate.BindUObject(this, &UAttackState::OnAttackEnd);
-		this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->CurrentAttack.AttackMontage);
-		this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentAttack.AttackMontage);
+		this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->CharacterContext.Store->CombatModule.CurrentAttack.AttackMontage);
+		this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CharacterContext.Store->CombatModule.CurrentAttack.AttackMontage);
 	}
 
 

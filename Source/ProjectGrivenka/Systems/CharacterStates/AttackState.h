@@ -9,8 +9,8 @@
 /**
  * 
  */
-static const float HEAVYATTACKTRESHOLD = 0.5;
-static const float CHARGEATTACKTRESHOLD = 1;
+static const float HEAVYATTACKTRESHOLD = 0.35;
+static const float CHARGEATTACKTRESHOLD = 0.75;
 
 UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UAttackState : public UBaseState
@@ -22,7 +22,6 @@ class PROJECTGRIVENKA_API UAttackState : public UBaseState
 	FTimerHandle HeavyTimer;
 	FTimerHandle ChargeTimer;
 	FTimerHandle QueueTimer;
-	FAttackValues CurrentAttack;
 
 public:
 	virtual bool StateValidation_Implementation() override;

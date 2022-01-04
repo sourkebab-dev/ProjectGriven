@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/BaseEffect.h"
+#include "ProjectGrivenka/GlobalDefinitions.h"
 #include "WeaponDamage.generated.h"
 
 /**
@@ -14,7 +15,9 @@ class PROJECTGRIVENKA_API UWeaponDamage : public UBaseEffect
 {
 	GENERATED_BODY()
 
+	FAttackValues AttackValue;
+
 public:
-	virtual void Init(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FEffectInfo InEffectInfo) override;
+	void InitOverloaded(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FAttackValues InAttackValue);
 	virtual void OnExecuteEffect() override;
 };

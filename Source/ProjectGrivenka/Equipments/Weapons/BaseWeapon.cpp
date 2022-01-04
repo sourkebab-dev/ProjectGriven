@@ -4,6 +4,7 @@
 #include "BaseWeapon.h"
 #include "Components/CapsuleComponent.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
+#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 
@@ -63,22 +64,26 @@ void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 	}
 	this->Hitlist.Add(OtherActor);
 
-	if (!OtherActor->Implements<UContextAvailable>()) {
+	if (OtherActor->Implements<UContextAvailable>()) {
 		if (this->GetOwner()) {
+			GLog->Log("DamageAvailCtx");
 			FCharacterContext DamagableCtx;
+			FCharacterContext InstigatorCtx;
 			IContextAvailable::Execute_GetContext(OtherActor, DamagableCtx);
-			//Sponge: need to find out how to get the hit direction & impact type
-			DamagableCtx.EventBus->DamagedDelegate.Broadcast(this->GetOwner(), FVector::ForwardVector, EDamageImpactType::DI_MEDIUM);
+			IContextAvailable::Execute_GetContext(this->GetOwner(), InstigatorCtx);
+			DamagableCtx.EventBus->DamagedDelegate.Broadcast(this->GetOwner(), InstigatorCtx.Store->CombatModule.CurrentAttack);
 		}
 	}
 
 }
 
 void ABaseWeapon::ActivateCollision() {
+	GLog->Log("ActivateDamage");
 	this->DamageCollider->SetCollisionProfileName("OverlapAll");
 }
 
 void ABaseWeapon::DisableCollision() {
+	GLog->Log("DisableDamage");
 	this->DamageCollider->SetCollisionProfileName("NoCollision");
 	this->Hitlist.Empty();
 }

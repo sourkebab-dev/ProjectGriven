@@ -66,9 +66,6 @@ public:
 		FAttributeData WeaponDamage;
 		ATTRIBUTE_ACCESSORS(WeaponDamage)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-		FAttributeData WeaponMovingValues;
-		ATTRIBUTE_ACCESSORS(WeaponMovingValues)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 		FAttributeData ElementalDamage;
 		ATTRIBUTE_ACCESSORS(ElementalDamage)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")

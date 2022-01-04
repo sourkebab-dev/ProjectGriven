@@ -177,9 +177,6 @@ void UBaseEffect::BasicSumExecute(TEnumAsByte<EAttributeCode> InAttributeCode, f
 	case EAttributeCode::ATT_WeaponDamage:
 		ReceiverComp->Attributes->SetWeaponDamage(ReceiverComp->Attributes->GetWeaponDamage() + InValue);
 		break;
-	case EAttributeCode::ATT_WeaponMovingValues:
-		ReceiverComp->Attributes->SetWeaponMovingValues(ReceiverComp->Attributes->GetWeaponMovingValues() + InValue);
-		break;
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->GetDefense() + InValue);
 		break;
@@ -230,9 +227,6 @@ void UBaseEffect::BasicMultiplyExecute(TEnumAsByte<EAttributeCode> InAttributeCo
 	case EAttributeCode::ATT_WeaponDamage:
 		ReceiverComp->Attributes->SetWeaponDamage(ReceiverComp->Attributes->GetWeaponDamage() * InValue);
 		break;
-	case EAttributeCode::ATT_WeaponMovingValues:
-		ReceiverComp->Attributes->SetWeaponMovingValues(ReceiverComp->Attributes->GetWeaponMovingValues() * InValue);
-		break;
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->GetDefense() * InValue);
 		break;
@@ -282,9 +276,6 @@ void UBaseEffect::BasicOverwriteExecute(TEnumAsByte<EAttributeCode> InAttributeC
 	case EAttributeCode::ATT_WeaponDamage:
 		ReceiverComp->Attributes->SetWeaponDamage(InValue);
 		break;
-	case EAttributeCode::ATT_WeaponMovingValues:
-		ReceiverComp->Attributes->SetWeaponMovingValues(InValue);
-		break;
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(InValue);
 		break;
@@ -333,9 +324,6 @@ void UBaseEffect::RevertSumExecute(TEnumAsByte<EAttributeCode> InAttributeCode, 
 		break;
 	case EAttributeCode::ATT_WeaponDamage:
 		ReceiverComp->Attributes->SetWeaponDamage(ReceiverComp->Attributes->GetWeaponDamage() - InValue);
-		break;
-	case EAttributeCode::ATT_WeaponMovingValues:
-		ReceiverComp->Attributes->SetWeaponMovingValues(ReceiverComp->Attributes->GetWeaponMovingValues() - InValue);
 		break;
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->GetDefense() - InValue);
@@ -387,9 +375,6 @@ void UBaseEffect::RevertMultiplyExecute(TEnumAsByte<EAttributeCode> InAttributeC
 	case EAttributeCode::ATT_WeaponDamage:
 		ReceiverComp->Attributes->SetWeaponDamage(ReceiverComp->Attributes->GetWeaponDamage() / InValue);
 		break;
-	case EAttributeCode::ATT_WeaponMovingValues:
-		ReceiverComp->Attributes->SetWeaponMovingValues(ReceiverComp->Attributes->GetWeaponMovingValues() / InValue);
-		break;
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->GetDefense() / InValue);
 		break;
@@ -438,9 +423,6 @@ void UBaseEffect::RevertOverwriteExecute(TEnumAsByte<EAttributeCode> InAttribute
 		break;
 	case EAttributeCode::ATT_WeaponDamage:
 		ReceiverComp->Attributes->SetWeaponDamage(ReceiverComp->Attributes->WeaponDamage.BaseValue);
-		break;
-	case EAttributeCode::ATT_WeaponMovingValues:
-		ReceiverComp->Attributes->SetWeaponMovingValues(ReceiverComp->Attributes->WeaponMovingValues.BaseValue);
 		break;
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->Defense.BaseValue);

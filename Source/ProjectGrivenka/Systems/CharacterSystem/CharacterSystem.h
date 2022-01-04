@@ -69,7 +69,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void InitEffectDepleteStamina(AActor* EffectInstigator, float InValue);
 	UFUNCTION(BlueprintCallable)
-	void InitEffectReceiveHit(AActor* EffectInstigator, FVector InDamageDirection, TEnumAsByte<enum EDamageImpactType> InImpactType);
+	void InitEffectReceiveHit(AActor* EffectInstigator, FAttackValues InAttackValues);
 	#pragma endregion
 		
 };

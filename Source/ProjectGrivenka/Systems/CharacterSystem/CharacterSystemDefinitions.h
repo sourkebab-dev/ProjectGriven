@@ -22,7 +22,6 @@ enum EAttributeCode {
     ATT_FortitudeRecoverRate UMETA(DisplayName = "Fortitude Recover Rate Attribute"),
     ATT_Defense       UMETA(DisplayName = "Defense Attribute"),
     ATT_WeaponDamage       UMETA(DisplayName = "Weapon Damage Attribute"),
-    ATT_WeaponMovingValues       UMETA(DisplayName = "Weapon Moving Values Attribute"),
     ATT_ElementalDamage     UMETA(DisplayName = "Weapon Elemental Damage Attribute"),
     ATT_FortitudeDamage     UMETA(DisplayName = "Weapon Fortitude Damage Attribute"),
     ATT_ElemFireDefense     UMETA(DisplayName = "Fire Defense Attribute"),
