@@ -40,6 +40,12 @@ struct FAttackValues
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float StaminaCost;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EDamageImpactType> ImpactType;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector AttackDirection;
 };
 
 USTRUCT(BlueprintType)

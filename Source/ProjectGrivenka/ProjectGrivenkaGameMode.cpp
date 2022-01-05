@@ -9,6 +9,6 @@ AProjectGrivenkaGameMode::AProjectGrivenkaGameMode()
 	//static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPersonCPP/Blueprints/BP_ControllableCharacter"));
 	//if (PlayerPawnBPClass.Class != NULL)
 	//{
-	//	DefaultPawnClass = PlayerPawnBPClass.Class;
+		DefaultPawnClass = NULL;
 	//}
 }

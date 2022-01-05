@@ -18,7 +18,7 @@ struct FCharacterContext
 		class USkeletalMeshComponent* SkeletalMeshComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		class UCharacterMovementComponent* CharacterMovementComp;
+		class UPawnMovementComponent* MovementComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		class UAnimInstance* CharacterAnim;

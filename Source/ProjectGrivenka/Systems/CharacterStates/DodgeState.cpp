@@ -47,14 +47,15 @@ void UDodgeState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAction
 	this->CharacterContext.EventBus->AnimDelegate.Broadcast(EAnimEvt::START_DODGE);
 
 	//SPONGE: i should probably adjust this setting but it works anyway lol
-	this->TempWalkSpeed = this->CharacterContext.CharacterMovementComp->MaxWalkSpeed;
-	this->TempGroundFriction = this->CharacterContext.CharacterMovementComp->BrakingDecelerationWalking;
-	this->TempAcceleration = this->CharacterContext.CharacterMovementComp->MaxAcceleration;
-	this->TempBrakingFriction = this->CharacterContext.CharacterMovementComp->BrakingFrictionFactor;
-	this->CharacterContext.CharacterMovementComp->BrakingFrictionFactor = 10;
-	this->CharacterContext.CharacterMovementComp->BrakingDecelerationWalking = 3000;
-	this->CharacterContext.CharacterMovementComp->MaxAcceleration = 3000;
-	this->CharacterContext.CharacterMovementComp->MaxWalkSpeed = 999999;
+	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
+	this->TempWalkSpeed = MovementComp->MaxWalkSpeed;
+	this->TempGroundFriction = MovementComp->BrakingDecelerationWalking;
+	this->TempAcceleration = MovementComp->MaxAcceleration;
+	this->TempBrakingFriction = MovementComp->BrakingFrictionFactor;
+	MovementComp->BrakingFrictionFactor = 10;
+	MovementComp->BrakingDecelerationWalking = 3000;
+	MovementComp->MaxAcceleration = 3000;
+	MovementComp->MaxWalkSpeed = 999999;
 
 	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
 		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, 10);
@@ -77,16 +78,17 @@ void UDodgeState::OnStateExit_Implementation()
 	this->DodgeTargetLocation = FVector::ZeroVector;
 	this->DodgeTimeline.Stop();
 
-	this->CharacterContext.CharacterMovementComp->MaxWalkSpeed = this->TempWalkSpeed;
-	this->CharacterContext.CharacterMovementComp->MaxAcceleration = this->TempAcceleration;
-	this->CharacterContext.CharacterMovementComp->BrakingDecelerationWalking = this->TempGroundFriction;
-	this->CharacterContext.CharacterMovementComp->BrakingFrictionFactor = this->TempBrakingFriction;
+	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
+	MovementComp->MaxWalkSpeed = this->TempWalkSpeed;
+	MovementComp->MaxAcceleration = this->TempAcceleration;
+	MovementComp->BrakingDecelerationWalking = this->TempGroundFriction;
+	MovementComp->BrakingFrictionFactor = this->TempBrakingFriction;
 	this->CharacterContext.EventBus->AnimDelegate.Broadcast(EAnimEvt::END_DODGE);
 }
 
 void UDodgeState::OnDodging(float InterpValue) {
 	FVector Interpolation = FMath::Lerp(this->TempCurrentLocation, this->DodgeTargetLocation, InterpValue);
-	this->CharacterContext.CharacterMovementComp->AddInputVector(Interpolation - this->CharacterContext.CharacterActor->GetActorLocation());
+	this->CharacterContext.MovementComp->AddInputVector(Interpolation - this->CharacterContext.CharacterActor->GetActorLocation());
 	GLog->Log("OnDodging");
 }
 

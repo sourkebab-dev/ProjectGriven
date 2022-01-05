@@ -5,7 +5,7 @@
 #include "OneOffUseItemState.h"
 #include "HoldUseItemState.h"
 #include "ToggleUseItemState.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "ProjectGrivenka/Items/BaseItem.h"
 #include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
@@ -33,7 +33,7 @@ void URootUseItemState::AxisHandler_Implementation(EActionList Action, float Axi
 
 	if (Action == EActionList::ActionMoveForward || Action == EActionList::ActionMoveRight)
 	{
-		this->CharacterContext.CharacterMovementComp->AddInputVector(this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir);
+		this->CharacterContext.MovementComp->AddInputVector(this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir);
 	}
 }
 

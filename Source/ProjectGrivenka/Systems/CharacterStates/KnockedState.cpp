@@ -2,12 +2,19 @@
 
 
 #include "KnockedState.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
+#include "ProjectGrivenka/VectorMathLib.h"
+
+void UKnockedState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
+{
+	Super::Init_Implementation(InContext, InStatesComp);
+	this->CharacterContext.EventBus->DamagedDelegate.AddDynamic(this, &UKnockedState::OnReceiveHit);
+}
 
 void UKnockedState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
 {
-	//Sponge : need to replace && this->EnterAction == EActionList::ActionLowKnocked
 	if (Action == EActionList::ActionDodge && EventType == IE_Pressed && this->StatesComp->CrossStateData.IsInterruptable) {
 		this->CharacterContext.CharacterAnim->Montage_Stop(0.25);
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Dodge"), EActionList::ActionDodge, IE_Pressed);
@@ -17,27 +24,87 @@ void UKnockedState::ActionHandler_Implementation(EActionList Action, EInputEvent
 void UKnockedState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
 {
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	this->PooledTime = 0.0;
+	this->PushTargetLocation = FVector::ZeroVector;
+	this->PushStartLocation = FVector::ZeroVector;
+	GEngine->AddOnScreenDebugMessage(22, 1, FColor::Yellow, "hit");
 	this->StatesComp->CrossStateData.IsInterruptable = false;
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->StunTimer, this, &UKnockedState::OnStunned, this->CharacterContext.CharacterActor->GetWorld()->GetDeltaSeconds(), true, -1.0f);
+	if (!this->CharacterContext.CharacterAnim) { this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Pressed); return; }
+	this->StartHitReact();
 }
 
 void UKnockedState::OnStateExit_Implementation()
 {
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->StunTimer);
 	this->StatesComp->CrossStateData.IsInterruptable = true;
-	this->PooledStunTime = 0.0;
-}
-
-
-void UKnockedState::OnStunned() {
-	this->PooledStunTime += this->CharacterContext.CharacterActor->GetWorld()->GetDeltaSeconds();
-	if (this->PooledStunTime / this->StunTime >= 0.5) this->StatesComp->CrossStateData.IsInterruptable = true;
-	if (this->PooledStunTime >= this->StunTime) {
-		this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->StunTimer);
-		this->OnFinishStunned();
+	if (!this->CharacterContext.CharacterAnim) return;
+	FAnimMontageInstance* AnimMontageInstance = this->CharacterContext.CharacterAnim->GetActiveInstanceForMontage(this->CurrentStunMontage);
+	if (AnimMontageInstance) {
+		AnimMontageInstance->OnMontageEnded.Unbind();
+		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
 	}
+	this->CharacterContext.CharacterAnim->Montage_Stop(0.25);
 }
 
-void UKnockedState::OnFinishStunned() {
-	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
+void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FAttackValues InAttackValue)
+{
+	this->HitInstigator = InHitInstigator;
+	this->AttackValue = InAttackValue;
+	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked"), EActionList::ActionNone, EInputEvent::IE_Released);
+}
+
+void UKnockedState::StartHitReact()
+{
+	float Degrees = UVectorMathLib::DegreesBetweenVectors(this->CharacterContext.CharacterActor->GetActorForwardVector(), this->HitInstigator->GetActorForwardVector());
+	FVector StunDirection = this->AttackValue.AttackDirection.RotateAngleAxis(Degrees, FVector::UpVector);
+	StunDirection.Z *= -1;
+
+	if (FVector::DotProduct(StunDirection, FVector::LeftVector) >= DOTDIRECTIONTRESHOLD) {
+		this->CurrentStunMontage = this->StunLeftMontage.DefaultMontage;
+	}
+	else if (FVector::DotProduct(StunDirection, FVector::RightVector) >= DOTDIRECTIONTRESHOLD) {
+		this->CurrentStunMontage = this->StunRightMontage.DefaultMontage;
+	}
+	else if (FVector::DotProduct(StunDirection, FVector::UpVector) >= DOTDIRECTIONTRESHOLD) {
+		this->CurrentStunMontage = this->StunUpMontage.DefaultMontage;
+	}
+	else if (FVector::DotProduct(StunDirection, FVector::DownVector) >= DOTDIRECTIONTRESHOLD) {
+		this->CurrentStunMontage = this->StunDownMontage.DefaultMontage;
+	}
+	else {
+		this->CurrentStunMontage = this->StunBackMontage.DefaultMontage;
+	}
+	this->CharacterContext.CharacterAnim->Montage_Play(this->CurrentStunMontage);
+
+	FOnMontageEnded EndAttackDelegate;
+	EndAttackDelegate.BindUObject(this, &UKnockedState::OnHitReactEnd);
+	this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->CurrentStunMontage);
+	this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentStunMontage);
+
+	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
+	if (!MovementComp) return;
+	FVector KnockBackDir = this->HitInstigator->GetActorForwardVector();
+	KnockBackDir.Normalize();
+	KnockBackDir.Z = 0;
+	this->PushStartLocation = this->CharacterContext.CharacterActor->GetActorLocation();
+	this->PushTargetLocation = this->CharacterContext.CharacterActor->GetActorLocation() + (KnockBackDir * this->PushDistanceMultiplier);
+}
+
+void UKnockedState::Tick_Implementation(float DeltaTime)
+{
+	Super::Tick_Implementation(DeltaTime);
+
+	if (this->PooledTime >= this->TotalPushTime) return;
+	this->PooledTime += DeltaTime;
+	FVector InterpVector = FMath::Lerp(this->PushStartLocation, this->PushTargetLocation, this->PooledTime / this->TotalPushTime);
+	this->CharacterContext.CharacterActor->SetActorLocation(InterpVector, true);
+}
+
+
+void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
+{
+	this->HitInstigator = nullptr;
+	this->AttackValue = FAttackValues();
+	if (!bInterrupted) {
+		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, EInputEvent::IE_Released);
+	}
 }

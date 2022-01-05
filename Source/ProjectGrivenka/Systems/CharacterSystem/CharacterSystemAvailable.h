@@ -88,7 +88,7 @@ public:
 	void InitEffectDepleteStamina(AActor* EffectInstigator, float InValue);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void InitEffectReceiveHit(AActor* EffectInstigator, FVector InDamageDirection, EDamageImpactType InImpactType);
+	void InitEffectReceiveHit(AActor* EffectInstigator, FAttackValues InAttackValues);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void RemoveEffectByTag(FGameplayTag EffectTag);

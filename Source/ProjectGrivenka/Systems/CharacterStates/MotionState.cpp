@@ -2,7 +2,7 @@
 
 
 #include "MotionState.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
@@ -55,8 +55,8 @@ void UMotionState::AxisHandler_Implementation(EActionList Action, float AxisValu
 }
 
 void UMotionState::MoveCharacter() {
-	if (!this->CharacterContext.CharacterMovementComp) return;
-	this->CharacterContext.CharacterMovementComp->AddInputVector(this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir);
+	if (!this->CharacterContext.MovementComp) return;
+	this->CharacterContext.MovementComp->AddInputVector(this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir);
 }
 
 void UMotionState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) {

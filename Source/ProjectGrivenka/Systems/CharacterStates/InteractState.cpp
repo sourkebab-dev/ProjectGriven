@@ -2,7 +2,7 @@
 
 
 #include "InteractState.h"
-#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Interfaces/Interactable.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
@@ -27,7 +27,7 @@ void UInteractState::AxisHandler_Implementation(EActionList Action, float AxisVa
 	if (this->InteractionInfo.LocomotionType == EInteractablesLocomotionType::INL_BLOCK) return;
 	if (Action == EActionList::ActionMoveForward || Action == EActionList::ActionMoveRight)
 	{
-		this->CharacterContext.CharacterMovementComp->AddInputVector(this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir);
+		this->CharacterContext.MovementComp->AddInputVector(this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir);
 	}
 }
 

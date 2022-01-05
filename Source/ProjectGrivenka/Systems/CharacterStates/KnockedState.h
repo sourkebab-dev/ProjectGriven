@@ -9,24 +9,64 @@
 /**
  * 
  */
+
+static const float DOTDIRECTIONTRESHOLD = 0.8;
+
+USTRUCT(BlueprintType)
+struct FStunMontage
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* DefaultMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* HeavyMontage;
+};
+
 UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UKnockedState : public UBaseState
 {
 	GENERATED_BODY()
 
-	float StunTime = 0.0;
-	float PooledStunTime = 0.0;
-	FTimerHandle StunTimer;
-
-	UFUNCTION()
-	void OnStunned();
-
-	UFUNCTION()
-	void OnFinishStunned();
+	FVector PushStartLocation;
+	FVector PushTargetLocation;
+	float PooledTime = 0.0;
 
 public:
-	//virtual void Init_Implementation(class ABaseCharacter* Instance) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TotalPushTime = 0.25;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float PushDistanceMultiplier = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* CurrentStunMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AActor* HitInstigator;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FAttackValues AttackValue;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FStunMontage StunLeftMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FStunMontage StunRightMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FStunMontage StunBackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FStunMontage StunUpMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FStunMontage StunDownMontage;
+
+public:
+	virtual void Init_Implementation(FCharacterContext InContext, class UCharacterStatesSystem* InStatesComp) override;
+	virtual void Tick_Implementation(float DeltaTime);
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
 	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;
 	virtual void OnStateExit_Implementation() override;
+	
+	UFUNCTION(BlueprintCallable)
+	void OnReceiveHit(AActor* InHitInstigator, FAttackValues InAttackValue);
+	UFUNCTION(BlueprintCallable)
+	void StartHitReact();
+	UFUNCTION(BlueprintCallable)
+	void OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted);
+
 };
