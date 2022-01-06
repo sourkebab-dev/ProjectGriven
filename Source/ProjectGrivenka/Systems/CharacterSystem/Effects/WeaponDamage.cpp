@@ -73,6 +73,7 @@ void UWeaponDamage::OnExecuteEffect() {
 	}
 	
 	//Fortitude Damage 
+	//sponge: need to reset by debounce
 	float FortitudeDamage = 0.0;
 	switch (this->DamageInfo.ImpactType)
 	{
@@ -90,13 +91,12 @@ void UWeaponDamage::OnExecuteEffect() {
 	}
 	
 	//sponge: might need to make a common func for defense calculation
-	float TotalPhysicalDamage = CalculatedPhysicalDamage * (CalculatedPhysicalDamage / (CalculatedPhysicalDamage + ReceiverDefense));
-	float TotalElementalDamage = CalculatedElementalDamage * (CalculatedElementalDamage / (CalculatedElementalDamage + ReceiverElementalDefense));
-	float TotalDamage = TotalPhysicalDamage + TotalElementalDamage;
+	float TotalPhysicalDamage = CalculatedPhysicalDamage ? CalculatedPhysicalDamage * (CalculatedPhysicalDamage / (CalculatedPhysicalDamage + ReceiverDefense)) : 0.0;
+	float TotalElementalDamage = CalculatedElementalDamage > 0.0 ? CalculatedElementalDamage * (CalculatedElementalDamage / (CalculatedElementalDamage + ReceiverElementalDefense)) : 0.0;
+	float AccumulatedDamage = TotalPhysicalDamage + TotalElementalDamage;
 	
-
 	//sponge: might need amp def
-	ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Health, ReceiverHealth - TotalDamage);
+	ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Health, ReceiverHealth - AccumulatedDamage);
 	ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Fortitude, ReceiverFortude - FortitudeDamage);
 	GLog->Log("ReceiverHealth");
 	GLog->Log(FString::SanitizeFloat(ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Health)));
