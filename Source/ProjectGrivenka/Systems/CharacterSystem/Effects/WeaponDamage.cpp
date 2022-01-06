@@ -8,109 +8,96 @@
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 
-
-void UWeaponDamage::InitOverloaded(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FAttackValues InAttackValue) {
+//Sponge: might need to rename this to add damage, might also need to rethink where to store weapon damage and all that shit also need to implement pooled elemental damage
+void UWeaponDamage::InitOverloaded(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FDamageInfo InDamageInfo) {
 	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	UEffectPrefab* EffectPrefab = AssetsData->EffectPrefab->EffectAssets.FindRef("Util_WeaponHit");
 	if (!EffectPrefab) return;
 	FEffectInfo TempEffectInfo = EffectPrefab->EffectInfo;
-	this->AttackValue = InAttackValue;
+	this->DamageInfo = InDamageInfo;
 	Super::Init(NewEffectInstigator, NewEffectReceiver, TempEffectInfo);
 }
 
 void UWeaponDamage::OnExecuteEffect() {
 	//if (this->EffectReceiverCharacter && this->EffectReceiverCharacter->CurrentStateCode == ECharacterStates::StateDodge) return;
-	
-	 
 
-	UCharacterSystem* InstigatorComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectInstigator);
+	//Health Damage Calculation
 	UCharacterSystem* ReceiverComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectReceiver);
-	FCharacterContext InstigatorCtx;
-	IContextAvailable::Execute_GetContext(this->EffectInstigator, InstigatorCtx);
-
-
-	float WeaponDamage = InstigatorComp->GetAttributeCurrentValue(EAttributeCode::ATT_WeaponDamage);
-	float MovingValues = this->AttackValue.MovingValues;
+	UCharacterSystem* InstigatorComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectInstigator);
 
 	float ReceiverDefense = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Defense);
 	float ReceiverHealth = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Health);
 	float ReceiverFortude = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Fortitude);
 	float ReceiverAmp = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Amp);
-	
+	float ReceiverElementalDefense = 0.0;
 
-	float DamageByMovement = WeaponDamage * (MovingValues / 100);
+	switch (this->DamageInfo.ElementType) {
+		case EDamageElementType::ElemElectric:
+			ReceiverElementalDefense = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_ElemElectricDefense);
+			break;
+		case EDamageElementType::ElemEnergy:
+			ReceiverElementalDefense = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_ElemEnergyDefense);
+			break;
+		case EDamageElementType::ElemFire:
+			ReceiverElementalDefense = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_ElemFireDefense);
+			break;
+		case EDamageElementType::ElemIce:
+			ReceiverElementalDefense = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_ElemIceDefense);
+			break;
+		case EDamageElementType::ElemPoison:
+			ReceiverElementalDefense = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_ElemPoisonDefense);
+			break;
+		default:
+			break;
+	}
 
-	GLog->Log("WeaponDamage");
-	GLog->Log(FString::SanitizeFloat(WeaponDamage));
-	GLog->Log("DamageBymove");
-	GLog->Log(FString::SanitizeFloat(DamageByMovement));
-	GLog->Log("ReceiverDefense");
-	GLog->Log(FString::SanitizeFloat(ReceiverDefense));
-	
-	//sponge: might need to change the way amp is used
-	//if (ReceiverComp->CombatFlags.IsAmpActivated) {
-	//	float AmpDamage = DamageByMovement * 0.50;
-	//	ReceiverComp->Attributes->SetAmp(ReceiverAmp + AmpDamage * (AmpDamage / (AmpDamage + ReceiverDefense)));
-	//	if (ReceiverComp->Attributes->GetAmp() >= ReceiverComp->Attributes->GetMaxAmp()) {
-			//SPONGE: Should probably add amp overload state
-	//		ReceiverComp->Attributes->SetFortitude(0);
-	//		ReceiverComp->Attributes->SetAmp(0);
-	//		ReceiverComp->CombatFlags.IsAmpActivated = false;
-	//	}
-	//}
-	//else {
-		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Health, ReceiverHealth - DamageByMovement * (DamageByMovement / (DamageByMovement + ReceiverDefense)));
-		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Fortitude, ReceiverFortude - (MovingValues / 50));
-		GLog->Log("ReceiverHealth");
-		GLog->Log(FString::SanitizeFloat(ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Health)));
-	//}
-	
+	float RawDamage = this->DamageInfo.RawPhysicalDamage;
+	float RawElementalDamage = this->DamageInfo.RawElementalDamage;
+	float CalculatedPhysicalDamage = 0.0;
+	float CalculatedElementalDamage = 0.0;
+	if (!this->DamageInfo.IsFixed) {
+		float InstigatorCritPower = InstigatorComp->GetAttributeCurrentValue(EAttributeCode::ATT_CriticalPower);
+		float InstigatorCritChance = InstigatorComp->GetAttributeCurrentValue(EAttributeCode::ATT_CriticalChance);
+		float MovingValues = this->DamageInfo.MovingValues;
+		float CritRand = FMath::RandRange(0, 100);
+		bool isCritical = CritRand <= InstigatorCritChance;
 
-	//Sponge: need to use event for this
-	//if (this->EffectReceiverCharacter) {
-		//this->EffectReceiverCharacter->SetupHitReaction(InstigatorComp->CompContext.CharacterActor, ReceiverFortude, ReceiverComp->Attributes->GetFortitude(), ReceiverComp->Attributes->GetMaxFortitude());
-	//}
-}
-
-/*
-void UWeaponDamage::SetupHitReaction(AActor* InstigatorActor, float OldFortitude, float NewFortitude, float MaxFortitude)
-{
-	//SPONGE: might change to pooled damage difference
-	//SPONGE: might move this to knockback state
-	float FortDamagePercentage = (OldFortitude - NewFortitude) / MaxFortitude;
-	if (FortDamagePercentage > .3) {
-		if (this->Execute_GetCharacterSystemComp()->Attributes->GetFortitude() <= 0.0) {
-			this->ChangeState(this->CurrentState, ECharacterStates::StateKnocked, EActionList::ActionHeavyKnocked, IE_Released);
-		}
-		else {
-			this->ChangeState(this->CurrentState, ECharacterStates::StateKnocked, EActionList::ActionMediumKnocked, IE_Released);
-		}
+		float DamageByMovement = RawDamage * (MovingValues / 100);
+		float ElemDamageByMovement = RawElementalDamage * (MovingValues / 100);
+		CalculatedPhysicalDamage = isCritical ? DamageByMovement + InstigatorCritPower : DamageByMovement;
+		CalculatedElementalDamage = isCritical ? ElemDamageByMovement + InstigatorCritPower : ElemDamageByMovement;
 	}
 	else {
-		if (this->Execute_GetCharacterSystemComp()->Attributes->GetFortitude() / this->Execute_GetCharacterSystemComp()->Attributes->GetMaxFortitude() <= .5) {
-			this->ChangeState(this->CurrentState, ECharacterStates::StateKnocked, EActionList::ActionLowKnocked, IE_Released);
-		}
-		FVector PushDirection = this->GetActorLocation() - InstigatorActor->GetActorLocation();
-		PushDirection.Normalize();
-		this->TempActorLocation = this->GetActorLocation();
-		this->TempTargetLocation = this->TempActorLocation + PushDirection * 50;
-		this->TempPooledTime = 0.0;
-		this->GetWorldTimerManager().SetTimer(this->CombatCharTimer, this, &AProjectGrivenkaCharacter::OnHitReaction, this->GetWorld()->GetDeltaSeconds(), true, -1.0f);
+		CalculatedPhysicalDamage = RawDamage;
+		CalculatedElementalDamage = RawElementalDamage;
 	}
+	
+	//Fortitude Damage 
+	float FortitudeDamage = 0.0;
+	switch (this->DamageInfo.ImpactType)
+	{
+		case EDamageImpactType::DI_LOW:
+			FortitudeDamage = 50;
+			break;
+		case EDamageImpactType::DI_MEDIUM:
+			FortitudeDamage = 100;
+			break;
+		case EDamageImpactType::DI_HIGH:
+			FortitudeDamage = 200;
+			break;
+		default:
+			break;
+	}
+	
+	//sponge: might need to make a common func for defense calculation
+	float TotalPhysicalDamage = CalculatedPhysicalDamage * (CalculatedPhysicalDamage / (CalculatedPhysicalDamage + ReceiverDefense));
+	float TotalElementalDamage = CalculatedElementalDamage * (CalculatedElementalDamage / (CalculatedElementalDamage + ReceiverElementalDefense));
+	float TotalDamage = TotalPhysicalDamage + TotalElementalDamage;
+	
 
-	if (!this->IsPlayerControlled()) {
-		AProjectGrivenkaCharacter* Attacker = Cast<AProjectGrivenkaCharacter>(InstigatorActor);
-		if (!Attacker || this->AggroList.Contains(InstigatorActor)) return;
-		this->AggroList.Add(Attacker);
-		this->AISetAggroTargetFromList();
-	}
+	//sponge: might need amp def
+	ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Health, ReceiverHealth - TotalDamage);
+	ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Fortitude, ReceiverFortude - FortitudeDamage);
+	GLog->Log("ReceiverHealth");
+	GLog->Log(FString::SanitizeFloat(ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Health)));
 }
-
-void UWeaponDamage::OnHitReaction() {
-	this->TempPooledTime += this->GetWorld()->GetDeltaSeconds();
-	this->SetActorLocation(FMath::Lerp(this->TempActorLocation, this->TempTargetLocation, this->TempPooledTime / 0.1), true);
-	if (FVector::Distance(this->GetActorLocation(), this->TempTargetLocation) <= 2.f || this->TempPooledTime >= 0.1) {
-		this->GetWorldTimerManager().ClearTimer(this->CombatCharTimer);
-	}
-}
-*/

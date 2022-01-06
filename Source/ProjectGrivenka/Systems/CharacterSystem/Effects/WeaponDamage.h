@@ -15,9 +15,9 @@ class PROJECTGRIVENKA_API UWeaponDamage : public UBaseEffect
 {
 	GENERATED_BODY()
 
-	FAttackValues AttackValue;
+	FDamageInfo DamageInfo;
 
 public:
-	void InitOverloaded(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FAttackValues InAttackValue);
+	void InitOverloaded(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FDamageInfo InDamageInfo);
 	virtual void OnExecuteEffect() override;
 };

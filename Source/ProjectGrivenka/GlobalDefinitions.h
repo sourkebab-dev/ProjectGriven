@@ -6,6 +6,19 @@
 #include "Engine/DataTable.h"
 #include "GlobalDefinitions.generated.h"
 
+
+UENUM(BlueprintType)
+enum EDamageElementType
+{
+    ElemNone UMETA(DisplayName = "No Element Type"),
+    ElemFire       UMETA(DisplayName = "Fire Element Type"),
+    ElemPoison       UMETA(DisplayName = "Poison Element Type"),
+    ElemIce        UMETA(DisplayName = "Ice Element Type"),
+    ElemElectric        UMETA(DisplayName = "Electric Element Type"),
+    ElemEnergy        UMETA(DisplayName = "Energy Element Type"),
+};
+
+
 UENUM(BlueprintType)
 enum EAttackMovementType {
     AM_DEFAULT       UMETA(DisplayName = "Default Attack Movement"),
@@ -46,6 +59,33 @@ struct FAttackValues
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector AttackDirection;
+};
+
+USTRUCT(BlueprintType)
+struct FDamageInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float RawPhysicalDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float RawElementalDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool IsFixed;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float MovingValues;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EDamageImpactType> ImpactType;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EDamageElementType> ElementType;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector DamageDirection; // 0.0.0 for radial
 };
 
 USTRUCT(BlueprintType)
@@ -101,17 +141,6 @@ struct FCommonCharacterAnimation
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UAnimMontage* VentAmp;
 
-};
-
-UENUM(BlueprintType)
-enum EDamageElementType
-{
-    ElemNone UMETA(DisplayName= "No Element Type"),
-    ElemFire       UMETA(DisplayName = "Fire Element Type"),
-    ElemPoison       UMETA(DisplayName = "Poison Element Type"),
-    ElemIce        UMETA(DisplayName = "Ice Element Type"),
-    ElemElectric        UMETA(DisplayName = "Electric Element Type"),
-    ElemEnergy        UMETA(DisplayName = "Energy Element Type"),
 };
 
 UENUM(BlueprintType)

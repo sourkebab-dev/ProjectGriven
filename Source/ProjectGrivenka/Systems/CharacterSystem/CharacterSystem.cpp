@@ -180,10 +180,24 @@ float UCharacterSystem::GetAttributeCurrentValue(TEnumAsByte<EAttributeCode> InA
 			return this->Attributes->GetFortitude();
 		case EAttributeCode::ATT_FortitudeRecoverRate:
 			return this->Attributes->GetFortitudeRecoverRate();
+		case EAttributeCode::ATT_CriticalPower:
+			return this->Attributes->GetCriticalPower();
+		case EAttributeCode::ATT_CriticalChance:
+			return this->Attributes->GetCriticalChance();
 		case EAttributeCode::ATT_WeaponDamage:
 			return this->Attributes->GetWeaponDamage();
 		case EAttributeCode::ATT_Defense:
 			return this->Attributes->GetDefense();
+		case EAttributeCode::ATT_ElemElectricDefense:
+			return this->Attributes->GetElemElectricDefense();
+		case EAttributeCode::ATT_ElemEnergyDefense:
+			return this->Attributes->GetElemEnergyDefense();
+		case EAttributeCode::ATT_ElemFireDefense:
+			return this->Attributes->GetElemFireDefense();
+		case EAttributeCode::ATT_ElemIceDefense:
+			return this->Attributes->GetElemIceDefense();
+		case EAttributeCode::ATT_ElemPoisonDefense:
+			return this->Attributes->GetElemPoisonDefense();
 		default:
 			return 0.0f;
 	}
@@ -250,10 +264,10 @@ void UCharacterSystem::InitEffectDepleteStamina(AActor* EffectInstigator, float 
 	this->AddEffect(SpendStamina);
 }
 
-void UCharacterSystem::InitEffectReceiveHit(AActor* EffectInstigator, FAttackValues InAttackValues)
+void UCharacterSystem::InitEffectReceiveHit(AActor* EffectInstigator, FDamageInfo InDamageInfo)
 {
 	UWeaponDamage* HitDamage = NewObject<UWeaponDamage>();
-	HitDamage->InitOverloaded(EffectInstigator, this->GetOwner(), InAttackValues);
+	HitDamage->InitOverloaded(EffectInstigator, this->GetOwner(), InDamageInfo);
 	this->AddEffect(HitDamage);
 }
 

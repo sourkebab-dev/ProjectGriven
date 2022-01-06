@@ -45,33 +45,36 @@ void UKnockedState::OnStateExit_Implementation()
 	this->CharacterContext.CharacterAnim->Montage_Stop(0.25);
 }
 
-void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FAttackValues InAttackValue)
+void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo)
 {
 	this->HitInstigator = InHitInstigator;
-	this->AttackValue = InAttackValue;
-	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked"), EActionList::ActionNone, EInputEvent::IE_Released);
+	this->DamageInfo = InDamageInfo;
+	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
 }
 
 void UKnockedState::StartHitReact()
 {
 	float Degrees = UVectorMathLib::DegreesBetweenVectors(this->CharacterContext.CharacterActor->GetActorForwardVector(), this->HitInstigator->GetActorForwardVector());
-	FVector StunDirection = this->AttackValue.AttackDirection.RotateAngleAxis(Degrees, FVector::UpVector);
+	FVector StunDirection = this->DamageInfo.DamageDirection.RotateAngleAxis(Degrees, FVector::UpVector);
 	StunDirection.Z *= -1;
 
 	if (FVector::DotProduct(StunDirection, FVector::LeftVector) >= DOTDIRECTIONTRESHOLD) {
-		this->CurrentStunMontage = this->StunLeftMontage.DefaultMontage;
+		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunLeftMontage.HeavyMontage : this->StunLeftMontage.DefaultMontage;
 	}
 	else if (FVector::DotProduct(StunDirection, FVector::RightVector) >= DOTDIRECTIONTRESHOLD) {
-		this->CurrentStunMontage = this->StunRightMontage.DefaultMontage;
+		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunRightMontage.HeavyMontage : this->StunRightMontage.DefaultMontage;
 	}
 	else if (FVector::DotProduct(StunDirection, FVector::UpVector) >= DOTDIRECTIONTRESHOLD) {
-		this->CurrentStunMontage = this->StunUpMontage.DefaultMontage;
+		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunUpMontage.HeavyMontage : this->StunUpMontage.DefaultMontage;
 	}
 	else if (FVector::DotProduct(StunDirection, FVector::DownVector) >= DOTDIRECTIONTRESHOLD) {
-		this->CurrentStunMontage = this->StunDownMontage.DefaultMontage;
+		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunDownMontage.HeavyMontage : this->StunDownMontage.DefaultMontage;
+	}
+	else if (FVector::DotProduct(StunDirection, FVector::ForwardVector) >= DOTDIRECTIONTRESHOLD) {
+		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunFrontMontage.HeavyMontage : this->StunFrontMontage.DefaultMontage;
 	}
 	else {
-		this->CurrentStunMontage = this->StunBackMontage.DefaultMontage;
+		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunBackMontage.HeavyMontage : this->StunBackMontage.DefaultMontage;
 	}
 	this->CharacterContext.CharacterAnim->Montage_Play(this->CurrentStunMontage);
 
@@ -103,7 +106,7 @@ void UKnockedState::Tick_Implementation(float DeltaTime)
 void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
 {
 	this->HitInstigator = nullptr;
-	this->AttackValue = FAttackValues();
+	this->DamageInfo = FDamageInfo();
 	if (!bInterrupted) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, EInputEvent::IE_Released);
 	}

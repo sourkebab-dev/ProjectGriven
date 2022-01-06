@@ -71,7 +71,15 @@ void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 			FCharacterContext InstigatorCtx;
 			IContextAvailable::Execute_GetContext(OtherActor, DamagableCtx);
 			IContextAvailable::Execute_GetContext(this->GetOwner(), InstigatorCtx);
-			DamagableCtx.EventBus->DamagedDelegate.Broadcast(this->GetOwner(), InstigatorCtx.Store->CombatModule.CurrentAttack);
+			FDamageInfo DamageInfo;
+			DamageInfo.MovingValues = InstigatorCtx.Store->CombatModule.CurrentAttack.MovingValues;
+			DamageInfo.DamageDirection = InstigatorCtx.Store->CombatModule.CurrentAttack.AttackDirection;
+			DamageInfo.ImpactType = InstigatorCtx.Store->CombatModule.CurrentAttack.ImpactType;
+			DamageInfo.ElementType = this->ElementType;
+			DamageInfo.RawPhysicalDamage = this->RawDamage;
+			DamageInfo.RawElementalDamage = this->ElementalDamage;
+			DamageInfo.IsFixed = false;
+			DamagableCtx.EventBus->DamagedDelegate.Broadcast(this->GetOwner(), DamageInfo);
 		}
 	}
 

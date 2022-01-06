@@ -41,6 +41,10 @@ struct FPersistedAttributes
 	float Defense;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	float WeaponDamage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	float CriticalChance;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	float CriticalPower;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
 	float ElemFireDefense;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
@@ -88,7 +92,7 @@ public:
 	void InitEffectDepleteStamina(AActor* EffectInstigator, float InValue);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void InitEffectReceiveHit(AActor* EffectInstigator, FAttackValues InAttackValues);
+	void InitEffectReceiveHit(AActor* EffectInstigator, FDamageInfo InDamageInfo);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void RemoveEffectByTag(FGameplayTag EffectTag);

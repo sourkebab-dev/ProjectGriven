@@ -43,11 +43,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor* HitInstigator;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FAttackValues AttackValue;
+	FDamageInfo DamageInfo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FStunMontage StunLeftMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FStunMontage StunRightMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FStunMontage StunFrontMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FStunMontage StunBackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -63,7 +65,7 @@ public:
 	virtual void OnStateExit_Implementation() override;
 	
 	UFUNCTION(BlueprintCallable)
-	void OnReceiveHit(AActor* InHitInstigator, FAttackValues InAttackValue);
+	void OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo);
 	UFUNCTION(BlueprintCallable)
 	void StartHitReact();
 	UFUNCTION(BlueprintCallable)

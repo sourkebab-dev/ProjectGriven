@@ -66,11 +66,14 @@ public:
 		FAttributeData WeaponDamage;
 		ATTRIBUTE_ACCESSORS(WeaponDamage)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+		FAttributeData CriticalChance;
+		ATTRIBUTE_ACCESSORS(CriticalChance)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+		FAttributeData CriticalPower;
+		ATTRIBUTE_ACCESSORS(CriticalPower)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 		FAttributeData ElementalDamage;
 		ATTRIBUTE_ACCESSORS(ElementalDamage)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-		FAttributeData FortitudeDamage;
-		ATTRIBUTE_ACCESSORS(FortitudeDamage)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Elemental")
 		FAttributeData ElemFireDefense;
 		ATTRIBUTE_ACCESSORS(ElemFireDefense)
