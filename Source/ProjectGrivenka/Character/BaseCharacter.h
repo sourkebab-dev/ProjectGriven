@@ -40,9 +40,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float RotationRate;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	FCommonCharacterAnimation CommonAnimationData;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	class ABaseAIController* AIController;
 

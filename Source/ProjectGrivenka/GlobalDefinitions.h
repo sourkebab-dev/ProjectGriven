@@ -6,6 +6,23 @@
 #include "Engine/DataTable.h"
 #include "GlobalDefinitions.generated.h"
 
+UENUM(BlueprintType)
+enum EAIState
+{
+    COMBAT,
+    SEARCH,
+    PATROL,
+    IDLE,
+};
+
+UENUM(BlueprintType)
+enum EHostilityType
+{
+    WILD,
+    HOSTILE,
+    NEUTRAL,
+    ALLY,
+};
 
 UENUM(BlueprintType)
 enum EDamageElementType
@@ -17,7 +34,6 @@ enum EDamageElementType
     ElemElectric        UMETA(DisplayName = "Electric Element Type"),
     ElemEnergy        UMETA(DisplayName = "Energy Element Type"),
 };
-
 
 UENUM(BlueprintType)
 enum EAttackMovementType {
@@ -106,43 +122,6 @@ struct FRotationRate
      float NormalRotationRate;
 };
 
-USTRUCT(BlueprintType)
-struct FCommonCharacterAnimation
-{
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* LKnockLeft;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* LKnockRight;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* LKnockForward;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* LKnockBack;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* MKnockForward;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* MKnockBack;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* HKnockForward;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* HKnockBack;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* ToggleAmpField;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* VentAmp;
-
-};
-
 UENUM(BlueprintType)
 enum EActionList {
     ActionNone       UMETA(DisplayName = "None"),
@@ -155,13 +134,6 @@ enum EActionList {
     ActionDodge UMETA(DisplayName="Dodge"),
     ActionToggleAmpField UMETA(DisplayName="Toggle Amp Field"),
     ActionVentAmp UMETA(DisplayName="Vent Amp"),
-};
-
-UENUM(BlueprintType)
-enum EAnimBPEvents {
-    AnimInterrupt       UMETA(DisplayName = "Interrupt"),
-    AnimDodge        UMETA(DisplayName = "Dodge"),
-    AnimRotationRate        UMETA(DisplayName = "Rotation"),
 };
 
 UENUM(BlueprintType)
