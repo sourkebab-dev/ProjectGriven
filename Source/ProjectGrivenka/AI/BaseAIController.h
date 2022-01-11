@@ -56,6 +56,7 @@ public:
 	virtual void ChangeAIState(TEnumAsByte<EAIState> NewAIState);
 	virtual void OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo);
 	virtual void AddAggroActor(AActor* AggroInstigator, float AggroPoints);
+	virtual void SetAggroTarget(AActor* AggroInstigator);
 	virtual void RemoveActorFromAggroList(AActor* AggroInstigator);
 
 	virtual void BTStart();

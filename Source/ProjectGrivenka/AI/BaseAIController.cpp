@@ -75,19 +75,23 @@ void ABaseAIController::AggroRefresh()
 	TArray<AActor*> Outkeys;
 	float MaxAggroPoint = 0.0f;
 	this->AggroMap.GetKeys(Outkeys);
+	AActor* TempAggroPoint = nullptr;
 	for (int i = 0; i < Outkeys.Num(); i++) {
 		if (this->AggroMap[Outkeys[i]] >= MaxAggroPoint) {
-			this->AggroTarget = Outkeys[i];
+			MaxAggroPoint = this->AggroMap[Outkeys[i]];
+			TempAggroPoint = Outkeys[i];
 		}
 		this->AggroMap[Outkeys[i]] = 0;
 	}
+	this->SetAggroTarget(TempAggroPoint);
 }
 
 void ABaseAIController::OnActorSeen(AActor* SeenActor)
 {
 	if (CheckHostility(SeenActor) && !this->AggroMap.Find(SeenActor)) {
-		if (this->AggroMap.Num() == 0) this->AggroTarget = SeenActor;
+		if (this->AggroMap.Num() == 0) this->SetAggroTarget(SeenActor);
 		this->AddAggroActor(SeenActor , 0);
+		this->ChangeAIState(EAIState::COMBAT);
 		GLog->Log("IsAggroed");
 	}
 }
@@ -126,6 +130,7 @@ void ABaseAIController::ChangeAIState(TEnumAsByte<EAIState> NewAIState)
 	if (this->CurrentAIState == NewAIState) return;
 
 	this->CurrentAIState = NewAIState;
+	this->BlackboardComp->SetValueAsEnum("AIState", NewAIState);
 
 	if (NewAIState == EAIState::COMBAT) {
 		this->GetWorldTimerManager().SetTimer(this->AggroRefreshTimer, this, &ABaseAIController::AggroRefresh, 10, true, 0);
@@ -133,7 +138,7 @@ void ABaseAIController::ChangeAIState(TEnumAsByte<EAIState> NewAIState)
 	else {
 		this->AggroRefreshTimer.Invalidate();
 		this->AggroMap.Empty();
-		this->AggroTarget = nullptr;
+		this->SetAggroTarget(nullptr);
 	}
 
 
@@ -143,7 +148,11 @@ void ABaseAIController::ChangeAIState(TEnumAsByte<EAIState> NewAIState)
 void ABaseAIController::OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo)
 {
 	//sponge: need to find how to generate aggro value
-	if (this->AggroMap.Num() == 0) this->AggroTarget = DamageInstigator;
+	if (this->AggroMap.Num() == 0) {
+		this->SetAggroTarget(DamageInstigator);
+		this->ChangeAIState(EAIState::COMBAT);
+	}
+
 	this->AddAggroActor(DamageInstigator, InDamageInfo.RawPhysicalDamage);
 }
 
@@ -155,6 +164,13 @@ void ABaseAIController::AddAggroActor(AActor* AggroInstigator, float AggroPoints
 	else {
 		this->AggroMap.Add(AggroInstigator, AggroPoints);
 	}
+}
+
+void ABaseAIController::SetAggroTarget(AActor* AggroInstigator)
+{
+	this->AggroTarget = AggroInstigator;
+	this->BlackboardComp->SetValueAsObject("TargetAggro", AggroInstigator);
+	GLog->Log("Settarget");
 }
 
 void ABaseAIController::RemoveActorFromAggroList(AActor* AggroInstigator)
