@@ -7,12 +7,12 @@
 #include "GlobalDefinitions.generated.h"
 
 UENUM(BlueprintType)
-enum EAIState
+enum EAIStateType
 {
-    COMBAT,
-    SEARCH,
-    PATROL,
     IDLE,
+    PATROL,
+    SEARCH,
+    COMBAT,
 };
 
 UENUM(BlueprintType)

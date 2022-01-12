@@ -13,18 +13,19 @@ void ABaseAIController::BeginPlay()
 	Super::BeginPlay();
 	this->BTStart();
 	this->BlackboardComp = this->GetBlackboardComponent();
+	//sponge: bb syncing might need to change ???
+	this->BlackboardComp->SetValueAsEnum("AIState", this->DefaultAIState);
+
 }
 
 
 void ABaseAIController::OnPossess(APawn* PossesedPawn)
 {
 	Super::OnPossess(PossesedPawn);
-	if (this->GetPawn() && this->GetPawn()->Implements<UContextAvailable>()) {
-		IContextAvailable::Execute_GetContext(this->GetPawn(), this->ActorCtx);
-		this->ActorCtx.AIController = this;
-	}
-
 	this->GetWorldTimerManager().SetTimer(this->SightRefreshTimer, this, &ABaseAIController::SightRefresh, 1, true);
+
+	//Note: This is for char switching, (actor already spawned and controlled by player, but later switched as npc)
+	this->OnContextSetup();
 }
 
 void ABaseAIController::OnUnPossess()
@@ -33,8 +34,24 @@ void ABaseAIController::OnUnPossess()
 	this->SightRefreshTimer.Invalidate();
 	this->AggroTarget = nullptr;
 	this->AggroMap.Empty();
+	if (this->ActorCtx.EventBus) {
+		this->ActorCtx.EventBus->DamagedDelegate.RemoveAll(this);
+	}
 }
 
+//sponge: might be a better way to catch the context initialization
+//Right now it's currently being called in each BP Class after context init
+void ABaseAIController::OnContextSetup()
+{
+	if (this->GetPawn() && this->GetPawn()->Implements<UContextAvailable>()) {
+		IContextAvailable::Execute_GetContext(this->GetPawn(), this->ActorCtx);
+		this->ActorCtx.AIController = this;
+	}
+
+	if (!this->ActorCtx.EventBus) return;
+
+	this->ActorCtx.EventBus->DamagedDelegate.AddDynamic(this, &ABaseAIController::OnHit);
+}
 
 void ABaseAIController::SightRefresh()
 {
@@ -42,7 +59,6 @@ void ABaseAIController::SightRefresh()
 	TArray<FHitResult> OutResults;
 	ActorsToIgnore.Add(this->GetPawn());
 
-	GLog->Log("Sightrefresh");
 	if (UKismetSystemLibrary::SphereTraceMulti(this->GetWorld(), this->GetPawn()->GetActorLocation(), this->GetPawn()->GetActorLocation(),  500.0f,  
 		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutResults, true)) {
 		for (int i = 0; i < OutResults.Num(); i++) {
@@ -54,7 +70,6 @@ void ABaseAIController::SightRefresh()
 				ForwardVec.Normalize();
 
 				if (FVector::DotProduct(ForwardVec, ToTarget) > 0.7) {
-					GLog->Log("DrawBlue");
 					UKismetSystemLibrary::DrawDebugSphere(this->GetWorld(), HitActor->GetActorLocation(), 50.0f, 12, FLinearColor::Blue, 5.0f);
 					this->OnActorSeen(HitActor);
 				}
@@ -62,16 +77,12 @@ void ABaseAIController::SightRefresh()
 			}
 		}
 	}
-	else {
-		GLog->Log("DrawRed");
-
-	}
 
 }
 
 void ABaseAIController::AggroRefresh()
 {
-	if (this->CurrentAIState != EAIState::COMBAT) return;
+	if (this->BlackboardComp->GetValueAsEnum("AIState") != EAIStateType::COMBAT) return;
 	TArray<AActor*> Outkeys;
 	float MaxAggroPoint = 0.0f;
 	this->AggroMap.GetKeys(Outkeys);
@@ -91,8 +102,7 @@ void ABaseAIController::OnActorSeen(AActor* SeenActor)
 	if (CheckHostility(SeenActor) && !this->AggroMap.Find(SeenActor)) {
 		if (this->AggroMap.Num() == 0) this->SetAggroTarget(SeenActor);
 		this->AddAggroActor(SeenActor , 0);
-		this->ChangeAIState(EAIState::COMBAT);
-		GLog->Log("IsAggroed");
+		this->ChangeAIState(EAIStateType::COMBAT);
 	}
 }
 
@@ -125,14 +135,15 @@ bool ABaseAIController::CheckHostility(AActor* HostilityToCheck)
 	
 }
 
-void ABaseAIController::ChangeAIState(TEnumAsByte<EAIState> NewAIState)
+void ABaseAIController::ChangeAIState(TEnumAsByte<EAIStateType> NewAIState)
 {
-	if (this->CurrentAIState == NewAIState) return;
+	GLog->Log("ChangeONrun?");
 
-	this->CurrentAIState = NewAIState;
+	if (this->BlackboardComp->GetValueAsEnum("AIState") == NewAIState) return;
+
 	this->BlackboardComp->SetValueAsEnum("AIState", NewAIState);
 
-	if (NewAIState == EAIState::COMBAT) {
+	if (NewAIState == EAIStateType::COMBAT) {
 		this->GetWorldTimerManager().SetTimer(this->AggroRefreshTimer, this, &ABaseAIController::AggroRefresh, 10, true, 0);
 	}
 	else {
@@ -142,15 +153,27 @@ void ABaseAIController::ChangeAIState(TEnumAsByte<EAIState> NewAIState)
 	}
 
 
-	//sponge: run ai state bp
 }
 
 void ABaseAIController::OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo)
 {
+	GLog->Log("hitai");
+	switch (this->BlackboardComp->GetValueAsEnum("AIState"))
+	{
+	case EAIStateType::COMBAT:
+		GLog->Log("CombatState");
+		break;
+	case EAIStateType::IDLE:
+		GLog->Log("Idle");
+		break;
+	default:
+		break;
+	}
 	//sponge: need to find how to generate aggro value
-	if (this->AggroMap.Num() == 0) {
+	if (this->BlackboardComp->GetValueAsEnum("AIState") != EAIStateType::COMBAT) {
+		GLog->Log("??");
 		this->SetAggroTarget(DamageInstigator);
-		this->ChangeAIState(EAIState::COMBAT);
+		this->ChangeAIState(EAIStateType::COMBAT);
 	}
 
 	this->AddAggroActor(DamageInstigator, InDamageInfo.RawPhysicalDamage);
@@ -170,7 +193,6 @@ void ABaseAIController::SetAggroTarget(AActor* AggroInstigator)
 {
 	this->AggroTarget = AggroInstigator;
 	this->BlackboardComp->SetValueAsObject("TargetAggro", AggroInstigator);
-	GLog->Log("Settarget");
 }
 
 void ABaseAIController::RemoveActorFromAggroList(AActor* AggroInstigator)

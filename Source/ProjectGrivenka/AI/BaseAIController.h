@@ -28,10 +28,10 @@ public:
 	FCharacterContext ActorCtx;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TEnumAsByte<EAIState> CurrentAIState;
+	TEnumAsByte<EAIStateType> DefaultAIState = EAIStateType::IDLE;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TEnumAsByte<EHostilityType> HostilityType;
+	TEnumAsByte<EHostilityType> HostilityType = EHostilityType::NEUTRAL;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<AActor*, float> AggroMap;
@@ -49,11 +49,15 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UFUNCTION(BlueprintCallable)
+	void OnContextSetup();
+
 	virtual void SightRefresh();
 	virtual void AggroRefresh();
 	virtual void OnActorSeen(AActor* SeenActor);
 	virtual bool CheckHostility(AActor* HostilityToCheck);
-	virtual void ChangeAIState(TEnumAsByte<EAIState> NewAIState);
+	virtual void ChangeAIState(TEnumAsByte<EAIStateType> NewAIState);
+	UFUNCTION()
 	virtual void OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo);
 	virtual void AddAggroActor(AActor* AggroInstigator, float AggroPoints);
 	virtual void SetAggroTarget(AActor* AggroInstigator);
