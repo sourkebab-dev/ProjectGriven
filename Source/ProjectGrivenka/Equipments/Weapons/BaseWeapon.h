@@ -24,6 +24,7 @@ public:
 	TArray<AActor*> Hitlist;
 
 	//SPONGE: Might change to something like character system
+	//sponge: Might need to use fweaponinfo instead of each attributes like this
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float FortitudeDamage;
 
@@ -63,6 +64,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGuid EquipmentId;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FBlockMontages BlockMontages;
 
 	UFUNCTION(BlueprintCallable)
 	void ActivateCollision();

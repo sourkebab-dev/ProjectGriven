@@ -18,4 +18,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static float DegreesBetweenVectors(FVector A, FVector B);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static bool CheckBlockDirection(FVector InstigatorLocation, FVector ReceiverLocation, FVector ReceiverForward);
+
 };

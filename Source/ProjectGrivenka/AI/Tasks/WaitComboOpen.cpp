@@ -18,6 +18,7 @@ EBTNodeResult::Type UWaitComboOpen::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	if (!AIPawn->Implements<UContextAvailable>()) return EBTNodeResult::Failed;
 	IContextAvailable::Execute_GetContext(AIPawn, this->CharCtx);
 	if (!this->CharCtx.EventBus) return EBTNodeResult::Failed;
+	this->CharCtx.EventBus->AnimDelegate.RemoveDynamic(this, &UWaitComboOpen::OnOpenComboTriggered);
 	this->CharCtx.EventBus->AnimDelegate.AddDynamic(this, &UWaitComboOpen::OnOpenComboTriggered);
 	this->GetWorld()->GetTimerManager().SetTimer(this->ForceExitTimer, this, &UWaitComboOpen::OnForceExitTimer, this->DefaultExitTime);
 	return EBTNodeResult::InProgress;

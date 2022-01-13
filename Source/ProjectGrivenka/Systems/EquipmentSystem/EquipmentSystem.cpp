@@ -98,3 +98,8 @@ FAttackValues UEquipmentSystem::GetNextAttackValue(TEnumAsByte<EAttackMovementTy
 
 	return AttackList[AtkIndex];
 }
+
+FBlockMontages UEquipmentSystem::GetBlockMontages()
+{
+	return this->WeaponR->BlockMontages;
+}

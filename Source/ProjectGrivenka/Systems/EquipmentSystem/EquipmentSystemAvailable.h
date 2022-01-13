@@ -4,30 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "ProjectGrivenka/Equipments/EquipmentDefinitions.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
 #include "EquipmentSystemAvailable.generated.h"
 
 
-USTRUCT(BlueprintType)
-struct FPersistedEquipmentItem
-{
-	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGuid EquipmentId;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName VariantId;
-};
-
-USTRUCT(BlueprintType)
-struct FPersistedEquipments
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPersistedEquipmentItem WeaponInfo;
-};
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
@@ -55,4 +37,6 @@ public:
 	void GetNextMainAttack(enum EAttackMovementType InMovementType, FAttackValues InCurrentAttackValues, FAttackValues& OutNextAttack);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	float GetCurrentAttackStaminaUsage(FAttackValues InCurrentAttackValues);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void GetBlockMontages(FBlockMontages& OutBlockMontages);
 };

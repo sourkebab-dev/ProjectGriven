@@ -26,10 +26,6 @@ void UMotionState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 		}
 	}
 
-	if (Action == EActionList::ActionHeavyAttack && EventType == IE_Pressed && IsStaminaAllowed) {
-		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Attack"), EActionList::ActionHeavyAttack, IE_Pressed);
-	}
-
 	if (Action == EActionList::ActionToggleAmpField && EventType == IE_Pressed) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.ToggleAmp"), EActionList::ActionToggleAmpField, IE_Pressed);
 	}
@@ -41,6 +37,12 @@ void UMotionState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 
 	if (Action == EActionList::ActionInteract && EventType == IE_Pressed) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Interact"), EActionList::ActionInteract, IE_Pressed);
+	}
+
+	GLog->Log("ActionIn");
+	if (Action == EActionList::ActionBlock && EventType == IE_Pressed) {
+		GLog->Log("BLK");
+		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Block"), EActionList::ActionBlock, IE_Pressed);
 	}
 }
 

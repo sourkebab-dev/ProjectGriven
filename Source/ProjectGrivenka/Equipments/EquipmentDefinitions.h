@@ -4,10 +4,49 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
 #include "EquipmentDefinitions.generated.h"
 
+
+USTRUCT(BlueprintType)
+struct FPersistedEquipmentItem
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGuid EquipmentId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName VariantId;
+};
+
+USTRUCT(BlueprintType)
+struct FPersistedEquipments
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FPersistedEquipmentItem WeaponInfo;
+};
+
+USTRUCT(BlueprintType)
+struct FBlockMontages
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UAnimMontage* BlockMontage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UAnimMontage* BlockHitMontage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UAnimMontage* BlockParryMontage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UAnimMontage* BlockPushMontage;
+
+};
 
 USTRUCT(BlueprintType)
 struct FEquipmentInfo
@@ -28,7 +67,6 @@ struct FEquipmentInfo
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UTexture2D* EquipmentIcon;
-
 };
 
 USTRUCT(BlueprintType)
@@ -42,6 +80,10 @@ struct FWeaponInfo
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Values")
     float RawDamage;
 
+    //Note: Block Damage Absorption
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Values")
+    float DamageAbsorption;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Values")
     float FortitudeDamage;
 
@@ -53,6 +95,9 @@ struct FWeaponInfo
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Values")
     TEnumAsByte<EDamageElementType> ElementType;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
+    FBlockMontages BlockMontages;
 };
 
 USTRUCT(BlueprintType)

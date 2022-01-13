@@ -24,6 +24,8 @@ protected:
 	void ControlMoveRight(float Value);
 	void ControlAttack();
 	void ControlAttackRelease();
+	void ControlBlock();
+	void ControlBlockRelease();
 	void ControlToggleAmpField();
 	void ControlUseItem();
 	void ControlVentAmp();

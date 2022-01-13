@@ -30,6 +30,8 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAction("Interact", IE_Pressed, this, &UControlSystem::ControlInteract);
 	InputComp->BindAction("Attack", IE_Pressed, this, &UControlSystem::ControlAttack);
 	InputComp->BindAction("Attack", IE_Released, this, &UControlSystem::ControlAttackRelease);
+	InputComp->BindAction("Block", IE_Pressed, this, &UControlSystem::ControlBlock);
+	InputComp->BindAction("Block", IE_Released, this, &UControlSystem::ControlBlockRelease);
 	InputComp->BindAction("Dodge", IE_Pressed, this, &UControlSystem::ControlDodge);
 	InputComp->BindAction("ToggleAmpField", IE_Pressed, this, &UControlSystem::ControlToggleAmpField);
 	InputComp->BindAction("VentAmp", IE_Pressed, this, &UControlSystem::ControlVentAmp);
@@ -52,6 +54,8 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 	InputComp->RemoveActionBinding("Interact", IE_Pressed);
 	InputComp->RemoveActionBinding("Attack", IE_Pressed);
 	InputComp->RemoveActionBinding("Attack", IE_Released);
+	InputComp->RemoveActionBinding("Block", IE_Pressed);
+	InputComp->RemoveActionBinding("Block", IE_Released);
 	InputComp->RemoveActionBinding("Dodge", IE_Pressed);
 	InputComp->RemoveActionBinding("ToggleAmpField", IE_Pressed);
 	InputComp->RemoveActionBinding("VentAmp", IE_Pressed);
@@ -120,6 +124,19 @@ void UControlSystem::ControlAttack()
 void UControlSystem::ControlAttackRelease()
 {
 	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
+}
+
+void UControlSystem::ControlBlock()
+{
+	GLog->Log("BLKPrs");
+
+	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionBlock, IE_Pressed);
+}
+
+void UControlSystem::ControlBlockRelease()
+{
+	GLog->Log("BLKrls");
+	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionBlock, IE_Released);
 }
 
 void UControlSystem::ControlToggleAmpField()

@@ -43,4 +43,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	virtual FAttackValues GetNextAttackValue(TEnumAsByte<enum EAttackMovementType> InMovementType, FAttackValues InCurrentAttack);
+
+	UFUNCTION(BlueprintCallable)
+	FBlockMontages GetBlockMontages();
 };

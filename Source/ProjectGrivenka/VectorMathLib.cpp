@@ -10,3 +10,11 @@ float UVectorMathLib::DegreesBetweenVectors(FVector A, FVector B)
 	float Sign = FMath::Sign(FVector::CrossProduct(A, B).Z);
 	return Sign * UKismetMathLibrary::DegAcos(DotResult);
 }
+
+bool UVectorMathLib::CheckBlockDirection(FVector InstigatorLocation, FVector ReceiverLocation, FVector ReceiverForward)
+{
+	FVector ToAttackerVector = InstigatorLocation - ReceiverLocation;
+	ToAttackerVector.Normalize();
+	ReceiverForward.Normalize();
+	return FVector::DotProduct(ToAttackerVector, ReceiverForward) >= 0;
+}

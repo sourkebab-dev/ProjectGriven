@@ -42,6 +42,10 @@ void UAttackState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 	if (Action == EActionList::ActionDodge && EventType == IE_Pressed && this->StatesComp->CrossStateData.IsInterruptable ) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Dodge"), EActionList::ActionDodge, IE_Pressed);
 	}
+
+	if (Action == EActionList::ActionBlock && EventType == IE_Pressed && this->StatesComp->CrossStateData.IsInterruptable) {
+		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Block"), EActionList::ActionBlock, IE_Pressed);
+	}
 }
 
 
