@@ -99,7 +99,8 @@ FAttackValues UEquipmentSystem::GetNextAttackValue(TEnumAsByte<EAttackMovementTy
 	return AttackList[AtkIndex];
 }
 
-FBlockMontages UEquipmentSystem::GetBlockMontages()
+void UEquipmentSystem::GetBlockInfo(FBlockInfo& OutBlockInfo, float& OutDamageAbsorption)
 {
-	return this->WeaponR->BlockMontages;
+	OutBlockInfo = this->WeaponR->BlockInfo;
+	OutDamageAbsorption = this->WeaponR->RawDamageAbsorption;
 }

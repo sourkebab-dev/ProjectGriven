@@ -3,6 +3,7 @@
 
 #include "BlockState.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
@@ -16,11 +17,16 @@ void UBlockState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAction
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
 	this->CharacterContext.EventBus->DamagedDelegate.AddDynamic(this, &UBlockState::OnReceiveHit);
 
-	FBlockMontages BlockMontages;
-	IEquipmentSystemAvailable::Execute_GetBlockMontages(this->CharacterContext.CharacterActor, BlockMontages);
-	this->CharacterContext.CharacterAnim->Montage_Play(BlockMontages.BlockMontage);
+	FBlockInfo BlockInfo;
+	float DamageAbsorption;
+	IEquipmentSystemAvailable::Execute_GetBlockInfo(this->CharacterContext.CharacterActor, BlockInfo, DamageAbsorption);
+	this->CharacterContext.CharacterAnim->Montage_Play(BlockInfo.BlockMontage);
 	this->IsParry = true;
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->ParryTimer, this, &UBlockState::InvalidateParry, PARRYTIME);
+	
+	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_Parry", 0, false);
+	}
 }
 
 void UBlockState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
@@ -44,6 +50,8 @@ void UBlockState::OnStateExit_Implementation()
 	this->CharacterContext.EventBus->DamagedDelegate.RemoveDynamic(this, &UBlockState::OnReceiveHit);
 	this->CharacterContext.CharacterAnim->StopAllMontages(0.1);
 	this->ParryTimer.Invalidate();
+	ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CharacterContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Block"));
+	ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CharacterContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Parry"));
 }
 
 void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo)
@@ -52,14 +60,15 @@ void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo
 	this->DamageInfo = InDamageInfo;
 
 	if (UVectorMathLib::CheckBlockDirection(InHitInstigator->GetActorLocation(), this->CharacterContext.CharacterActor->GetActorLocation(), this->CharacterContext.CharacterActor->GetActorForwardVector())) {
-		FBlockMontages BlockMontages;
-		IEquipmentSystemAvailable::Execute_GetBlockMontages(this->CharacterContext.CharacterActor, BlockMontages);
+		FBlockInfo BlockInfo;
+		float DamageAbsorption;
+		IEquipmentSystemAvailable::Execute_GetBlockInfo(this->CharacterContext.CharacterActor, BlockInfo, DamageAbsorption);
 
 		if (this->IsParry) {
-			this->CharacterContext.CharacterAnim->Montage_JumpToSection("Parry", BlockMontages.BlockMontage);
+			this->CharacterContext.CharacterAnim->Montage_JumpToSection("Parry", BlockInfo.BlockMontage);
 		}
 		else {
-			this->CharacterContext.CharacterAnim->Montage_JumpToSection("Hit", BlockMontages.BlockMontage);
+			this->CharacterContext.CharacterAnim->Montage_JumpToSection("Hit", BlockInfo.BlockMontage);
 		}
 	}
 	else {
@@ -73,7 +82,13 @@ void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo
 void UBlockState::InvalidateParry()
 {
 	this->IsParry = false;
-	//sponge: disable ucharsys parry eff
+	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CharacterContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Parry"));
+		FBlockInfo BlockInfo;
+		float DamageAbsorption;
+		IEquipmentSystemAvailable::Execute_GetBlockInfo(this->CharacterContext.CharacterActor, BlockInfo, DamageAbsorption);
+		ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_RaiseShield", DamageAbsorption, true);
+	}
 }
 
 bool UBlockState::StateValidation_Implementation()

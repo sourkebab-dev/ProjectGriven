@@ -62,6 +62,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
 		FAttributeData Defense;
 		ATTRIBUTE_ACCESSORS(Defense)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
+		FAttributeData DamageAbsorption;
+		ATTRIBUTE_ACCESSORS(DamageAbsorption)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 		FAttributeData WeaponDamage;
 		ATTRIBUTE_ACCESSORS(WeaponDamage)

@@ -45,5 +45,5 @@ public:
 	virtual FAttackValues GetNextAttackValue(TEnumAsByte<enum EAttackMovementType> InMovementType, FAttackValues InCurrentAttack);
 
 	UFUNCTION(BlueprintCallable)
-	FBlockMontages GetBlockMontages();
+	void GetBlockInfo(FBlockInfo& OutBlockInfo, float& OutDamageAbsorption);
 };

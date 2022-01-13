@@ -45,6 +45,8 @@ public:
 	void RemoveEffectsById(FName EffectId);
 	UFUNCTION(BlueprintCallable)
 	void DeactivateAllEffects();
+	UFUNCTION(BlueprintCallable)
+	UBaseEffect* FindEffectsByTag(FGameplayTag EffectTag);
 
 	//Sponge: maybe should use events for all of these?
 	#pragma region Primitive GetterSetters (should be called internally in the system)

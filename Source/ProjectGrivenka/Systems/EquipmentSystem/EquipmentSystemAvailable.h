@@ -38,5 +38,5 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	float GetCurrentAttackStaminaUsage(FAttackValues InCurrentAttackValues);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void GetBlockMontages(FBlockMontages& OutBlockMontages);
+	void GetBlockInfo(FBlockInfo& OutBlockInfo, float& OutDamageAbsorption);
 };

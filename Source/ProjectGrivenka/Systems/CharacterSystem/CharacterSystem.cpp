@@ -128,6 +128,20 @@ void UCharacterSystem::DeactivateAllEffects()
 	}
 }
 
+UBaseEffect* UCharacterSystem::FindEffectsByTag(FGameplayTag EffectTag)
+{
+	UBaseEffect* Effect = nullptr;
+	for (int i = 0; i < this->ActiveEffects.Num(); i++)
+	{
+		if (this->ActiveEffects[i]->EffectInfo.EffectTags.HasTag(EffectTag))
+		{
+			Effect = this->ActiveEffects[i];
+		}
+	}
+
+	return Effect;
+}
+
 float UCharacterSystem::GetAttributeBaseValue(TEnumAsByte<EAttributeCode> InAttributeCode)
 {
 	switch (InAttributeCode) {
@@ -198,6 +212,8 @@ float UCharacterSystem::GetAttributeCurrentValue(TEnumAsByte<EAttributeCode> InA
 			return this->Attributes->GetElemIceDefense();
 		case EAttributeCode::ATT_ElemPoisonDefense:
 			return this->Attributes->GetElemPoisonDefense();
+		case EAttributeCode::ATT_DamageAbsorption:
+			return this->Attributes->GetDamageAbsorption();
 		default:
 			return 0.0f;
 	}

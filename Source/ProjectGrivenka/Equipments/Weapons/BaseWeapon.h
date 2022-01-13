@@ -38,6 +38,9 @@ public:
 	float ElementalDamage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float RawDamageAbsorption;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TEnumAsByte<EDamageElementType> ElementType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
@@ -65,7 +68,7 @@ public:
 	FGuid EquipmentId;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FBlockMontages BlockMontages;
+	FBlockInfo BlockInfo;
 
 	UFUNCTION(BlueprintCallable)
 	void ActivateCollision();

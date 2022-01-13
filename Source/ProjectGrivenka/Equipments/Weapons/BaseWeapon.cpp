@@ -50,18 +50,12 @@ void ABaseWeapon::LoadData(FWeaponInfo InWeaponInfo)
 	this->RawDamage = InWeaponInfo.RawDamage;
 	this->FortitudeDamage = InWeaponInfo.FortitudeDamage;
 	this->WeaponTypeClass = InWeaponInfo.GeneralInfo.EquipmentBaseClass;
-	
-	if (InWeaponInfo.BlockMontages.BlockHitMontage) {
-		this->BlockMontages.BlockHitMontage = InWeaponInfo.BlockMontages.BlockHitMontage;
+
+	if (InWeaponInfo.BlockInfo.BlockMontage) {
+		this->BlockInfo.BlockMontage = InWeaponInfo.BlockInfo.BlockMontage;
 	}
-	if (InWeaponInfo.BlockMontages.BlockMontage) {
-		this->BlockMontages.BlockMontage = InWeaponInfo.BlockMontages.BlockMontage;
-	}
-	if (InWeaponInfo.BlockMontages.BlockParryMontage) {
-		this->BlockMontages.BlockParryMontage = InWeaponInfo.BlockMontages.BlockParryMontage;
-	}
-	if (InWeaponInfo.BlockMontages.BlockPushMontage) {
-		this->BlockMontages.BlockPushMontage = InWeaponInfo.BlockMontages.BlockPushMontage;
+	if (InWeaponInfo.BlockInfo.BlockPushMontage) {
+		this->BlockInfo.BlockPushMontage = InWeaponInfo.BlockInfo.BlockPushMontage;
 	}
 
 	//Sponge: Should i save variant id to weaponinfo?

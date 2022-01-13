@@ -30,18 +30,12 @@ struct FPersistedEquipments
 };
 
 USTRUCT(BlueprintType)
-struct FBlockMontages
+struct FBlockInfo
 {
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UAnimMontage* BlockMontage;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* BlockHitMontage;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    UAnimMontage* BlockParryMontage;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UAnimMontage* BlockPushMontage;
@@ -96,8 +90,8 @@ struct FWeaponInfo
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Values")
     TEnumAsByte<EDamageElementType> ElementType;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animations")
-    FBlockMontages BlockMontages;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Blocks")
+    FBlockInfo BlockInfo;
 };
 
 USTRUCT(BlueprintType)

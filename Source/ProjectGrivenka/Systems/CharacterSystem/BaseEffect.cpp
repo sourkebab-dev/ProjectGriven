@@ -180,6 +180,9 @@ void UBaseEffect::BasicSumExecute(TEnumAsByte<EAttributeCode> InAttributeCode, f
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->GetDefense() + InValue);
 		break;
+	case EAttributeCode::ATT_DamageAbsorption:
+		ReceiverComp->Attributes->SetDamageAbsorption(ReceiverComp->Attributes->GetDamageAbsorption() + InValue);
+		break;
 	default:
 		break;
 	}
@@ -230,6 +233,9 @@ void UBaseEffect::BasicMultiplyExecute(TEnumAsByte<EAttributeCode> InAttributeCo
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->GetDefense() * InValue);
 		break;
+	case EAttributeCode::ATT_DamageAbsorption:
+		ReceiverComp->Attributes->SetDamageAbsorption(ReceiverComp->Attributes->GetDamageAbsorption() * InValue);
+		break;
 	default:
 		break;
 	}
@@ -279,6 +285,9 @@ void UBaseEffect::BasicOverwriteExecute(TEnumAsByte<EAttributeCode> InAttributeC
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(InValue);
 		break;
+	case EAttributeCode::ATT_DamageAbsorption:
+		ReceiverComp->Attributes->SetDamageAbsorption(InValue);
+		break;
 	default:
 		break;
 	}
@@ -327,6 +336,9 @@ void UBaseEffect::RevertSumExecute(TEnumAsByte<EAttributeCode> InAttributeCode, 
 		break;
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->GetDefense() - InValue);
+		break;
+	case EAttributeCode::ATT_DamageAbsorption:
+		ReceiverComp->Attributes->SetDamageAbsorption(ReceiverComp->Attributes->GetDamageAbsorption() - InValue);
 		break;
 	default:
 		break;
@@ -378,6 +390,9 @@ void UBaseEffect::RevertMultiplyExecute(TEnumAsByte<EAttributeCode> InAttributeC
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->GetDefense() / InValue);
 		break;
+	case EAttributeCode::ATT_DamageAbsorption:
+		ReceiverComp->Attributes->SetDamageAbsorption(ReceiverComp->Attributes->GetDamageAbsorption() / InValue);
+		break;
 	default:
 		break;
 	}
@@ -426,6 +441,9 @@ void UBaseEffect::RevertOverwriteExecute(TEnumAsByte<EAttributeCode> InAttribute
 		break;
 	case EAttributeCode::ATT_Defense:
 		ReceiverComp->Attributes->SetDefense(ReceiverComp->Attributes->Defense.BaseValue);
+		break;
+	case EAttributeCode::ATT_DamageAbsorption:
+		ReceiverComp->Attributes->SetDamageAbsorption(ReceiverComp->Attributes->DamageAbsorption.BaseValue);
 		break;
 	default:
 		break;

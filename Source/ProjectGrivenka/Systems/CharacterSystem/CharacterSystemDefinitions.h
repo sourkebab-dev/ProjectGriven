@@ -35,6 +35,7 @@ enum EAttributeCode {
     ATT_ElemElectricPooledDamage        UMETA(DisplayName = "Electric Pooled Damage Attribute"),
     ATT_ElemEnergyPooledDamage      UMETA(DisplayName = "Energy Pooled Damage Attribute"),
     ATT_ElemPoisonPooledDamage      UMETA(DisplayName = "Poison Pooled Damage Attribute"),
+    ATT_DamageAbsorption      UMETA(DisplayName = "Damage Absorption Attribute"),
 };
 
 UENUM(BlueprintType)
