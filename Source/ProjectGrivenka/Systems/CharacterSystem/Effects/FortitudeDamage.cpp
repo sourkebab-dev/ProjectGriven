@@ -20,8 +20,10 @@ void UFortitudeDamage::OnExecuteEffect()
 	UCharacterSystem* ReceiverComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectReceiver);
 	float CurrentFortitude = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Fortitude);
 	float CurrentMaxFortitude = ReceiverComp->GetAttributeMaxValue(EAttributeCode::ATT_Fortitude);
-	if (CurrentFortitude <= 0) ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Fortitude, CurrentMaxFortitude);
-
+	if (CurrentFortitude <= 0) {
+		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Fortitude, CurrentMaxFortitude);
+		CurrentFortitude = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Fortitude);
+	}
 
 	float FortitudeDamage = 0.0;
 	switch (this->DamageInfo.ImpactType) {
