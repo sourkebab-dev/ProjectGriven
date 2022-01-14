@@ -8,6 +8,7 @@
 #include "Effects/AttributeRegenOvertime.h"
 #include "Effects/DepleteStamina.h"
 #include "Effects/WeaponDamage.h"
+#include "Effects/FortitudeDamage.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 
@@ -79,7 +80,7 @@ void UCharacterSystem::AddEffect(UBaseEffect* InEffect)
 				EGameplayContainerMatchType::Any
 			);
 			if (TagMatch) {
-				this->RemoveEffect(this->ActiveEffects[i]);
+				this->RemoveEffect(this->ActiveEffects[i], InEffect->EffectInfo.IsForceCancelOnAdd);
 			}
 		}
 	}
@@ -88,32 +89,33 @@ void UCharacterSystem::AddEffect(UBaseEffect* InEffect)
 	InEffect->OnActivated();
 }
 
-void UCharacterSystem::RemoveEffect(UBaseEffect* InEffect)
+void UCharacterSystem::RemoveEffect(UBaseEffect* InEffect, bool isForceRemove)
 {
-	InEffect->OnDeactivated();
+	if (isForceRemove) InEffect->OnForceInterrupt();
+	else InEffect->OnDeactivated();
 	this->ActiveEffects.Remove(InEffect);
 }
 
-void UCharacterSystem::RemoveEffectsByTag(FGameplayTag EffectTag)
+void UCharacterSystem::RemoveEffectsByTag(FGameplayTag EffectTag, bool isForceRemove)
 {
 	for (int i = 0; i < this->ActiveEffects.Num() ; i++)
 	{
 		UBaseEffect* Effect = this->ActiveEffects[i];
 		if (Effect->EffectInfo.EffectTags.HasTag(EffectTag))
 		{
-			this->RemoveEffect(Effect);
+			this->RemoveEffect(Effect, isForceRemove);
 		}
 	}
 }
 
-void UCharacterSystem::RemoveEffectsById(FName EffectId)
+void UCharacterSystem::RemoveEffectsById(FName EffectId, bool isForceRemove)
 {
 	for (int i = 0; i < this->ActiveEffects.Num(); i++)
 	{
 		UBaseEffect* Effect = this->ActiveEffects[i];
 		if (Effect->EffectInfo.EffectId == EffectId)
 		{
-			this->RemoveEffect(Effect);
+			this->RemoveEffect(Effect, isForceRemove);
 		}
 	}
 }
@@ -285,6 +287,13 @@ void UCharacterSystem::InitEffectReceiveHit(AActor* EffectInstigator, FDamageInf
 	UWeaponDamage* HitDamage = NewObject<UWeaponDamage>();
 	HitDamage->InitOverloaded(EffectInstigator, this->GetOwner(), InDamageInfo);
 	this->AddEffect(HitDamage);
+}
+
+void UCharacterSystem::InitEffectForitudeDamage(AActor* EffectInstigator, FDamageInfo InDamageInfo)
+{
+	UFortitudeDamage* FortitudeDamage = NewObject<UFortitudeDamage>();
+	FortitudeDamage->InitOverloaded(EffectInstigator, this->GetOwner(), InDamageInfo);
+	this->AddEffect(FortitudeDamage);
 }
 
 

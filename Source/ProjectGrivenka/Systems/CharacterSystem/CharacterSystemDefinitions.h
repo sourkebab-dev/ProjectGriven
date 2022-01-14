@@ -111,6 +111,9 @@ struct FEffectInfo
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Info")
         FGameplayTagContainer CancelledEffects;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Info")
+        bool IsForceCancelOnAdd; //check whether cancel tag would forcefully cancels tagged effects
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Timing")
         TEnumAsByte<EEffectTimeType> TimeType;
 

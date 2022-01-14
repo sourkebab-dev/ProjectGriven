@@ -35,6 +35,8 @@ class PROJECTGRIVENKA_API UKnockedState : public UBaseState
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsStaggeredOnEmptyFortitude;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float TotalPushTime = 0.25;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float PushDistanceMultiplier = 100;

@@ -2,8 +2,6 @@
 
 
 #include "WeaponDamage.h"
-#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
-#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
@@ -27,7 +25,6 @@ void UWeaponDamage::OnExecuteEffect() {
 
 	float ReceiverDefense = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Defense);
 	float ReceiverHealth = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Health);
-	float ReceiverFortude = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Fortitude);
 	float ReceiverAmp = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Amp);
 	float ReceiverDamageAbsorption = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_DamageAbsorption);
 	float ReceiverStamina = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Stamina);
@@ -77,41 +74,22 @@ void UWeaponDamage::OnExecuteEffect() {
 		CalculatedElementalDamage = RawElementalDamage;
 	}
 	
-	//Fortitude Damage 
-	//sponge: need to reset by debounce need to recheck the numbers
-	float FortitudeDamage = 0.0;
-	switch (this->DamageInfo.ImpactType)
-	{
-		case EDamageImpactType::DI_LOW:
-			FortitudeDamage = 50;
-			break;
-		case EDamageImpactType::DI_MEDIUM:
-			FortitudeDamage = 100;
-			break;
-		case EDamageImpactType::DI_HIGH:
-			FortitudeDamage = 200;
-			break;
-		default:
-			break;
-	}
-	
+
 	//sponge: might need to make a common func for defense calculation
 	float TotalPhysicalDamage = CalculatedPhysicalDamage ? CalculatedPhysicalDamage * (CalculatedPhysicalDamage / (CalculatedPhysicalDamage + ReceiverDefense)) : 0.0;
 	float TotalElementalDamage = CalculatedElementalDamage > 0.0 ? CalculatedElementalDamage * (CalculatedElementalDamage / (CalculatedElementalDamage + ReceiverElementalDefense)) : 0.0;
 	
 	//Shield Damage (elementals are not negated by shield)
 	TotalPhysicalDamage = TotalPhysicalDamage - (TotalPhysicalDamage * (ReceiverDamageAbsorption / 100));
-	FortitudeDamage = FortitudeDamage - (FortitudeDamage * (ReceiverDamageAbsorption / 100));
 	float AccumulatedDamage = TotalPhysicalDamage + TotalElementalDamage;
 	
 	if (ReceiverComp->FindEffectsByTag(FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Block"))) {
 		//Sponge: need to recheck numbers
-		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Stamina, ReceiverStamina - FortitudeDamage);
+		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Stamina, ReceiverStamina - 50);
 	}
 
 	//sponge: might need amp def
 	ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Health, ReceiverHealth - AccumulatedDamage);
-	ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Fortitude, ReceiverFortude - FortitudeDamage);
 	GLog->Log("ReceiverHealth");
 	GLog->Log(FString::SanitizeFloat(ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Health)));
 }

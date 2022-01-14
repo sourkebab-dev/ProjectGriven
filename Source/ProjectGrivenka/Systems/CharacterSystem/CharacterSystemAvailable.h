@@ -95,6 +95,9 @@ public:
 	void InitEffectReceiveHit(AActor* EffectInstigator, FDamageInfo InDamageInfo);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void InitEffectFortitudeDamage(AActor* EffectInstigator, FDamageInfo InDamageInfo);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void RemoveEffectByTag(FGameplayTag EffectTag);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

@@ -38,29 +38,23 @@ public:
 	virtual void Init(AActor* NewEffectInstigator, AActor* NewEffectReceiver, FEffectInfo InEffectInfo);
 	UFUNCTION(BlueprintCallable)
 	virtual void OnActivated();
-	//Force delete effect without turning off
 	UFUNCTION(BlueprintCallable)
 	virtual void OnForceInterrupt();
-	//Turning off without deleting effects
 	UFUNCTION(BlueprintCallable)
 	virtual void OnDeactivated();
 	UFUNCTION(BlueprintCallable)
 	virtual void OnDurationTick();
 	UFUNCTION(BlueprintCallable)
-	virtual void OnTick();
+	virtual void OnPreExecuteEffect(); //h
 	UFUNCTION(BlueprintCallable)
-	virtual void OnPreExecuteEffect();
+	virtual void OnExecuteEffect(); //main effect logic
 	UFUNCTION(BlueprintCallable)
-	virtual void OnExecuteEffect();
-	//turn off process: post & onend
+	virtual void OnPostExecuteEffect(); //cycle to handle an "after" effect
 	UFUNCTION(BlueprintCallable)
-	virtual void OnPostExecuteEffect();
-	UFUNCTION(BlueprintCallable)
-	virtual void OnEnded();
+	virtual void OnEnded(); // cycle to remove handlers like timers, delegates etc
 	UFUNCTION(BlueprintCallable)
 	void RemoveSelf();
-	UFUNCTION(BlueprintCallable)
-	void UpdateEffectInfo(FEffectInfo InEffectInfo);
+
 protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void BasicSumExecute(TEnumAsByte<EAttributeCode> InAttributeCode, float InValue);

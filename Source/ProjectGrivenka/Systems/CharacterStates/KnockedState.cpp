@@ -5,6 +5,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
+#include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 
 void UKnockedState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
@@ -27,7 +28,6 @@ void UKnockedState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActi
 	this->PooledTime = 0.0;
 	this->PushTargetLocation = FVector::ZeroVector;
 	this->PushStartLocation = FVector::ZeroVector;
-	GEngine->AddOnScreenDebugMessage(22, 1, FColor::Yellow, "hit");
 	this->StatesComp->CrossStateData.IsInterruptable = false;
 	if (!this->CharacterContext.CharacterAnim) { this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Pressed); return; }
 	this->StartHitReact();
@@ -49,7 +49,26 @@ void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageIn
 {
 	this->HitInstigator = InHitInstigator;
 	this->DamageInfo = InDamageInfo;
-	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
+
+	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->CharacterContext.CharacterActor, InHitInstigator, this->DamageInfo);
+		float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Fortitude);
+		float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Fortitude);
+
+
+		if (CurrentFortitude <= 0 && this->IsStaggeredOnEmptyFortitude) {
+			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Staggered"), EActionList::ActionNone, EInputEvent::IE_Released);
+		}
+		else if (CurrentFortitude/MaxFortitude < 0.6) {
+			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
+		}
+		else {
+			//Sponge: need to add jitter effect
+		}
+	}
+	else {
+		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
+	}
 }
 
 void UKnockedState::StartHitReact()

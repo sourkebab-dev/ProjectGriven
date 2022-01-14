@@ -38,11 +38,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AddEffect(class UBaseEffect* InEffect);
 	UFUNCTION(BlueprintCallable)
-	void RemoveEffect(class UBaseEffect* InEffect);
+	void RemoveEffect(class UBaseEffect* InEffect, bool isForceRemove = false);
 	UFUNCTION(BlueprintCallable)
-	void RemoveEffectsByTag(FGameplayTag EffectTag);
+	void RemoveEffectsByTag(FGameplayTag EffectTag , bool isForceRemove = false);
 	UFUNCTION(BlueprintCallable)
-	void RemoveEffectsById(FName EffectId);
+	void RemoveEffectsById(FName EffectId, bool isForceRemove = false);
 	UFUNCTION(BlueprintCallable)
 	void DeactivateAllEffects();
 	UFUNCTION(BlueprintCallable)
@@ -72,6 +72,8 @@ public:
 	void InitEffectDepleteStamina(AActor* EffectInstigator, float InValue);
 	UFUNCTION(BlueprintCallable)
 	void InitEffectReceiveHit(AActor* EffectInstigator, FDamageInfo InDamageInfo);
+	UFUNCTION(BlueprintCallable)
+	void InitEffectForitudeDamage(AActor* EffectInstigator, FDamageInfo InDamageInfo);
 	#pragma endregion
 		
 };

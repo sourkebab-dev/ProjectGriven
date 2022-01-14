@@ -14,12 +14,6 @@ void UBaseEffect::Init(AActor* NewEffectInstigator, AActor* NewEffectReceiver, F
 	this->EffectInfo = InEffectInfo;
 }
 
-void UBaseEffect::UpdateEffectInfo(FEffectInfo InEffectInfo)
-{
-	//In case where an effect is generated inside initoverloaded & the effect value is based on effect receiver/instigator
-	this->EffectInfo = InEffectInfo;
-}
-
 void UBaseEffect::OnActivated()
 {
 	this->OnPreExecuteEffect();
@@ -37,7 +31,7 @@ void UBaseEffect::OnActivated()
 	}
 
 	if (this->EffectInfo.TickRate > 0) {
-		this->EffectReceiver->GetWorld()->GetTimerManager().SetTimer(this->TickHandler, this, &UBaseEffect::OnTick, this->EffectInfo.TickRate, true, -1);
+		this->EffectReceiver->GetWorld()->GetTimerManager().SetTimer(this->TickHandler, this, &UBaseEffect::OnExecuteEffect, this->EffectInfo.TickRate, true, -1);
 	}
 	else {
 		this->OnExecuteEffect();
@@ -51,7 +45,7 @@ void UBaseEffect::OnActivated()
 }
 
 void UBaseEffect::OnForceInterrupt() {
-	this->RemoveSelf();
+	this->OnEnded();
 }
 
 void UBaseEffect::OnDeactivated() {
@@ -65,11 +59,6 @@ void UBaseEffect::OnDurationTick()
 	if (this->PooledDuration >= this->EffectInfo.Duration) {
 		this->RemoveSelf();
 	}
-}
-
-void UBaseEffect::OnTick()
-{
-	this->OnExecuteEffect();
 }
 
 void UBaseEffect::OnPreExecuteEffect()
