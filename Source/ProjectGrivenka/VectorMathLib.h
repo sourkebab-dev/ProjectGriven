@@ -22,4 +22,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	static bool CheckBlockDirection(FVector InstigatorLocation, FVector ReceiverLocation, FVector ReceiverForward);
 
+	UFUNCTION(BlueprintCallable)
+	static void RotateActorToTargetVector(AActor* ToRotateActor, FVector TargetVector, float RotationRate, float DeltaSeconds);
+
 };

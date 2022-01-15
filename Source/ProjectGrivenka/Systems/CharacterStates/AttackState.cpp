@@ -2,6 +2,7 @@
 
 
 #include "AttackState.h"
+#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemDefinitions.h"
@@ -58,8 +59,7 @@ void UAttackState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActio
 
 void UAttackState::OnStateExit_Implementation()
 {
-	//UGrivenkaDataSingleton* CommonData = UGrivenkaSingletonLibrary::GetGrivenkaData();
-	//this->CharacterInstance->SetRotationRate(CommonData->CommonRotationRate.NormalRotationRate);
+	this->CharacterContext.EventBus->AnimDelegate.Broadcast(EAnimEvt::FULL_ROTATION);
 
 
 	//Note: Unbind ended/blendingout delegate if interrupted by state changes
@@ -173,7 +173,6 @@ void UAttackState::OnAttackEnd(UAnimMontage* Montage, bool bInterrupted) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
 	}
 	else {
-		//UGrivenkaDataSingleton* CommonData = UGrivenkaSingletonLibrary::GetGrivenkaData();
-		//this->CharacterInstance->SetRotationRate(CommonData->CommonRotationRate.NormalRotationRate);
+		this->CharacterContext.EventBus->AnimDelegate.Broadcast(EAnimEvt::FULL_ROTATION);
 	}
 }

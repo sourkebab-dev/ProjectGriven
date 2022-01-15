@@ -5,8 +5,11 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
+#include "ProjectGrivenka/VectorMathLib.h"
 
+ABaseAIController::ABaseAIController() : AAIController() {
+	PrimaryActorTick.bCanEverTick = true;
+}
 
 void ABaseAIController::BeginPlay()
 {
@@ -16,6 +19,14 @@ void ABaseAIController::BeginPlay()
 	//sponge: bb syncing might need to change ???
 	this->BlackboardComp->SetValueAsEnum("AIState", this->DefaultAIState);
 
+}
+
+//sponge: Might need to move this ai rotation func to somewhere else
+void ABaseAIController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if (!this->AggroTarget) return;
+	UVectorMathLib::RotateActorToTargetVector(this->ActorCtx.CharacterActor, this->AggroTarget->GetActorLocation(), this->RotationRate, DeltaTime);
 }
 
 
@@ -51,6 +62,25 @@ void ABaseAIController::OnContextSetup()
 	if (!this->ActorCtx.EventBus) return;
 
 	this->ActorCtx.EventBus->DamagedDelegate.AddDynamic(this, &ABaseAIController::OnHit);
+	this->ActorCtx.EventBus->AnimDelegate.AddDynamic(this, &ABaseAIController::SetRotationRate);
+}
+
+void ABaseAIController::SetRotationRate(EAnimEvt InAnimEvt)
+{
+	switch (InAnimEvt)
+	{
+		case FULL_ROTATION:
+			this->RotationRate = 20;
+			break;
+		case SLOW_ROTATION:
+			this->RotationRate = 8;
+			break;
+		case OFF_ROTATION:
+			this->RotationRate = 0.01;
+			break;
+		default:
+			break;
+	}
 }
 
 void ABaseAIController::SightRefresh()
@@ -60,7 +90,7 @@ void ABaseAIController::SightRefresh()
 	ActorsToIgnore.Add(this->GetPawn());
 
 	if (UKismetSystemLibrary::SphereTraceMulti(this->GetWorld(), this->GetPawn()->GetActorLocation(), this->GetPawn()->GetActorLocation(),  500.0f,  
-		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutResults, true)) {
+		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::None, OutResults, true)) {
 		for (int i = 0; i < OutResults.Num(); i++) {
 			AActor* HitActor = OutResults[i].Actor.Get();
 			if (HitActor) {
@@ -70,7 +100,7 @@ void ABaseAIController::SightRefresh()
 				ForwardVec.Normalize();
 
 				if (FVector::DotProduct(ForwardVec, ToTarget) > 0.7) {
-					UKismetSystemLibrary::DrawDebugSphere(this->GetWorld(), HitActor->GetActorLocation(), 50.0f, 12, FLinearColor::Blue, 5.0f);
+					//UKismetSystemLibrary::DrawDebugSphere(this->GetWorld(), HitActor->GetActorLocation(), 50.0f, 12, FLinearColor::Blue, 5.0f);
 					this->OnActorSeen(HitActor);
 				}
 

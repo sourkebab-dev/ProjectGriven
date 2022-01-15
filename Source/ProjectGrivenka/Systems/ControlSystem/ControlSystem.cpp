@@ -6,7 +6,11 @@
 #include "Controllable.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
+#include "ProjectGrivenka/VectorMathLib.h"
+
+UControlSystem::UControlSystem() : UBaseContextableComponent() {
+	this->PrimaryComponentTick.bCanEverTick = true;
+}
 
 void UControlSystem::Init()
 {
@@ -16,6 +20,7 @@ void UControlSystem::Init()
 	}
 	this->CompContext.EventBus->PossessionDelegate.AddDynamic(this, &UControlSystem::ControlSystemSetup);
 	this->CompContext.EventBus->UnpossesionDelegate.AddDynamic(this, &UControlSystem::ControlSystemDisable);
+	this->CompContext.EventBus->AnimDelegate.AddDynamic(this, &UControlSystem::AnimHandler);
 	APawn* ActorPawn = Cast<APawn>(this->CompContext.CharacterActor);
 	if (!ActorPawn || !this->CompContext.CharacterActor->Implements<UControllable>()) {
 		UE_LOG(LogTemp, Error, TEXT("ControlSystem Initiation Failure (Owner must be a pawn) & Implements IControllable"), *GetNameSafe(this)); return;
@@ -25,7 +30,10 @@ void UControlSystem::Init()
 
 void UControlSystem::ControlSystemSetup(AController* NewController)
 {	
-	if (!NewController || !NewController->IsPlayerController() || (!this->GetOwner()->InputComponent && !NewController->InputComponent)) return;
+	if (!NewController || !NewController->IsPlayerController() || (!this->GetOwner()->InputComponent && !NewController->InputComponent)) {
+		this->SetComponentTickEnabled(false);
+		return;
+	}
 	UInputComponent* InputComp = this->GetOwner()->InputComponent ? this->GetOwner()->InputComponent : NewController->InputComponent;
 	InputComp->BindAction("Interact", IE_Pressed, this, &UControlSystem::ControlInteract);
 	InputComp->BindAction("Attack", IE_Pressed, this, &UControlSystem::ControlAttack);
@@ -39,6 +47,39 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAxis("MoveForward", this, &UControlSystem::ControlMoveForward);
 	InputComp->BindAxis("MoveRight", this, &UControlSystem::ControlMoveRight);
 	InputComp->BindAxis("CycleItem", this, &UControlSystem::ControlCycleItem);
+	this->SetComponentTickEnabled(true);
+	Cast<APlayerController>(NewController)->bShowMouseCursor = true;
+}
+
+void UControlSystem::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	AController* PlayerController = this->GetWorld()->GetFirstPlayerController();
+	if (!PlayerController) {
+		GLog->Log("ControlSystem RotateTick PlayerController Failure");
+		return;
+	}
+	FHitResult MouseHit;
+	this->GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery1, false, MouseHit);
+	UVectorMathLib::RotateActorToTargetVector(this->GetOwner(), MouseHit.Location, this->RotationRate, DeltaTime);
+}
+
+void UControlSystem::AnimHandler(EAnimEvt InAnimEvt)
+{
+	switch (InAnimEvt)
+	{
+	case FULL_ROTATION:
+		this->RotationRate = 20;
+		break;
+	case SLOW_ROTATION:
+		this->RotationRate = 8;
+		break;
+	case OFF_ROTATION:
+		this->RotationRate = 0.01;
+		break;
+	default:
+		break;
+	}
 }
 
 void UControlSystem::UpdateWorldSpaceVectors() {
@@ -61,6 +102,7 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 	InputComp->RemoveActionBinding("VentAmp", IE_Pressed);
 	InputComp->RemoveActionBinding("UseItem", IE_Pressed);
 	InputComp->AxisBindings.Empty();
+	this->SetComponentTickEnabled(false);
 }
 
 void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
@@ -81,10 +123,11 @@ void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 
 	if (!InstigatorCtx.AIController) {
 		InstigatorPawn->SpawnDefaultController();
-		AAIController* InstigatorAIController = Cast<AAIController>(InstigatorPawn->GetController());
-		if (InstigatorAIController) {
-			InstigatorCtx.AIController = InstigatorAIController;
-		}
+		//Note: disabled cause controller is already set in BaseAIController OnPossess
+		//AAIController* InstigatorAIController = Cast<AAIController>(InstigatorPawn->GetController());
+		//if (InstigatorAIController) {
+		//	InstigatorCtx.AIController = InstigatorAIController;
+		//}
 	}
 	else {
 		InstigatorCtx.AIController->Possess(InstigatorPawn);
@@ -128,14 +171,11 @@ void UControlSystem::ControlAttackRelease()
 
 void UControlSystem::ControlBlock()
 {
-	GLog->Log("BLKPrs");
-
 	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionBlock, IE_Pressed);
 }
 
 void UControlSystem::ControlBlockRelease()
 {
-	GLog->Log("BLKrls");
 	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionBlock, IE_Released);
 }
 

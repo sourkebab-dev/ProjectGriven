@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ProjectGrivenka/ContextUtilities/BaseContextableComponent.h"
+#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ControlSystem.generated.h"
 
 /**
@@ -13,10 +14,14 @@ UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent
 class PROJECTGRIVENKA_API UControlSystem : public UBaseContextableComponent
 {
 	GENERATED_BODY()
-	
+
+	UControlSystem();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector RawInput;
+
+	float RotationRate = 20;
 
 protected:
 	void ControlCycleItem(float Value);
@@ -37,9 +42,11 @@ public:
 	void Init() override;
 	UFUNCTION()
 	void ControlSystemSetup(AController* NewController);
+	void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
+	UFUNCTION()
+	void AnimHandler(EAnimEvt InAnimEvt);
 	UFUNCTION()
 	void ControlSystemDisable(AController* OldController);
 	UFUNCTION()
 	void ControlSystemPossess(AActor* PossessInstigator);
-
 };

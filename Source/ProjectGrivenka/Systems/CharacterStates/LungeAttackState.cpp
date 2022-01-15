@@ -2,6 +2,7 @@
 
 
 #include "LungeAttackState.h"
+#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemDefinitions.h"
@@ -54,8 +55,7 @@ void ULungeAttackState::OnStateEnter_Implementation(FGameplayTagContainer InPrev
 
 void ULungeAttackState::OnStateExit_Implementation()
 {
-	//UGrivenkaDataSingleton* CommonData = UGrivenkaSingletonLibrary::GetGrivenkaData();
-	//this->CharacterInstance->SetRotationRate(CommonData->CommonRotationRate.NormalRotationRate);
+	this->CharacterContext.EventBus->AnimDelegate.Broadcast(EAnimEvt::FULL_ROTATION);
 
 	//Note: Unbind ended/blendingout delegate if interrupted by state changes
 	FAttackValues NewAttack;

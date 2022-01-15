@@ -18,3 +18,13 @@ bool UVectorMathLib::CheckBlockDirection(FVector InstigatorLocation, FVector Rec
 	ReceiverForward.Normalize();
 	return FVector::DotProduct(ToAttackerVector, ReceiverForward) >= 0;
 }
+
+void UVectorMathLib::RotateActorToTargetVector(AActor* ToRotateActor, FVector TargetVector, float RotationRate, float DeltaSeconds)
+{
+	FRotator CurrentRotation = ToRotateActor->GetActorRotation();
+	FVector CurrentLocation = ToRotateActor->GetActorLocation();
+	FRotator RotationTarget = FRotator::ZeroRotator;
+	RotationTarget.Yaw = UKismetMathLibrary::FindLookAtRotation(CurrentLocation, TargetVector).Yaw;
+	FRotator InterpRotation = FMath::RInterpTo(CurrentRotation, RotationTarget, DeltaSeconds, RotationRate);
+	ToRotateActor->SetActorRotation(InterpRotation);
+}

@@ -7,6 +7,7 @@
 #include "GameplayTagContainer.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
+#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "BaseAIController.generated.h"
 
 /**
@@ -16,6 +17,8 @@ UCLASS()
 class PROJECTGRIVENKA_API ABaseAIController : public AAIController
 {
 	GENERATED_BODY()
+
+	ABaseAIController();
 
 public:
 	UPROPERTY(EditAnywhere)
@@ -39,6 +42,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor* AggroTarget;
 
+	float RotationRate = 20;
 	FTimerHandle AggroRefreshTimer;
 	FTimerHandle SightRefreshTimer;
 
@@ -47,10 +51,13 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void Tick(float DeltaTime) override;
 public:
 	UFUNCTION(BlueprintCallable)
 	void OnContextSetup();
+	UFUNCTION()
+	void SetRotationRate(EAnimEvt InAnimEvt);
+
 
 	virtual void SightRefresh();
 	virtual void AggroRefresh();

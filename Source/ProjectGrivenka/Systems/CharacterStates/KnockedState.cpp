@@ -64,7 +64,7 @@ void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageIn
 		}
 		else {
 			//Sponge: need to add jitter effect
-		}
+		}		
 	}
 	else {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
@@ -96,6 +96,10 @@ void UKnockedState::StartHitReact()
 		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunBackMontage.HeavyMontage : this->StunBackMontage.DefaultMontage;
 	}
 	this->CharacterContext.CharacterAnim->Montage_Play(this->CurrentStunMontage);
+
+	//Sponge: try hitpause
+	//this->CharacterContext.CharacterAnim->Montage_Pause(this->)
+
 
 	FOnMontageEnded EndAttackDelegate;
 	EndAttackDelegate.BindUObject(this, &UKnockedState::OnHitReactEnd);

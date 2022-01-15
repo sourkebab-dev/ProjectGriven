@@ -24,7 +24,6 @@ void UStrafeWait::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory,
 {
 	if (!OwnerComp.GetAIOwner() || !OwnerComp.GetAIOwner()->GetPawn() ) FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 	APawn* Pawn = OwnerComp.GetAIOwner()->GetPawn();
-
 	float Degrees = UVectorMathLib::DegreesBetweenVectors(FVector::ForwardVector, Pawn->GetActorForwardVector());
 	Pawn->AddMovementInput(this->CurrentStrafeDir.RotateAngleAxis(Degrees, FVector::UpVector) * this->StrafeSpeed * DeltaSeconds);
 
