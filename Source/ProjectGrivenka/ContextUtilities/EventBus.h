@@ -38,6 +38,9 @@ class PROJECTGRIVENKA_API UEventBus : public UObject
 	
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FDamagedDelegate StaggerDelegate;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FDamagedDelegate DamagedDelegate;
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)

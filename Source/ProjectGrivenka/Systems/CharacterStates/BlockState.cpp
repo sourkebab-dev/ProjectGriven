@@ -7,6 +7,7 @@
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
+#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 
@@ -59,23 +60,42 @@ void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo
 	this->HitInstigator = InHitInstigator;
 	this->DamageInfo = InDamageInfo;
 
-	if (UVectorMathLib::CheckBlockDirection(InHitInstigator->GetActorLocation(), this->CharacterContext.CharacterActor->GetActorLocation(), this->CharacterContext.CharacterActor->GetActorForwardVector())) {
-		FBlockInfo BlockInfo;
-		float DamageAbsorption;
-		IEquipmentSystemAvailable::Execute_GetBlockInfo(this->CharacterContext.CharacterActor, BlockInfo, DamageAbsorption);
-
-		if (this->IsParry) {
-			this->CharacterContext.CharacterAnim->Montage_JumpToSection("Parry", BlockInfo.BlockMontage);
-		}
-		else {
-			this->CharacterContext.CharacterAnim->Montage_JumpToSection("Hit", BlockInfo.BlockMontage);
-		}
-	}
-	else {
+	if (!UVectorMathLib::CheckBlockDirection(InHitInstigator->GetActorLocation(), this->CharacterContext.CharacterActor->GetActorLocation(), this->CharacterContext.CharacterActor->GetActorForwardVector())) {
 		this->StatesComp->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Ground"));
 		this->StatesComp->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
 		this->StatesComp->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Air"));
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
+		return;
+	}
+
+
+	FBlockInfo BlockInfo;
+	float DamageAbsorption;
+	IEquipmentSystemAvailable::Execute_GetBlockInfo(this->CharacterContext.CharacterActor, BlockInfo, DamageAbsorption);
+
+	if (this->IsParry) {
+		this->CharacterContext.CharacterAnim->Montage_JumpToSection("Parry", BlockInfo.BlockMontage);
+
+		FCharacterContext InstigatorCtx;
+		IContextAvailable::Execute_GetContext(this->HitInstigator, InstigatorCtx);
+		if (!InstigatorCtx.EventBus) return;
+
+		FDamageInfo StaggerDamage;
+		StaggerDamage.ImpactType = EDamageImpactType::DI_HIGH;
+		if (this->HitInstigator->Implements<UCharacterSystemAvailable>()) {
+			ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(InHitInstigator, this->CharacterContext.CharacterActor, StaggerDamage);
+			float InstigatorFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(InHitInstigator, EAttributeCode::ATT_Fortitude);
+			if (InstigatorFortitude <= 0) {
+				InstigatorCtx.EventBus->StaggerDelegate.Broadcast(this->CharacterContext.CharacterActor, StaggerDamage);
+			}
+		}
+		else {
+			InstigatorCtx.EventBus->StaggerDelegate.Broadcast(this->CharacterContext.CharacterActor, StaggerDamage);
+
+		}
+	}
+	else {
+		this->CharacterContext.CharacterAnim->Montage_JumpToSection("Hit", BlockInfo.BlockMontage);
 	}
 }
 
