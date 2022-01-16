@@ -50,7 +50,7 @@ void UBlockState::OnStateExit_Implementation()
 {
 	this->CharacterContext.EventBus->DamagedDelegate.RemoveDynamic(this, &UBlockState::OnReceiveHit);
 	this->CharacterContext.CharacterAnim->StopAllMontages(0.1);
-	this->ParryTimer.Invalidate();
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->ParryTimer);
 	ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CharacterContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Block"));
 	ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CharacterContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Parry"));
 }

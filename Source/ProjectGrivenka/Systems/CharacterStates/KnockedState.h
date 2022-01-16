@@ -29,6 +29,9 @@ class PROJECTGRIVENKA_API UKnockedState : public UBaseState
 {
 	GENERATED_BODY()
 
+
+	FTimerHandle HitPauseTimer;
+
 	FVector PushStartLocation;
 	FVector PushTargetLocation;
 	float PooledTime = 0.0;
@@ -66,6 +69,10 @@ public:
 	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;
 	virtual void OnStateExit_Implementation() override;
 	
+
+	void InitiatePause();
+	void OnPauseEnd();
+	void ClearPauseOnLastInstigator();
 	UFUNCTION(BlueprintCallable)
 	void OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo);
 	UFUNCTION(BlueprintCallable)

@@ -41,8 +41,11 @@ void ABaseAIController::OnPossess(APawn* PossesedPawn)
 
 void ABaseAIController::OnUnPossess()
 {
-	this->AggroRefreshTimer.Invalidate();
-	this->SightRefreshTimer.Invalidate();
+	if (this->ActorCtx.CharacterActor) {
+		this->ActorCtx.CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);
+		this->ActorCtx.CharacterActor->GetWorldTimerManager().ClearTimer(this->SightRefreshTimer);
+	}
+
 	this->AggroTarget = nullptr;
 	this->AggroMap.Empty();
 	if (this->ActorCtx.EventBus) {
@@ -177,7 +180,7 @@ void ABaseAIController::ChangeAIState(TEnumAsByte<EAIStateType> NewAIState)
 		this->GetWorldTimerManager().SetTimer(this->AggroRefreshTimer, this, &ABaseAIController::AggroRefresh, 10, true, 0);
 	}
 	else {
-		this->AggroRefreshTimer.Invalidate();
+		this->ActorCtx.CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);
 		this->AggroMap.Empty();
 		this->SetAggroTarget(nullptr);
 	}

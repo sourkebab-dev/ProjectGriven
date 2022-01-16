@@ -26,8 +26,11 @@ EBTNodeResult::Type UWaitComboOpen::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 void UWaitComboOpen::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
 {
-	this->ForceExitTimer.Invalidate();
-	this->PaddingTimer.Invalidate();
+	APawn* AIPawn = OwnerComp.GetAIOwner()->GetPawn();
+	if (AIPawn) {
+		AIPawn->GetWorldTimerManager().ClearTimer(this->ForceExitTimer);
+		AIPawn->GetWorldTimerManager().ClearTimer(this->PaddingTimer);
+	}
 	if (this->CharCtx.EventBus) {
 		this->CharCtx.EventBus->AnimDelegate.RemoveDynamic(this, &UWaitComboOpen::OnOpenComboTriggered);
 	}
