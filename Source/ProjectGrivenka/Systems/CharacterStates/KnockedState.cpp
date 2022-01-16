@@ -111,10 +111,10 @@ void UKnockedState::InitiatePause()
 		PauseTime = 0.2;
 		break;
 	case EDamageImpactType::DI_MEDIUM:
-		PauseTime = 0.15;
+		PauseTime = 0.1;
 		break;
 	case EDamageImpactType::DI_LOW:
-		PauseTime = 0.1;
+		PauseTime = 0.07;
 		break;
 	default:
 		break;

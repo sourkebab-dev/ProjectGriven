@@ -190,21 +190,9 @@ void ABaseAIController::ChangeAIState(TEnumAsByte<EAIStateType> NewAIState)
 
 void ABaseAIController::OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo)
 {
-	GLog->Log("hitai");
-	switch (this->BlackboardComp->GetValueAsEnum("AIState"))
-	{
-	case EAIStateType::COMBAT:
-		GLog->Log("CombatState");
-		break;
-	case EAIStateType::IDLE:
-		GLog->Log("Idle");
-		break;
-	default:
-		break;
-	}
+
 	//sponge: need to find how to generate aggro value
 	if (this->BlackboardComp->GetValueAsEnum("AIState") != EAIStateType::COMBAT) {
-		GLog->Log("??");
 		this->SetAggroTarget(DamageInstigator);
 		this->ChangeAIState(EAIStateType::COMBAT);
 	}

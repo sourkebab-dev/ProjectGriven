@@ -28,6 +28,12 @@ void UBlockState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAction
 	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
 		ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_Parry", 0, false);
 	}
+
+	if (this->CharacterContext.MovementComp) {
+		UCharacterMovementComponent* CharMove = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
+		this->TempMaxWalkSpeed = CharMove->MaxWalkSpeed;
+		CharMove->MaxWalkSpeed = CharMove->MaxWalkSpeed * 0.3;
+	}
 }
 
 void UBlockState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
@@ -48,6 +54,10 @@ void UBlockState::AxisHandler_Implementation(EActionList Action, float AxisValue
 
 void UBlockState::OnStateExit_Implementation()
 {
+	if (this->CharacterContext.MovementComp) {
+		UCharacterMovementComponent* CharMove = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
+		CharMove->MaxWalkSpeed = this->TempMaxWalkSpeed;
+	}
 	this->CharacterContext.EventBus->DamagedDelegate.RemoveDynamic(this, &UBlockState::OnReceiveHit);
 	this->CharacterContext.CharacterAnim->StopAllMontages(0.1);
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->ParryTimer);

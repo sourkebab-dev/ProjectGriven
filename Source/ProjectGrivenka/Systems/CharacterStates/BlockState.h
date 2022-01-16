@@ -19,6 +19,8 @@ class PROJECTGRIVENKA_API UBlockState : public UBaseState
 	GENERATED_BODY()
 
 public:
+	float TempMaxWalkSpeed;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor* HitInstigator;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
