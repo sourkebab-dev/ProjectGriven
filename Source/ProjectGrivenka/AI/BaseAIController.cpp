@@ -254,9 +254,11 @@ void ABaseAIController::SetBBAggroTarget(AActor* NewAggroTarget)
 	this->BlackboardComp->SetValueAsObject("TargetAggro", NewAggroTarget);
 }
 
-void ABaseAIController::SetBBCharacterState(FGameplayTagContainer NewState) {
-	//this->BlackboardComp->SetValueAsEnum("CurrentState", NewState);
+void ABaseAIController::SendAIEvent(TEnumAsByte<EAIEvent> InAIEvent)
+{
+	//sponge: dunno if this is the best way to do it
+	this->BlackboardComp->SetValueAsEnum("AIEvent", InAIEvent);
+	GEngine->AddOnScreenDebugMessage(12, 1, FColor::Red, "HitSignal");
 }
-
 
 

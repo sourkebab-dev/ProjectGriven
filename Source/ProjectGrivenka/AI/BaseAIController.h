@@ -13,6 +13,13 @@
 /**
  * 
  */
+UENUM(BlueprintType)
+enum EAIEvent
+{
+	AI_NONE,
+	SIGNALLED_ATTACK,
+};
+
 UCLASS()
 class PROJECTGRIVENKA_API ABaseAIController : public AAIController
 {
@@ -57,26 +64,26 @@ public:
 	void OnContextSetup();
 	UFUNCTION()
 	void SetRotationRate(EAnimEvt InAnimEvt);
-
+	UFUNCTION()
+	virtual void OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo);
+	
 
 	virtual void SightRefresh();
 	virtual void AggroRefresh();
 	virtual void OnActorSeen(AActor* SeenActor);
 	virtual bool CheckHostility(AActor* HostilityToCheck);
 	virtual void ChangeAIState(TEnumAsByte<EAIStateType> NewAIState);
-	UFUNCTION()
-	virtual void OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo);
 	virtual void AddAggroActor(AActor* AggroInstigator, float AggroPoints);
 	virtual void SetAggroTarget(AActor* AggroInstigator);
 	virtual void RemoveActorFromAggroList(AActor* AggroInstigator);
-
 	virtual void BTStart();
 	virtual void Dodge();
 	virtual void Attack();
 	virtual void HeavyAttackCharge();
 	virtual void HeavyAttackRelease();
 	virtual void SetBBAggroTarget(AActor* NewAggroTarget);
-	virtual void SetBBCharacterState(FGameplayTagContainer NewState);
+	virtual void SendAIEvent(TEnumAsByte<EAIEvent> InAIEvent);
+
 
 	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }
 };
