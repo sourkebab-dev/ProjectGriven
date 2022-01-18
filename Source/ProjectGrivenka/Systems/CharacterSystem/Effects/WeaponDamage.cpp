@@ -80,7 +80,9 @@ void UWeaponDamage::OnExecuteEffect() {
 	float TotalElementalDamage = CalculatedElementalDamage > 0.0 ? CalculatedElementalDamage * (CalculatedElementalDamage / (CalculatedElementalDamage + ReceiverElementalDefense)) : 0.0;
 	
 	//Shield Damage (elementals are not negated by shield)
-	TotalPhysicalDamage = TotalPhysicalDamage - (TotalPhysicalDamage * (ReceiverDamageAbsorption / 100));
+	if (this->DamageInfo.IsAbsorbed && !this->DamageInfo.IsFixed) {
+		TotalPhysicalDamage = TotalPhysicalDamage - (TotalPhysicalDamage * (ReceiverDamageAbsorption / 100));
+	}
 	float AccumulatedDamage = TotalPhysicalDamage + TotalElementalDamage;
 	
 	if (ReceiverComp->FindEffectsByTag(FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Block"))) {

@@ -16,7 +16,7 @@
 void UBlockState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) 
 {
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
-	this->CharacterContext.EventBus->DamagedDelegate.AddDynamic(this, &UBlockState::OnReceiveHit);
+	this->StatesComp->BlockHitDelegate.AddDynamic(this, &UBlockState::OnReceiveHit);
 
 	FBlockInfo BlockInfo;
 	float DamageAbsorption;
@@ -58,7 +58,7 @@ void UBlockState::OnStateExit_Implementation()
 		UCharacterMovementComponent* CharMove = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
 		CharMove->MaxWalkSpeed = this->TempMaxWalkSpeed;
 	}
-	this->CharacterContext.EventBus->DamagedDelegate.RemoveDynamic(this, &UBlockState::OnReceiveHit);
+	this->StatesComp->BlockHitDelegate.RemoveDynamic(this, &UBlockState::OnReceiveHit);
 	this->CharacterContext.CharacterAnim->StopAllMontages(0.1);
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->ParryTimer);
 	ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CharacterContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Block"));
@@ -67,17 +67,10 @@ void UBlockState::OnStateExit_Implementation()
 
 void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo)
 {
+	if (this->StatesComp->BlockedTags.HasAny(this->ActionTag)) return;
+
 	this->HitInstigator = InHitInstigator;
 	this->DamageInfo = InDamageInfo;
-
-	if (!UVectorMathLib::CheckBlockDirection(InHitInstigator->GetActorLocation(), this->CharacterContext.CharacterActor->GetActorLocation(), this->CharacterContext.CharacterActor->GetActorForwardVector())) {
-		this->StatesComp->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Ground"));
-		this->StatesComp->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
-		this->StatesComp->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Air"));
-		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
-		return;
-	}
-
 
 	FBlockInfo BlockInfo;
 	float DamageAbsorption;
@@ -105,6 +98,18 @@ void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo
 		}
 	}
 	else {
+		if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+			ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->CharacterContext.CharacterActor, InHitInstigator, this->DamageInfo);
+			float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Fortitude);
+			float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Fortitude);
+
+
+			if (CurrentFortitude <= 0) {
+				this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Staggered"), EActionList::ActionNone, EInputEvent::IE_Released);
+			}
+		}
+
+
 		this->CharacterContext.CharacterAnim->Montage_JumpToSection("Hit", BlockInfo.BlockMontage);
 	}
 }

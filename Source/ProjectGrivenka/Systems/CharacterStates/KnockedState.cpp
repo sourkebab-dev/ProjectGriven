@@ -11,7 +11,7 @@
 void UKnockedState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
 {
 	Super::Init_Implementation(InContext, InStatesComp);
-	this->CharacterContext.EventBus->DamagedDelegate.AddDynamic(this, &UKnockedState::OnReceiveHit);
+	this->StatesComp->TrueHitDelegate.AddDynamic(this, &UKnockedState::OnReceiveHit);
 }
 
 void UKnockedState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
@@ -24,6 +24,8 @@ void UKnockedState::ActionHandler_Implementation(EActionList Action, EInputEvent
 
 void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo)
 {
+	if (this->StatesComp->BlockedTags.HasAny(this->ActionTag)) return;
+
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 	if (this->HitInstigator) {
 		this->ClearPauseOnLastInstigator();

@@ -3,7 +3,8 @@
 
 #include "CharacterStatesSystem.h"
 #include "BaseState.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
+#include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
+#include "ProjectGrivenka/VectorMathLib.h"
 
 UCharacterStatesSystem::UCharacterStatesSystem() : UBaseContextableComponent() {
 	this->PrimaryComponentTick.bCanEverTick = true;
@@ -18,6 +19,7 @@ void UCharacterStatesSystem::Init()
 	this->CompContext.EventBus->StateActionDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentActionHandler);
 	this->CompContext.EventBus->StateAxisDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentAxisHandler);
 	this->CompContext.EventBus->AnimDelegate.AddDynamic(this, &UCharacterStatesSystem::AnimEventsHandler);
+	this->CompContext.EventBus->DamagedDelegate.AddDynamic(this, &UCharacterStatesSystem::OnHit);
 }
 
 void UCharacterStatesSystem::InitializePersistantStates()
@@ -119,4 +121,24 @@ void UCharacterStatesSystem::ChangeState(FGameplayTag ChangeTo, EActionList NewE
 		this->AIController->SetBBCharacterState(ChangeTo);
 	} 
 	*/
+}
+
+void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageInfo)
+{
+
+	if (this->CurrentState->ActionTag.HasTag(FGameplayTag::RequestGameplayTag("ActionStates.Block")) 
+		&& UVectorMathLib::CheckBlockDirection(HitInstigator->GetActorLocation(), this->CompContext.CharacterActor->GetActorLocation(), this->CompContext.CharacterActor->GetActorForwardVector())) {
+		GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "Blocked");
+		InDamageInfo.IsAbsorbed = true;
+		this->BlockHitDelegate.Broadcast(HitInstigator, InDamageInfo);
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "OnHit");
+		this->TrueHitDelegate.Broadcast(HitInstigator, InDamageInfo);
+	}
+
+	if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_InitEffectReceiveHit(this->CompContext.CharacterActor, HitInstigator, InDamageInfo);
+	}
+
 }

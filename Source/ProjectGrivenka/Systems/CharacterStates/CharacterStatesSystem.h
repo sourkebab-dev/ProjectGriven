@@ -6,6 +6,7 @@
 #include "GameplayTagContainer.h"
 #include "ProjectGrivenka/ContextUtilities/BaseContextableComponent.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
+#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "CharacterStatesSystem.generated.h"
 
 USTRUCT(BlueprintType)
@@ -30,6 +31,8 @@ struct FCrossStateData
 
 };
 
+
+
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTGRIVENKA_API UCharacterStatesSystem : public UBaseContextableComponent
 {
@@ -53,6 +56,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UBaseState*> PersistantStates;
 
+	FDamagedDelegate TrueHitDelegate;
+	FDamagedDelegate BlockHitDelegate;
+
 public:	
 
 	void Init() override;
@@ -68,4 +74,6 @@ public:
 	virtual void ChangeState(FGameplayTag ChangeTo, EActionList NewEnterAction, EInputEvent NewEnterEvent);
 	UFUNCTION(BlueprintCallable)
 	virtual class UBaseState* GetCurrentState() { return CurrentState;  };
+	UFUNCTION()
+	void OnHit(AActor* HitInstigator, FDamageInfo InDamageInfo);
 };

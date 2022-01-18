@@ -92,6 +92,9 @@ struct FDamageInfo
     bool IsFixed;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool IsAbsorbed;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float MovingValues;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

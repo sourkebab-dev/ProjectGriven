@@ -24,7 +24,6 @@ void UCharacterSystem::Init()
 {
 	Super::Init();
 	if (!this->CompContext.EventBus) return;
-	this->CompContext.EventBus->DamagedDelegate.AddDynamic(this, &UCharacterSystem::InitEffectReceiveHit);
 	//this->CompContext.EventBus->ItemUsageDelegate.AddUObject(this, &UCharacterSystem::InitFXByPrefab);
 	if (this->PrefabData) this->InitializeAttributes(this->PrefabData->CharacterData.Attributes);
 }
