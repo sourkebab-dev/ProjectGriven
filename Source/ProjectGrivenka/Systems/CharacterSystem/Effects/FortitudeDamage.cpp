@@ -20,6 +20,8 @@ void UFortitudeDamage::OnExecuteEffect()
 	UCharacterSystem* ReceiverComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectReceiver);
 	float CurrentFortitude = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Fortitude);
 	float CurrentMaxFortitude = ReceiverComp->GetAttributeMaxValue(EAttributeCode::ATT_Fortitude);
+	float CurrentDamAbsorp = ReceiverComp->GetAttributeMaxValue(EAttributeCode::ATT_DamageAbsorption);
+
 	//sponge: need to handle hit -> stagger -> heavy attack, expected launch, i think it's poised right now because of fortitude restore
 	if (CurrentFortitude <= 0) {
 		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Fortitude, CurrentMaxFortitude);
@@ -39,6 +41,10 @@ void UFortitudeDamage::OnExecuteEffect()
 		break;
 	}
 	
+	if (this->DamageInfo.IsAbsorbed) {
+		FortitudeDamage -= (FortitudeDamage * (CurrentDamAbsorp / 100));
+	}
+
 	ReceiverComp->SetAttributeValue( EAttributeCode::ATT_Fortitude, CurrentFortitude - FortitudeDamage);
 	GLog->Log("CurrFortitude");
 	GLog->Log(FString::SanitizeFloat(CurrentFortitude - FortitudeDamage));

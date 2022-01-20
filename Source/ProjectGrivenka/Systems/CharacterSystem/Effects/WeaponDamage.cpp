@@ -85,7 +85,7 @@ void UWeaponDamage::OnExecuteEffect() {
 	}
 	float AccumulatedDamage = TotalPhysicalDamage + TotalElementalDamage;
 	
-	if (ReceiverComp->FindEffectsByTag(FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Block"))) {
+	if (this->DamageInfo.IsAbsorbed) {
 		//Sponge: need to recheck numbers
 		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Stamina, ReceiverStamina - 50);
 	}
