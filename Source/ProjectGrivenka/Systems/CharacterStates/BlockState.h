@@ -11,7 +11,7 @@
  */
 
 //Sponge: parry window is based on seconds, should probably be a frame?
-static const float PARRYTIME = 0.2f;
+static const float PARRYTIME = 0.15f;
 
 UCLASS()
 class PROJECTGRIVENKA_API UBlockState : public UBaseState

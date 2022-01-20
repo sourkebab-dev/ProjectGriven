@@ -29,11 +29,10 @@ void ABaseAIController::Tick(float DeltaTime)
 	UVectorMathLib::RotateActorToTargetVector(this->ActorCtx.CharacterActor, this->AggroTarget->GetActorLocation(), this->RotationRate, DeltaTime);
 }
 
-
 void ABaseAIController::OnPossess(APawn* PossesedPawn)
 {
 	Super::OnPossess(PossesedPawn);
-	this->GetWorldTimerManager().SetTimer(this->SightRefreshTimer, this, &ABaseAIController::SightRefresh, 1, true);
+	this->GetWorldTimerManager().SetTimer(this->SightRefreshTimer, this, &ABaseAIController::SightRefresh, 0.5, true);
 
 	//Note: This is for char switching, (actor already spawned and controlled by player, but later switched as npc)
 	this->OnContextSetup();
@@ -102,7 +101,7 @@ void ABaseAIController::SightRefresh()
 				FVector ForwardVec = this->GetPawn()->GetActorForwardVector();
 				ForwardVec.Normalize();
 
-				if (FVector::DotProduct(ForwardVec, ToTarget) > 0.7) {
+				if (FVector::DotProduct(ForwardVec, ToTarget) > 0.1) {
 					//UKismetSystemLibrary::DrawDebugSphere(this->GetWorld(), HitActor->GetActorLocation(), 50.0f, 12, FLinearColor::Blue, 5.0f);
 					this->OnActorSeen(HitActor);
 				}
@@ -118,55 +117,69 @@ void ABaseAIController::AggroRefresh()
 	if (this->BlackboardComp->GetValueAsEnum("AIState") != EAIStateType::COMBAT) return;
 	TArray<AActor*> Outkeys;
 	float MaxAggroPoint = 0.0f;
+	float ClosestDist = 99999.0f;
 	this->AggroMap.GetKeys(Outkeys);
 	AActor* TempAggroPoint = nullptr;
+	AActor* ClosestAggro = nullptr;
 	for (int i = 0; i < Outkeys.Num(); i++) {
 		if (this->AggroMap[Outkeys[i]] >= MaxAggroPoint) {
 			MaxAggroPoint = this->AggroMap[Outkeys[i]];
 			TempAggroPoint = Outkeys[i];
 		}
+
+		float Dist = Outkeys[i]->GetDistanceTo(this->ActorCtx.CharacterActor);
+		if (Dist < ClosestDist) {
+			ClosestAggro = Outkeys[i];
+			ClosestDist = Dist;
+		}
+
 		this->AggroMap[Outkeys[i]] = 0;
 	}
-	this->SetAggroTarget(TempAggroPoint);
+
+	this->SetAggroTarget(MaxAggroPoint == 0.0 ? ClosestAggro : TempAggroPoint);
 }
 
 void ABaseAIController::OnActorSeen(AActor* SeenActor)
 {
-	if (CheckHostility(SeenActor) && !this->AggroMap.Find(SeenActor)) {
+	if (CheckHostility(this->ActorCtx.CharacterActor, SeenActor) && !this->AggroMap.Find(SeenActor)) {
 		if (this->AggroMap.Num() == 0) this->SetAggroTarget(SeenActor);
 		this->AddAggroActor(SeenActor , 0);
 		this->ChangeAIState(EAIStateType::COMBAT);
 	}
 }
 
-bool ABaseAIController::CheckHostility(AActor* HostilityToCheck)
+bool ABaseAIController::CheckHostility(AActor* SourceActor, AActor* HostilityToCheck)
 {
+	APawn* SourcePawn = Cast<APawn>(SourceActor);
 	APawn* CheckPawn = Cast<APawn>(HostilityToCheck);
-	if (!CheckPawn) return false;
+	if (!CheckPawn || !CheckPawn->GetController() || !SourcePawn || !SourcePawn->GetController()) return false;
 
-	ABaseAIController* PawnController = Cast<ABaseAIController>(CheckPawn->GetController());
-	EHostilityType ToCheckType;
+	ABaseAIController* SourceController = Cast<ABaseAIController>(SourcePawn->GetController());
+	ABaseAIController* CheckedController = Cast<ABaseAIController>(CheckPawn->GetController());
 
-	if (!PawnController && !CheckPawn->GetController()->IsPlayerController()) return false;
-	else if (PawnController) ToCheckType = PawnController->HostilityType;
-	else ToCheckType = EHostilityType::ALLY;
+	EHostilityType TypeA, TypeB;
+	if (SourcePawn->GetController()->IsPlayerController()) TypeA = EHostilityType::ALLY;
+	else TypeA = SourceController->HostilityType;
 
-	switch (this->HostilityType)
+	if (CheckPawn->GetController()->IsPlayerController()) TypeB = EHostilityType::ALLY;
+	else TypeB = CheckedController->HostilityType;
+
+	switch (TypeA)
 	{
-		case EHostilityType::ALLY:
-			return ToCheckType == EHostilityType::WILD || ToCheckType == EHostilityType::HOSTILE;
-		case EHostilityType::HOSTILE:
-			return ToCheckType == EHostilityType::WILD || ToCheckType == EHostilityType::ALLY;
-		case EHostilityType::WILD:
-			return ToCheckType == EHostilityType::HOSTILE || ToCheckType == EHostilityType::NEUTRAL || ToCheckType == EHostilityType::ALLY;
-		case EHostilityType::NEUTRAL:
-			return false;
-		default:
-			return false;
+	case EHostilityType::ALLY:
+		return TypeB == EHostilityType::WILD || TypeB == EHostilityType::HOSTILE;
+	case EHostilityType::HOSTILE:
+		return TypeB == EHostilityType::WILD || TypeB == EHostilityType::ALLY;
+	case EHostilityType::WILD:
+		return TypeB == EHostilityType::HOSTILE || TypeB == EHostilityType::NEUTRAL || TypeB == EHostilityType::ALLY;
+	case EHostilityType::NEUTRAL:
+		return false;
+	default:
+		return false;
 	}
-	
-	
+
 }
+
 
 void ABaseAIController::ChangeAIState(TEnumAsByte<EAIStateType> NewAIState)
 {
@@ -177,7 +190,7 @@ void ABaseAIController::ChangeAIState(TEnumAsByte<EAIStateType> NewAIState)
 	this->BlackboardComp->SetValueAsEnum("AIState", NewAIState);
 
 	if (NewAIState == EAIStateType::COMBAT) {
-		this->GetWorldTimerManager().SetTimer(this->AggroRefreshTimer, this, &ABaseAIController::AggroRefresh, 10, true, 0);
+		this->GetWorldTimerManager().SetTimer(this->AggroRefreshTimer, this, &ABaseAIController::AggroRefresh, 5, true, 0);
 	}
 	else {
 		this->ActorCtx.CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);

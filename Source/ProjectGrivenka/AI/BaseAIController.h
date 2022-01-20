@@ -60,18 +60,17 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 public:
+	static bool CheckHostility(AActor* SourceActor, AActor* HostilityToCheck);
+
 	UFUNCTION(BlueprintCallable)
 	void OnContextSetup();
 	UFUNCTION()
 	void SetRotationRate(EAnimEvt InAnimEvt);
 	UFUNCTION()
 	virtual void OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo);
-	
-
 	virtual void SightRefresh();
 	virtual void AggroRefresh();
 	virtual void OnActorSeen(AActor* SeenActor);
-	virtual bool CheckHostility(AActor* HostilityToCheck);
 	virtual void ChangeAIState(TEnumAsByte<EAIStateType> NewAIState);
 	virtual void AddAggroActor(AActor* AggroInstigator, float AggroPoints);
 	virtual void SetAggroTarget(AActor* AggroInstigator);

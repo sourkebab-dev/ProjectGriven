@@ -7,7 +7,7 @@
 
 void UAttackSignaller::NotifyBegin(USkeletalMeshComponent* Mesh, UAnimSequenceBase* Animation, float TotalDuration)
 {
-	Mesh->GetOwner()->GetActorLocation();
+	if (!Mesh) return;
 	AActor* ActorInstigator = Mesh->GetOwner();
 	if (!ActorInstigator) return;
 	TArray<AActor*> IgnoredActors;

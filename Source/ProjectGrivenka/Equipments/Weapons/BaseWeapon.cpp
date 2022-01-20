@@ -7,6 +7,7 @@
 #include "ProjectGrivenka/ContextUtilities/ContextStore.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
+#include "ProjectGrivenka/AI/BaseAIController.h"
 
 // Sets default values
 ABaseWeapon::ABaseWeapon() : ABaseEquipment()
@@ -79,6 +80,9 @@ void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 			FCharacterContext InstigatorCtx;
 			IContextAvailable::Execute_GetContext(OtherActor, DamagableCtx);
 			IContextAvailable::Execute_GetContext(this->GetOwner(), InstigatorCtx);
+
+			if (!ABaseAIController::CheckHostility(DamagableCtx.CharacterActor, InstigatorCtx.CharacterActor)) return;
+
 			FDamageInfo DamageInfo;
 			DamageInfo.MovingValues = InstigatorCtx.Store->CombatModule.CurrentAttack.MovingValues;
 			DamageInfo.DamageDirection = InstigatorCtx.Store->CombatModule.CurrentAttack.AttackDirection;

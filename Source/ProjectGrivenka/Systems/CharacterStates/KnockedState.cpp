@@ -52,6 +52,7 @@ void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageIn
 	else {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
 	}
+
 }
 
 void UKnockedState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
@@ -97,6 +98,7 @@ void UKnockedState::StartHitReact()
 	//this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentStunMontage);
 
 
+	this->StatesComp->BlockedTags.AddTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
 	//Sponge: try hitpause
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, this, &UKnockedState::InitiatePause, 0.005);
 }
@@ -135,6 +137,7 @@ void UKnockedState::InitiatePause()
 
 void UKnockedState::OnPauseEnd()
 {
+	this->StatesComp->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 	this->ClearPauseOnLastInstigator();
 
