@@ -20,6 +20,7 @@ void UCharacterStatesSystem::Init()
 	this->CompContext.EventBus->StateAxisDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentAxisHandler);
 	this->CompContext.EventBus->AnimDelegate.AddDynamic(this, &UCharacterStatesSystem::AnimEventsHandler);
 	this->CompContext.EventBus->DamagedDelegate.AddDynamic(this, &UCharacterStatesSystem::OnHit);
+	this->CompContext.EventBus->HitStopDelegate.BindUObject(this, &UCharacterStatesSystem::LockAnimation);
 }
 
 void UCharacterStatesSystem::InitializePersistantStates()
@@ -141,4 +142,23 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 		ICharacterSystemAvailable::Execute_InitEffectReceiveHit(this->CompContext.CharacterActor, HitInstigator, InDamageInfo);
 	}
 
+}
+
+//sponge: dunno if it's a good way to put it here, also might need to clear delegate
+void UCharacterStatesSystem::LockAnimation(EDamageImpactType InDamageImpactTime, FHitStopFinishDelegate OnHitFinish)
+{
+	this->BlockedTags.AddTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
+	this->CompContext.CharacterAnim->Montage_Pause(this->CompContext.CharacterAnim->GetCurrentActiveMontage());
+	TMap<EDamageImpactType, float> LockTimeMap = {
+		{ EDamageImpactType::DI_LOW, 0.07 },
+		{ EDamageImpactType::DI_MEDIUM, 0.1 },
+		{ EDamageImpactType::DI_HIGH, 0.2 },
+	};
+
+	float LockTime = LockTimeMap[InDamageImpactTime];
+	this->CompContext.CharacterActor->GetWorldTimerManager().SetTimer(this->AnimLockHandle, FTimerDelegate::CreateLambda([&, OnHitFinish] {
+		this->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
+		OnHitFinish.ExecuteIfBound();
+		this->CompContext.CharacterAnim->Montage_Resume(this->CompContext.CharacterAnim->GetCurrentActiveMontage());
+	}), LockTime, false);
 }

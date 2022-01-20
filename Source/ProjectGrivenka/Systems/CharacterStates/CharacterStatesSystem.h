@@ -59,8 +59,10 @@ public:
 	FDamagedDelegate TrueHitDelegate;
 	FDamagedDelegate BlockHitDelegate;
 
-public:	
+protected:
+	FTimerHandle AnimLockHandle;
 
+public:	
 	void Init() override;
 	void InitializePersistantStates();
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -76,4 +78,5 @@ public:
 	virtual class UBaseState* GetCurrentState() { return CurrentState;  };
 	UFUNCTION()
 	void OnHit(AActor* HitInstigator, FDamageInfo InDamageInfo);
+	void LockAnimation(EDamageImpactType InDamageImpactTime, FHitStopFinishDelegate OnHitFinish);
 };

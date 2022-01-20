@@ -19,9 +19,11 @@ enum EAnimEvt {
 	SLOW_ROTATION,
 	OFF_ROTATION,
 	START_DODGE,
-	END_DODGE
+	END_DODGE,
 };
 
+DECLARE_DELEGATE(FHitStopFinishDelegate);
+DECLARE_DELEGATE_TwoParams(FHitStopStartDelegate, EDamageImpactType, FHitStopFinishDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLatentInteractionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAnimDelegate, EAnimEvt, EventType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDamagedDelegate, AActor*, DamageInstigator, FDamageInfo, DamageInfo);
@@ -63,4 +65,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FAnimDelegate AnimDelegate;
+
+	FHitStopStartDelegate HitStopDelegate;
 };

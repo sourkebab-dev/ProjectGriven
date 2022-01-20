@@ -98,12 +98,10 @@ void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 }
 
 void ABaseWeapon::ActivateCollision() {
-	GLog->Log("ActivateDamage");
 	this->DamageCollider->SetCollisionProfileName("OverlapAll");
 }
 
 void ABaseWeapon::DisableCollision() {
-	GLog->Log("DisableDamage");
 	this->DamageCollider->SetCollisionProfileName("NoCollision");
 	this->Hitlist.Empty();
 }

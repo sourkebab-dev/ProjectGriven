@@ -27,9 +27,6 @@ void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageIn
 	if (this->StatesComp->BlockedTags.HasAny(this->ActionTag)) return;
 
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
-	if (this->HitInstigator) {
-		this->ClearPauseOnLastInstigator();
-	}
 	this->HitInstigator = InHitInstigator;
 	this->DamageInfo = InDamageInfo;
 
@@ -100,55 +97,25 @@ void UKnockedState::StartHitReact()
 
 	this->StatesComp->BlockedTags.AddTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
 	//Sponge: try hitpause
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, this, &UKnockedState::InitiatePause, 0.005);
-}
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
+		if (this->HitInstigator) {
+			FCharacterContext InstigatorCtx;
+			IContextAvailable::Execute_GetContext(this->HitInstigator, InstigatorCtx);
+			InstigatorCtx.EventBus->HitStopDelegate.Execute(this->DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([] {}));
+		}
 
-void UKnockedState::InitiatePause()
-{
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
-	this->CharacterContext.CharacterAnim->Montage_Pause(this->CurrentStunMontage);
+		//freeze -> onFreezefinish
+		this->StatesComp->LockAnimation(this->DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([&] {
+			UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
+			if (!MovementComp) return;
+			FVector KnockBackDir = this->HitInstigator->GetActorForwardVector();
+			KnockBackDir.Normalize();
+			KnockBackDir.Z = 0;
+			this->PushStartLocation = this->CharacterContext.CharacterActor->GetActorLocation();
+			this->PushTargetLocation = this->CharacterContext.CharacterActor->GetActorLocation() + (KnockBackDir * this->PushDistanceMultiplier);
+		}));
 
-	float PauseTime = 0.0;
-	switch (this->DamageInfo.ImpactType)
-	{
-	case EDamageImpactType::DI_HIGH:
-		PauseTime = 0.2;
-		break;
-	case EDamageImpactType::DI_MEDIUM:
-		PauseTime = 0.1;
-		break;
-	case EDamageImpactType::DI_LOW:
-		PauseTime = 0.07;
-		break;
-	default:
-		break;
-	}
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, this, &UKnockedState::OnPauseEnd, PauseTime);
-
-	if (!this->HitInstigator) {
-		GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "Knock No Instigator");
-		GLog->Log("Knock No Instigator");
-		return;
-	}
-	FCharacterContext InstigatorCtx;
-	IContextAvailable::Execute_GetContext(this->HitInstigator, InstigatorCtx);
-	InstigatorCtx.CharacterAnim->Montage_Pause(InstigatorCtx.CharacterAnim->GetCurrentActiveMontage());
-}
-
-void UKnockedState::OnPauseEnd()
-{
-	this->StatesComp->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
-	this->ClearPauseOnLastInstigator();
-
-	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
-	if (!MovementComp) return;
-	FVector KnockBackDir = this->HitInstigator->GetActorForwardVector();
-	KnockBackDir.Normalize();
-	KnockBackDir.Z = 0;
-	this->PushStartLocation = this->CharacterContext.CharacterActor->GetActorLocation();
-	this->PushTargetLocation = this->CharacterContext.CharacterActor->GetActorLocation() + (KnockBackDir * this->PushDistanceMultiplier);
-
+	}), 0.005, false);
 }
 
 void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
@@ -160,24 +127,6 @@ void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
 		this->DamageInfo = FDamageInfo();
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, EInputEvent::IE_Released);
 	}
-	else {
-		this->ClearPauseOnLastInstigator();
-	}
-
-}
-
-void UKnockedState::ClearPauseOnLastInstigator()
-{
-	this->CharacterContext.CharacterAnim->Montage_Resume(this->CurrentStunMontage);
-	if (!this->HitInstigator) {
-		GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "Knock No Instigator");
-		GLog->Log("Knock No Instigator");
-		return;
-	}
-	FCharacterContext InstigatorCtx;
-	IContextAvailable::Execute_GetContext(this->HitInstigator, InstigatorCtx);
-	InstigatorCtx.CharacterAnim->Montage_Resume(InstigatorCtx.CharacterAnim->GetCurrentActiveMontage());
-
 }
 
 void UKnockedState::OnStateExit_Implementation()
