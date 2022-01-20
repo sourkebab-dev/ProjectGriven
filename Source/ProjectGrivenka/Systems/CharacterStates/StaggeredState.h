@@ -13,7 +13,8 @@ UCLASS()
 class PROJECTGRIVENKA_API UStaggeredState : public UBaseState
 {
 	GENERATED_BODY()
-	
+
+	FTimerHandle HitStopTimer;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor* StaggerInstigator;

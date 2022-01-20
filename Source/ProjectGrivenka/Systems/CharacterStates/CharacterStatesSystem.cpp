@@ -147,7 +147,8 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 //sponge: dunno if it's a good way to put it here, also might need to clear delegate
 void UCharacterStatesSystem::LockAnimation(EDamageImpactType InDamageImpactTime, FHitStopFinishDelegate OnHitFinish)
 {
-	this->BlockedTags.AddTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
+	if (this->CrossStateData.IsHitStopped) return;
+	this->CrossStateData.IsHitStopped = true;
 	this->CompContext.CharacterAnim->Montage_Pause(this->CompContext.CharacterAnim->GetCurrentActiveMontage());
 	TMap<EDamageImpactType, float> LockTimeMap = {
 		{ EDamageImpactType::DI_LOW, 0.07 },
@@ -157,6 +158,7 @@ void UCharacterStatesSystem::LockAnimation(EDamageImpactType InDamageImpactTime,
 
 	float LockTime = LockTimeMap[InDamageImpactTime];
 	this->CompContext.CharacterActor->GetWorldTimerManager().SetTimer(this->AnimLockHandle, FTimerDelegate::CreateLambda([&, OnHitFinish] {
+		this->CrossStateData.IsHitStopped = false;
 		this->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
 		OnHitFinish.ExecuteIfBound();
 		this->CompContext.CharacterAnim->Montage_Resume(this->CompContext.CharacterAnim->GetCurrentActiveMontage());

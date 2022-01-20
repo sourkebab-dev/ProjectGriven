@@ -29,6 +29,8 @@ struct FCrossStateData
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool IsLungePooling = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsHitStopped = false;
 };
 
 

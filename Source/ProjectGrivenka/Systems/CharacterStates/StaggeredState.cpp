@@ -29,6 +29,15 @@ void UStaggeredState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAc
 	this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->StaggerMontage);
 	this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->StaggerMontage);
 
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->HitStopTimer, FTimerDelegate::CreateLambda([&] {
+		if (this->StaggerInstigator) {
+			FCharacterContext InstigatorCtx;
+			IContextAvailable::Execute_GetContext(this->StaggerInstigator, InstigatorCtx);
+			InstigatorCtx.EventBus->HitStopDelegate.Execute(EDamageImpactType::DI_HIGH, FHitStopFinishDelegate::CreateLambda([] {}));
+		}
+
+		this->StatesComp->LockAnimation(EDamageImpactType::DI_HIGH, FHitStopFinishDelegate::CreateLambda([&] { })); 
+	}), 0.005, false);
 }
 
 void UStaggeredState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
@@ -41,6 +50,7 @@ void UStaggeredState::AxisHandler_Implementation(EActionList Action, float AxisV
 
 void UStaggeredState::OnStateExit_Implementation()
 {
+	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitStopTimer);
 
 	if (!this->CharacterContext.CharacterAnim) return;
 	FAnimMontageInstance* AnimMontageInstance = this->CharacterContext.CharacterAnim->GetActiveInstanceForMontage(this->StaggerMontage);
@@ -54,9 +64,9 @@ void UStaggeredState::OnStateExit_Implementation()
 
 void UStaggeredState::OnStaggerEnd(UAnimMontage* Montage, bool bInterrupted)
 {
-	this->StaggerInstigator = nullptr;
-	this->StaggerInfo = FDamageInfo();
 	if (!bInterrupted) {
+		this->StaggerInstigator = nullptr;
+		this->StaggerInfo = FDamageInfo();
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, EInputEvent::IE_Released);
 	}
 }

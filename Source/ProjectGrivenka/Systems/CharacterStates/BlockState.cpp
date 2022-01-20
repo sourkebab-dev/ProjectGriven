@@ -105,7 +105,7 @@ void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo
 
 
 			if (CurrentFortitude <= 0) {
-				this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Staggered"), EActionList::ActionNone, EInputEvent::IE_Released);
+				this->CharacterContext.EventBus->StaggerDelegate.Broadcast(this->HitInstigator, this->DamageInfo);
 			}
 		}
 

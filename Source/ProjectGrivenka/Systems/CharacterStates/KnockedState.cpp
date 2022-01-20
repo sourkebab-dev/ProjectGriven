@@ -37,7 +37,7 @@ void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageIn
 
 
 		if (CurrentFortitude <= 0 && this->IsStaggeredOnEmptyFortitude) {
-			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Staggered"), EActionList::ActionNone, EInputEvent::IE_Released);
+			this->CharacterContext.EventBus->StaggerDelegate.Broadcast(this->HitInstigator, this->DamageInfo);
 		}
 		else if (CurrentFortitude / MaxFortitude < 0.6) {
 			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
@@ -95,7 +95,6 @@ void UKnockedState::StartHitReact()
 	//this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentStunMontage);
 
 
-	this->StatesComp->BlockedTags.AddTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
 	//Sponge: try hitpause
 	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
 		if (this->HitInstigator) {
