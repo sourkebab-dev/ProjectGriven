@@ -9,9 +9,8 @@ bool UBaseState::StateValidation_Implementation()
 	return true;
 }
 
-void UBaseState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
+void UBaseState::Init_Implementation(UCharacterStatesSystem* InStatesComp)
 {
-	this->CharacterContext = InContext;
 	this->StatesComp = InStatesComp;
 }
 

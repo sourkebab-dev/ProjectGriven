@@ -3,6 +3,7 @@
 
 #include "EndDialogue.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "ProjectGrivenka/Systems/DialogueSystem/DialogueSystem.h"
 #include "ProjectGrivenka/Systems/DialogueSystem/DialogueSystemAvailable.h"
 
 UEndDialogue::UEndDialogue() {

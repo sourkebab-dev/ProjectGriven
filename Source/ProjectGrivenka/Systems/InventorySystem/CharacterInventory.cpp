@@ -3,6 +3,7 @@
 
 #include "CharacterInventory.h"
 #include "Kismet/GameplayStatics.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/Items/BaseItem.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/Utilities/BaseGameInstance.h"
@@ -74,12 +75,12 @@ void UCharacterInventory::CommitItem()
 		SpawnParameters.Owner = this->GetOwner();
 		if (!this->GetOwner()) return;
 		this->CommitedItemBeltIdx = this->SelectedItemBeltIdx;
-		this->UsedItem = this->CompContext.CharacterActor->GetWorld()->SpawnActor<ABaseItem>(SelectedItemInfo.ItemBaseClass, SpawnParameters);
+		this->UsedItem = this->CompContext->CharacterActor->GetWorld()->SpawnActor<ABaseItem>(SelectedItemInfo.ItemBaseClass, SpawnParameters);
 		this->UsedItem->LoadInfo(SelectedItemInfo);
 
 		//SPONGE: move item to hand ?
 		FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
-		this->UsedItem->AttachToComponent(this->CompContext.SkeletalMeshComp, TransformRules, "WeaponSlot");
+		this->UsedItem->AttachToComponent(this->CompContext->SkeletalMeshComp, TransformRules, "WeaponSlot");
 
 	}
 	else {

@@ -5,7 +5,8 @@
 #include "AIController.h"
 #include "Controllable.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
-#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 
 UControlSystem::UControlSystem() : UBaseContextableComponent() {
@@ -15,14 +16,14 @@ UControlSystem::UControlSystem() : UBaseContextableComponent() {
 void UControlSystem::Init()
 {
 	Super::Init();
-	if (!this->CompContext.EventBus) {
+	if (!this->CompContext->EventBus) {
 		UE_LOG(LogTemp, Error, TEXT("Eventbus Initiation Failure"), *GetNameSafe(this)); return;
 	}
-	this->CompContext.EventBus->PossessionDelegate.AddDynamic(this, &UControlSystem::ControlSystemSetup);
-	this->CompContext.EventBus->UnpossesionDelegate.AddDynamic(this, &UControlSystem::ControlSystemDisable);
-	this->CompContext.EventBus->AnimDelegate.AddDynamic(this, &UControlSystem::AnimHandler);
-	APawn* ActorPawn = Cast<APawn>(this->CompContext.CharacterActor);
-	if (!ActorPawn || !this->CompContext.CharacterActor->Implements<UControllable>()) {
+	this->CompContext->EventBus->PossessionDelegate.AddDynamic(this, &UControlSystem::ControlSystemSetup);
+	this->CompContext->EventBus->UnpossesionDelegate.AddDynamic(this, &UControlSystem::ControlSystemDisable);
+	this->CompContext->EventBus->AnimDelegate.AddDynamic(this, &UControlSystem::AnimHandler);
+	APawn* ActorPawn = Cast<APawn>(this->CompContext->CharacterActor);
+	if (!ActorPawn || !this->CompContext->CharacterActor->Implements<UControllable>()) {
 		UE_LOG(LogTemp, Error, TEXT("ControlSystem Initiation Failure (Owner must be a pawn) & Implements IControllable"), *GetNameSafe(this)); return;
 	}
 	this->ControlSystemSetup(ActorPawn->GetController());
@@ -34,6 +35,7 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 		this->SetComponentTickEnabled(false);
 		return;
 	}
+	this->CompContext->Controller = NewController;
 	UInputComponent* InputComp = this->GetOwner()->InputComponent ? this->GetOwner()->InputComponent : NewController->InputComponent;
 	InputComp->BindAction("Interact", IE_Pressed, this, &UControlSystem::ControlInteract);
 	InputComp->BindAction("Attack", IE_Pressed, this, &UControlSystem::ControlAttack);
@@ -49,6 +51,7 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAxis("CycleItem", this, &UControlSystem::ControlCycleItem);
 	this->SetComponentTickEnabled(true);
 	Cast<APlayerController>(NewController)->bShowMouseCursor = true;
+
 }
 
 void UControlSystem::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -83,14 +86,15 @@ void UControlSystem::AnimHandler(EAnimEvt InAnimEvt)
 }
 
 void UControlSystem::UpdateWorldSpaceVectors() {
-	float YawRotation = IControllable::Execute_GetControlledCameraYawRotation(this->CompContext.CharacterActor);
+	float YawRotation = IControllable::Execute_GetControlledCameraYawRotation(this->CompContext->CharacterActor);
 	FRotator TempRotator = FRotator(0, YawRotation, 0);
-	this->CompContext.Store->MovementModule.WorldSpaceTargetDir = TempRotator.RotateVector(this->RawInput);
+	this->CompContext->MovementModule.WorldSpaceTargetDir = TempRotator.RotateVector(this->RawInput);
 }
 
 void UControlSystem::ControlSystemDisable(AController* OldController)
 {
 	if (!OldController || !OldController->IsPlayerController() || (!this->GetOwner()->InputComponent && !OldController->InputComponent)) return;
+	this->CompContext->Controller = nullptr;
 	UInputComponent* InputComp = this->GetOwner()->InputComponent ? this->GetOwner()->InputComponent : OldController->InputComponent;
 	InputComp->RemoveActionBinding("Interact", IE_Pressed);
 	InputComp->RemoveActionBinding("Attack", IE_Pressed);
@@ -107,7 +111,7 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 
 void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 {
-	APawn* OwnerPawn = Cast<APawn>(this->CompContext.CharacterActor);
+	APawn* OwnerPawn = Cast<APawn>(this->CompContext->CharacterActor);
 	APawn* InstigatorPawn = Cast<APawn>(PossessInstigator);
 	if (!OwnerPawn 
 		|| !InstigatorPawn 
@@ -115,13 +119,14 @@ void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 		|| !InstigatorPawn->GetController()->IsPlayerController()
 		|| !InstigatorPawn->Implements<UContextAvailable>()
 	) return;
-	AController* PlayerController = InstigatorPawn->GetController();
+
+	auto InstigatorCtx = IContextAvailable::Execute_GetContext(InstigatorPawn);
+
+	AController* PlayerController = InstigatorCtx->Controller;
 	PlayerController->UnPossess();
 	
-	FCharacterContext InstigatorCtx;
-	IContextAvailable::Execute_GetContext(InstigatorPawn, InstigatorCtx);
 
-	if (!InstigatorCtx.AIController) {
+	if (!InstigatorCtx->Controller) {
 		InstigatorPawn->SpawnDefaultController();
 		//Note: disabled cause controller is already set in BaseAIController OnPossess
 		//AAIController* InstigatorAIController = Cast<AAIController>(InstigatorPawn->GetController());
@@ -130,7 +135,7 @@ void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 		//}
 	}
 	else {
-		InstigatorCtx.AIController->Possess(InstigatorPawn);
+		InstigatorCtx->Controller->Possess(InstigatorPawn);
 	}
 
 	PlayerController->Possess(OwnerPawn);
@@ -148,7 +153,7 @@ void UControlSystem::ControlMoveForward(float Value)
 	this->RawInput.X = Value;
 	this->RawInput.Normalize();
 	this->UpdateWorldSpaceVectors();
-	this->CompContext.EventBus->StateAxisDelegate.Broadcast(EActionList::ActionMoveForward, Value);
+	this->CompContext->EventBus->StateAxisDelegate.Broadcast(EActionList::ActionMoveForward, Value);
 }
 
 void UControlSystem::ControlMoveRight(float Value)
@@ -156,50 +161,50 @@ void UControlSystem::ControlMoveRight(float Value)
 	this->RawInput.Y = Value;
 	this->RawInput.Normalize();
 	this->UpdateWorldSpaceVectors();
-	this->CompContext.EventBus->StateAxisDelegate.Broadcast(EActionList::ActionMoveRight, Value);
+	this->CompContext->EventBus->StateAxisDelegate.Broadcast(EActionList::ActionMoveRight, Value);
 }
 
 void UControlSystem::ControlAttack()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
 }
 
 void UControlSystem::ControlAttackRelease()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
 }
 
 void UControlSystem::ControlBlock()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionBlock, IE_Pressed);
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionBlock, IE_Pressed);
 }
 
 void UControlSystem::ControlBlockRelease()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionBlock, IE_Released);
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionBlock, IE_Released);
 }
 
 void UControlSystem::ControlToggleAmpField()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionToggleAmpField, IE_Pressed);
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionToggleAmpField, IE_Pressed);
 }
 
 void UControlSystem::ControlUseItem()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionUseItem, IE_Pressed);
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionUseItem, IE_Pressed);
 }
 
 void UControlSystem::ControlVentAmp()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionVentAmp, IE_Pressed);
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionVentAmp, IE_Pressed);
 }
 
 void UControlSystem::ControlDodge()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionDodge, IE_Pressed);
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionDodge, IE_Pressed);
 }
 
 void UControlSystem::ControlInteract()
 {
-	this->CompContext.EventBus->StateActionDelegate.Broadcast(EActionList::ActionInteract, IE_Pressed);
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionInteract, IE_Pressed);
 }

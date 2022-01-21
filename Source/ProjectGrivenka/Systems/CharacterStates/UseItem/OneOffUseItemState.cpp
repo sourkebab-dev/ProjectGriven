@@ -6,6 +6,7 @@
 #include "ProjectGrivenka/Items/BaseItem.h"
 #include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 
 void UOneOffUseItemState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
 {
@@ -15,12 +16,12 @@ void UOneOffUseItemState::ActionHandler_Implementation(EActionList Action, EInpu
 void UOneOffUseItemState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
 {
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
-	ABaseItem* UsedItem = ICharacterInventoryAvailable::Execute_GetCommitedItem(this->CharacterContext.CharacterActor);
-	this->CharacterContext.CharacterAnim->Montage_Play(UsedItem->ItemInfo.UsageAnimation);
+	ABaseItem* UsedItem = ICharacterInventoryAvailable::Execute_GetCommitedItem(this->StatesComp->CompContext->CharacterActor);
+	this->StatesComp->CompContext->CharacterAnim->Montage_Play(UsedItem->ItemInfo.UsageAnimation);
 	FOnMontageEnded EndUseItemDelegate;
 	EndUseItemDelegate.BindUFunction(this, "OnUseItemAnimFinished");
-	this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndUseItemDelegate, UsedItem->ItemInfo.UsageAnimation);
-	this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndUseItemDelegate, UsedItem->ItemInfo.UsageAnimation);
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndUseItemDelegate, UsedItem->ItemInfo.UsageAnimation);
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndUseItemDelegate, UsedItem->ItemInfo.UsageAnimation);
 }
 
 void UOneOffUseItemState::OnStateExit_Implementation()

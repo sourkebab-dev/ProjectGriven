@@ -2,14 +2,16 @@
 
 
 #include "StaggeredState.h"
+#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 
-void UStaggeredState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
+void UStaggeredState::Init_Implementation(UCharacterStatesSystem* InStatesComp)
 {
-	Super::Init_Implementation(InContext, InStatesComp);
-	this->CharacterContext.EventBus->StaggerDelegate.AddDynamic(this, &UStaggeredState::OnReceiveStagger);
+	Super::Init_Implementation(InStatesComp);
+	this->StatesComp->CompContext->EventBus->StaggerDelegate.AddDynamic(this, &UStaggeredState::OnReceiveStagger);
 }
 
 
@@ -23,17 +25,16 @@ void UStaggeredState::OnReceiveStagger(AActor* InHitInstigator, FDamageInfo InDa
 void UStaggeredState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
 {
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
-	this->CharacterContext.CharacterAnim->Montage_Play(this->StaggerMontage);
+	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->StaggerMontage);
 	FOnMontageEnded EndAttackDelegate;
 	EndAttackDelegate.BindUObject(this, &UStaggeredState::OnStaggerEnd);
-	this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->StaggerMontage);
-	this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->StaggerMontage);
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->StaggerMontage);
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->StaggerMontage);
 
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->HitStopTimer, FTimerDelegate::CreateLambda([&] {
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->HitStopTimer, FTimerDelegate::CreateLambda([&] {
 		if (this->StaggerInstigator) {
-			FCharacterContext InstigatorCtx;
-			IContextAvailable::Execute_GetContext(this->StaggerInstigator, InstigatorCtx);
-			InstigatorCtx.EventBus->HitStopDelegate.Execute(EDamageImpactType::DI_HIGH, FHitStopFinishDelegate::CreateLambda([] {}));
+			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->StaggerInstigator);
+			InstigatorCtx->EventBus->HitStopDelegate.Execute(EDamageImpactType::DI_HIGH, FHitStopFinishDelegate::CreateLambda([] {}));
 		}
 
 		this->StatesComp->LockAnimation(EDamageImpactType::DI_HIGH, FHitStopFinishDelegate::CreateLambda([&] { })); 
@@ -50,15 +51,15 @@ void UStaggeredState::AxisHandler_Implementation(EActionList Action, float AxisV
 
 void UStaggeredState::OnStateExit_Implementation()
 {
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitStopTimer);
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitStopTimer);
 
-	if (!this->CharacterContext.CharacterAnim) return;
-	FAnimMontageInstance* AnimMontageInstance = this->CharacterContext.CharacterAnim->GetActiveInstanceForMontage(this->StaggerMontage);
+	if (!this->StatesComp->CompContext->CharacterAnim) return;
+	FAnimMontageInstance* AnimMontageInstance = this->StatesComp->CompContext->CharacterAnim->GetActiveInstanceForMontage(this->StaggerMontage);
 	if (AnimMontageInstance) {
 		AnimMontageInstance->OnMontageEnded.Unbind();
 		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
 	}
-	this->CharacterContext.CharacterAnim->Montage_Stop(0.25);
+	this->StatesComp->CompContext->CharacterAnim->Montage_Stop(0.25);
 
 }
 

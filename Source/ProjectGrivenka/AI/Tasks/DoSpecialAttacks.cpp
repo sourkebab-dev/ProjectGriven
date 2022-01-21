@@ -5,6 +5,7 @@
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/AI/BaseAIController.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 
 UDoSpecialAttacks::UDoSpecialAttacks() {
 	this->NodeName = TEXT("Do Special Attacks(Temp)");
@@ -22,10 +23,9 @@ EBTNodeResult::Type UDoSpecialAttacks::ExecuteTask(UBehaviorTreeComponent& Owner
 	if (ThisPawn) {
 
 		if (!ThisPawn->Implements<UContextAvailable>()) return EBTNodeResult::Failed;
-		FCharacterContext CharCtx;
-		IContextAvailable::Execute_GetContext(ThisPawn, CharCtx);
-		if (CharCtx.CharacterAnim) {
-			CharCtx.CharacterAnim->Montage_Play(this->AttackMontage);
+		auto CharCtx = IContextAvailable::Execute_GetContext(ThisPawn);
+		if (CharCtx->CharacterAnim) {
+			CharCtx->CharacterAnim->Montage_Play(this->AttackMontage);
 			this->MontageLength = this->AttackMontage->SequenceLength;
 			return EBTNodeResult::InProgress;
 		}

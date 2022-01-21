@@ -5,7 +5,7 @@
 #include "ProjectGrivenka/AI/BaseAIController.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
-#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 
 UDodgeToRelative::UDodgeToRelative() {
 	this->NodeName = TEXT("Dodge To Relative");
@@ -22,13 +22,11 @@ EBTNodeResult::Type UDodgeToRelative::ExecuteTask(UBehaviorTreeComponent& OwnerC
 	APawn* ThisPawn = OwnerComp.GetAIOwner()->GetPawn();
 	ABaseAIController* Ctrl = Cast<ABaseAIController>(OwnerComp.GetAIOwner());
 	if (Ctrl && ThisPawn) {
-
 		float Degrees = UVectorMathLib::DegreesBetweenVectors(FVector::ForwardVector , ThisPawn->GetActorForwardVector());
 
 		if (ThisPawn->Implements<UContextAvailable>()) {
-			FCharacterContext ActorCtx;
-			IContextAvailable::Execute_GetContext(ThisPawn, ActorCtx);
-			ActorCtx.Store->MovementModule.WorldSpaceTargetDir = this->RelativeDirection.RotateAngleAxis(Degrees, FVector::UpVector);
+			auto ActorCtx = IContextAvailable::Execute_GetContext(ThisPawn);
+			ActorCtx->MovementModule.WorldSpaceTargetDir = this->RelativeDirection.RotateAngleAxis(Degrees, FVector::UpVector);
 			Ctrl->Dodge();
 			return EBTNodeResult::InProgress;
 		}

@@ -116,7 +116,7 @@ void AControllableCharacter::ActionCycleItem(float Value)
 {
 	int IndexModifier = (int)Value;
 	
-	//this->CharacterContext.InventorySystemComp->SetSelectedItem(this->CharacterContext.InventorySystemComp->SelectedItemBeltIdx + IndexModifier);
+	//this->StatesComp->CompContext->InventorySystemComp->SetSelectedItem(this->StatesComp->CompContext->InventorySystemComp->SelectedItemBeltIdx + IndexModifier);
 }
 */
 
@@ -136,9 +136,9 @@ void AControllableCharacter::SaveData_Implementation()
 	GLog->Log(FString::FromInt(CharIndex));
 	if (CharIndex == -1) return;
 
-//	if (!this->CharacterContext.EquipmentSystemComp->GetEquippedWeapon()) return;
-	//GameInstance->Crew[CharIndex].Equipments.WeaponInfo.BaseClass = this->CharacterContext.EquipmentSystemComp->GetEquippedWeapon()->WeaponTypeClass;
-	//GameInstance->Crew[CharIndex].Equipments.WeaponInfo.VariantId = this->CharacterContext.EquipmentSystemComp->GetEquippedWeapon()->VariantId;
+//	if (!this->StatesComp->CompContext->EquipmentSystemComp->GetEquippedWeapon()) return;
+	//GameInstance->Crew[CharIndex].Equipments.WeaponInfo.BaseClass = this->StatesComp->CompContext->EquipmentSystemComp->GetEquippedWeapon()->WeaponTypeClass;
+	//GameInstance->Crew[CharIndex].Equipments.WeaponInfo.VariantId = this->StatesComp->CompContext->EquipmentSystemComp->GetEquippedWeapon()->VariantId;
 }
 
 void AControllableCharacter::LoadData_Implementation()
@@ -167,7 +167,7 @@ void AControllableCharacter::OnUIEquipmentChange(FGuid InCharGuid, FPersisted_Eq
 	if (!this->CharacterId.IsValid() || InCharGuid != this->CharacterId) return;
 	FPersisted_CharacterCompleteData CharData = FPersisted_CharacterCompleteData();
 	CharData.Equipments.WeaponInfo = InEquipmentInfo;
-	//this->CharacterContext.EquipmentSystemComp->LoadEquipments(CharData);
+	//this->StatesComp->CompContext->EquipmentSystemComp->LoadEquipments(CharData);
 ;}
 
 */

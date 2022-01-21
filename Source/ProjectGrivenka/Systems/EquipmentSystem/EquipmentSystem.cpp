@@ -6,6 +6,7 @@
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/Equipments/Weapons/BaseWeapon.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 
 void UEquipmentSystem::Init()
 {
@@ -27,8 +28,8 @@ void UEquipmentSystem::LoadEquipments(FPersistedEquipments InPersistedEquipments
 		TSubclassOf<ABaseEquipment> WeaponClass = WeaponPrefab->WeaponInfo.GeneralInfo.EquipmentBaseClass;
 		if (WeaponClass && WeaponClass->IsChildOf(ABaseWeapon::StaticClass())) {
 			if (this->WeaponR) {
-				if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-					ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CompContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Weapon"));
+				if (this->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
+					ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CompContext->CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Weapon"));
 				}
 				this->WeaponR->Destroy();
 			}
@@ -37,12 +38,12 @@ void UEquipmentSystem::LoadEquipments(FPersistedEquipments InPersistedEquipments
 			SpawnParams.Owner = this->GetOwner();
 			ABaseWeapon* Weapon = this->GetWorld()->SpawnActor<ABaseWeapon>(WeaponClass, SpawnParams);
 			FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
-			Weapon->AttachToComponent(this->CompContext.SkeletalMeshComp, TransformRules, "WeaponSlot");
+			Weapon->AttachToComponent(this->CompContext->SkeletalMeshComp, TransformRules, "WeaponSlot");
 			this->WeaponR = Weapon;
 			this->WeaponR->LoadData(WeaponPrefab->WeaponInfo);
 
-			if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-				ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CompContext.CharacterActor, this->CompContext.CharacterActor, "Util_WeaponDamage", Weapon->RawDamage, true);
+			if (this->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
+				ICharacterSystemAvailable::Execute_InitEffectByPrefabName(this->CompContext->CharacterActor, this->CompContext->CharacterActor, "Util_WeaponDamage", Weapon->RawDamage, true);
 			}
 		}
 	}

@@ -5,6 +5,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 
 ABaseAIController::ABaseAIController() : AAIController() {
@@ -25,8 +27,8 @@ void ABaseAIController::BeginPlay()
 void ABaseAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (!this->AggroTarget) return;
-	UVectorMathLib::RotateActorToTargetVector(this->ActorCtx.CharacterActor, this->AggroTarget->GetActorLocation(), this->RotationRate, DeltaTime);
+	if (!this->AggroTarget || !this->ActorCtx) return;
+	UVectorMathLib::RotateActorToTargetVector(this->ActorCtx->CharacterActor, this->AggroTarget->GetActorLocation(), this->RotationRate, DeltaTime);
 }
 
 void ABaseAIController::OnPossess(APawn* PossesedPawn)
@@ -40,16 +42,12 @@ void ABaseAIController::OnPossess(APawn* PossesedPawn)
 
 void ABaseAIController::OnUnPossess()
 {
-	if (this->ActorCtx.CharacterActor) {
-		this->ActorCtx.CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);
-		this->ActorCtx.CharacterActor->GetWorldTimerManager().ClearTimer(this->SightRefreshTimer);
-	}
+	this->ActorCtx->CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);
+	this->ActorCtx->CharacterActor->GetWorldTimerManager().ClearTimer(this->SightRefreshTimer);
 
 	this->AggroTarget = nullptr;
 	this->AggroMap.Empty();
-	if (this->ActorCtx.EventBus) {
-		this->ActorCtx.EventBus->DamagedDelegate.RemoveAll(this);
-	}
+	this->ActorCtx->EventBus->DamagedDelegate.RemoveAll(this);
 }
 
 //sponge: might be a better way to catch the context initialization
@@ -57,14 +55,14 @@ void ABaseAIController::OnUnPossess()
 void ABaseAIController::OnContextSetup()
 {
 	if (this->GetPawn() && this->GetPawn()->Implements<UContextAvailable>()) {
-		IContextAvailable::Execute_GetContext(this->GetPawn(), this->ActorCtx);
-		this->ActorCtx.AIController = this;
+		this->ActorCtx = IContextAvailable::Execute_GetContext(this->GetPawn());
+		this->ActorCtx->Controller = this;
 	}
 
-	if (!this->ActorCtx.EventBus) return;
+	if (!this->ActorCtx || !this->ActorCtx->EventBus) return;
 
-	this->ActorCtx.EventBus->DamagedDelegate.AddDynamic(this, &ABaseAIController::OnHit);
-	this->ActorCtx.EventBus->AnimDelegate.AddDynamic(this, &ABaseAIController::SetRotationRate);
+	this->ActorCtx->EventBus->DamagedDelegate.AddDynamic(this, &ABaseAIController::OnHit);
+	this->ActorCtx->EventBus->AnimDelegate.AddDynamic(this, &ABaseAIController::SetRotationRate);
 }
 
 void ABaseAIController::SetRotationRate(EAnimEvt InAnimEvt)
@@ -127,7 +125,7 @@ void ABaseAIController::AggroRefresh()
 			TempAggroPoint = Outkeys[i];
 		}
 
-		float Dist = Outkeys[i]->GetDistanceTo(this->ActorCtx.CharacterActor);
+		float Dist = Outkeys[i]->GetDistanceTo(this->ActorCtx->CharacterActor);
 		if (Dist < ClosestDist) {
 			ClosestAggro = Outkeys[i];
 			ClosestDist = Dist;
@@ -141,7 +139,7 @@ void ABaseAIController::AggroRefresh()
 
 void ABaseAIController::OnActorSeen(AActor* SeenActor)
 {
-	if (CheckHostility(this->ActorCtx.CharacterActor, SeenActor) && !this->AggroMap.Find(SeenActor)) {
+	if (CheckHostility(this->ActorCtx->CharacterActor, SeenActor) && !this->AggroMap.Find(SeenActor)) {
 		if (this->AggroMap.Num() == 0) this->SetAggroTarget(SeenActor);
 		this->AddAggroActor(SeenActor , 0);
 		this->ChangeAIState(EAIStateType::COMBAT);
@@ -150,19 +148,19 @@ void ABaseAIController::OnActorSeen(AActor* SeenActor)
 
 bool ABaseAIController::CheckHostility(AActor* SourceActor, AActor* HostilityToCheck)
 {
-	APawn* SourcePawn = Cast<APawn>(SourceActor);
-	APawn* CheckPawn = Cast<APawn>(HostilityToCheck);
-	if (!CheckPawn || !CheckPawn->GetController() || !SourcePawn || !SourcePawn->GetController()) return false;
+	UContextSystem* SourceCtx = IContextAvailable::Execute_GetContext(SourceActor);
+	UContextSystem* ToCheckCtx = IContextAvailable::Execute_GetContext(HostilityToCheck);
 
-	ABaseAIController* SourceController = Cast<ABaseAIController>(SourcePawn->GetController());
-	ABaseAIController* CheckedController = Cast<ABaseAIController>(CheckPawn->GetController());
+	if (!SourceCtx->Controller || !ToCheckCtx->Controller) return false;
 
+	ABaseAIController* SourceAIController = Cast<ABaseAIController>(SourceCtx->Controller);
+	ABaseAIController* CheckedAIController = Cast<ABaseAIController>(ToCheckCtx->Controller);
 	EHostilityType TypeA, TypeB;
-	if (SourcePawn->GetController()->IsPlayerController()) TypeA = EHostilityType::ALLY;
-	else TypeA = SourceController->HostilityType;
+	if (SourceCtx->Controller->IsPlayerController()) TypeA = EHostilityType::ALLY;
+	else TypeA = SourceAIController->HostilityType;
 
-	if (CheckPawn->GetController()->IsPlayerController()) TypeB = EHostilityType::ALLY;
-	else TypeB = CheckedController->HostilityType;
+	if (ToCheckCtx->Controller->IsPlayerController()) TypeB = EHostilityType::ALLY;
+	else TypeB = CheckedAIController->HostilityType;
 
 	switch (TypeA)
 	{
@@ -193,7 +191,7 @@ void ABaseAIController::ChangeAIState(TEnumAsByte<EAIStateType> NewAIState)
 		this->GetWorldTimerManager().SetTimer(this->AggroRefreshTimer, this, &ABaseAIController::AggroRefresh, 5, true, 0);
 	}
 	else {
-		this->ActorCtx.CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);
+		this->ActorCtx->CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);
 		this->AggroMap.Empty();
 		this->SetAggroTarget(nullptr);
 	}
@@ -242,24 +240,24 @@ void ABaseAIController::BTStart() {
 
 
 void ABaseAIController::Dodge() {
-	if (!this->ActorCtx.EventBus) return;
-	this->ActorCtx.EventBus->StateActionDelegate.Broadcast(EActionList::ActionDodge, IE_Pressed);
+	if (!this->ActorCtx->EventBus) return;
+	this->ActorCtx->EventBus->StateActionDelegate.Broadcast(EActionList::ActionDodge, IE_Pressed);
 }
 
 void ABaseAIController::Attack() {
-	if (!this->ActorCtx.EventBus) return;
-	this->ActorCtx.EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
-	this->ActorCtx.EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
+	if (!this->ActorCtx->EventBus) return;
+	this->ActorCtx->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
+	this->ActorCtx->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
 }
 
 void ABaseAIController::HeavyAttackCharge() {
-	if (!this->ActorCtx.EventBus) return;
-	this->ActorCtx.EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
+	if (!this->ActorCtx->EventBus) return;
+	this->ActorCtx->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
 }
 
 void ABaseAIController::HeavyAttackRelease() {
-	if (!this->ActorCtx.EventBus) return;
-	this->ActorCtx.EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
+	if (!this->ActorCtx->EventBus) return;
+	this->ActorCtx->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
 }
 
 void ABaseAIController::SetBBAggroTarget(AActor* NewAggroTarget)

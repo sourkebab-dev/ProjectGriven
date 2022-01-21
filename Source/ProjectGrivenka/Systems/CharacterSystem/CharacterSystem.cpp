@@ -11,6 +11,7 @@
 #include "Effects/FortitudeDamage.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 
 
 // Called when the game starts
@@ -23,8 +24,8 @@ void UCharacterSystem::BeginPlay()
 void UCharacterSystem::Init()
 {
 	Super::Init();
-	if (!this->CompContext.EventBus) return;
-	//this->CompContext.EventBus->ItemUsageDelegate.AddUObject(this, &UCharacterSystem::InitFXByPrefab);
+	if (!this->CompContext->EventBus) return;
+	//this->CompContext->EventBus->ItemUsageDelegate.AddUObject(this, &UCharacterSystem::InitFXByPrefab);
 	if (this->PrefabData) this->InitializeAttributes(this->PrefabData->CharacterData.Attributes);
 }
 

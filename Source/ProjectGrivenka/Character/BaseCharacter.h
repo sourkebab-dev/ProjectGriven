@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "ProjectGrivenka/Interfaces/Interactable.h"
-#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/Systems/DialogueSystem/DialogueSystemAvailable.h"
 #include "ProjectGrivenka/PersistedData/Persistable.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
@@ -14,16 +13,13 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLatentActionDelegate);
 
 UCLASS()
-class PROJECTGRIVENKA_API ABaseCharacter : public ACharacter, public IInteractable, public IDialogueSystemAvailable, public IContextAvailable
+class PROJECTGRIVENKA_API ABaseCharacter : public ACharacter, public IInteractable, public IDialogueSystemAvailable
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FCharacterContext CharacterContext;
 
 	UPROPERTY(BlueprintAssignable, VisibleAnywhere, BlueprintCallable, Category = "Events")
 	FLatentActionDelegate LatentActionDelegate;
@@ -88,10 +84,6 @@ public:
 	void RequestInteractionInfo(AActor* InteractionInstigator, FInteractionInfo& OutInteractionInfo);
 	virtual void RequestInteractionInfo_Implementation(AActor* InteractInstigator, FInteractionInfo& OutInteractionInfo) override;
 	
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void GetContext(FCharacterContext& OutContext);
-	virtual void GetContext_Implementation(FCharacterContext& OutContext) override;
-
 	UFUNCTION(BlueprintCallable)
 	void RotateToTarget();
 	

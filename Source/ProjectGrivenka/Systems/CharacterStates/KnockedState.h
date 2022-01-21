@@ -63,7 +63,7 @@ public:
 	FStunMontage StunDownMontage;
 
 public:
-	virtual void Init_Implementation(FCharacterContext InContext, class UCharacterStatesSystem* InStatesComp) override;
+	virtual void Init_Implementation(class UCharacterStatesSystem* InStatesComp) override;
 	virtual void Tick_Implementation(float DeltaTime);
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
 	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;

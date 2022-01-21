@@ -20,7 +20,6 @@ class PROJECTGRIVENKA_API ULungeAttackState : public UBaseState
 	FOnMontageEnded LungeEndDelegate;
 
 public:
-	virtual void Init_Implementation(FCharacterContext InContext, class UCharacterStatesSystem* InStatesComp) override;
 	virtual bool StateValidation_Implementation() override;
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
 	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;

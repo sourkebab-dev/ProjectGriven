@@ -4,7 +4,7 @@
 #include "BaseWeapon.h"
 #include "Components/CapsuleComponent.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
-#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/AI/BaseAIController.h"
@@ -75,23 +75,20 @@ void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 
 	if (OtherActor->Implements<UContextAvailable>()) {
 		if (this->GetOwner()) {
-			GLog->Log("DamageAvailCtx");
-			FCharacterContext DamagableCtx;
-			FCharacterContext InstigatorCtx;
-			IContextAvailable::Execute_GetContext(OtherActor, DamagableCtx);
-			IContextAvailable::Execute_GetContext(this->GetOwner(), InstigatorCtx);
+			auto DamagableCtx = IContextAvailable::Execute_GetContext(OtherActor);
+			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->GetOwner());
 
-			if (!ABaseAIController::CheckHostility(DamagableCtx.CharacterActor, InstigatorCtx.CharacterActor)) return;
+			if (!ABaseAIController::CheckHostility(DamagableCtx->CharacterActor, InstigatorCtx->CharacterActor)) return;
 
 			FDamageInfo DamageInfo;
-			DamageInfo.MovingValues = InstigatorCtx.Store->CombatModule.CurrentAttack.MovingValues;
-			DamageInfo.DamageDirection = InstigatorCtx.Store->CombatModule.CurrentAttack.AttackDirection;
-			DamageInfo.ImpactType = InstigatorCtx.Store->CombatModule.CurrentAttack.ImpactType;
+			DamageInfo.MovingValues = InstigatorCtx->CombatModule.CurrentAttack.MovingValues;
+			DamageInfo.DamageDirection = InstigatorCtx->CombatModule.CurrentAttack.AttackDirection;
+			DamageInfo.ImpactType = InstigatorCtx->CombatModule.CurrentAttack.ImpactType;
 			DamageInfo.ElementType = this->ElementType;
 			DamageInfo.RawPhysicalDamage = this->RawDamage;
 			DamageInfo.RawElementalDamage = this->ElementalDamage;
 			DamageInfo.IsFixed = false;
-			DamagableCtx.EventBus->DamagedDelegate.Broadcast(this->GetOwner(), DamageInfo);
+			DamagableCtx->EventBus->DamagedDelegate.Broadcast(this->GetOwner(), DamageInfo);
 		}
 	}
 

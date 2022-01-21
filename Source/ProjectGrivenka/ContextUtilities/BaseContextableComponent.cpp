@@ -2,6 +2,8 @@
 
 
 #include "BaseContextableComponent.h"
+#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "EventBus.h"
 
 // Sets default values for this component's properties
@@ -18,7 +20,7 @@ void UBaseContextableComponent::Init()
 		return;
 	}
 	
-	IContextAvailable::Execute_GetContext(this->GetOwner(), this->CompContext);
+	this->CompContext = IContextAvailable::Execute_GetContext(this->GetOwner());
 }
 
 

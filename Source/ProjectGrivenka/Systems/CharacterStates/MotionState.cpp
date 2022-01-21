@@ -3,15 +3,15 @@
 
 #include "MotionState.h"
 #include "GameFramework/PawnMovementComponent.h"
-#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemDefinitions.h"
 
 void UMotionState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
 {
-	bool IsStaminaAllowed = this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>() 
-		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Stamina) > 0 : true;
+	bool IsStaminaAllowed = this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>() 
+		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->StatesComp->CompContext->CharacterActor, EAttributeCode::ATT_Stamina) > 0 : true;
 
 	if (Action == EActionList::ActionDodge && EventType == IE_Pressed && IsStaminaAllowed) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Dodge"), EActionList::ActionDodge, IE_Pressed);
@@ -39,9 +39,7 @@ void UMotionState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Interact"), EActionList::ActionInteract, IE_Pressed);
 	}
 
-	GLog->Log("ActionIn");
 	if (Action == EActionList::ActionBlock && EventType == IE_Pressed) {
-		GLog->Log("BLK");
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Block"), EActionList::ActionBlock, IE_Pressed);
 	}
 }
@@ -57,8 +55,8 @@ void UMotionState::AxisHandler_Implementation(EActionList Action, float AxisValu
 }
 
 void UMotionState::MoveCharacter() {
-	if (!this->CharacterContext.MovementComp) return;
-	this->CharacterContext.MovementComp->AddInputVector(this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir);
+	if (!this->StatesComp->CompContext->MovementComp) return;
+	this->StatesComp->CompContext->MovementComp->AddInputVector(this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir);
 }
 
 void UMotionState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) {

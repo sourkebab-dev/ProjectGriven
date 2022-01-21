@@ -87,7 +87,7 @@ void UWeaponDamage::OnExecuteEffect() {
 	
 	if (this->DamageInfo.IsAbsorbed) {
 		//Sponge: need to recheck numbers
-		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Stamina, ReceiverStamina - 50);
+		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Stamina, ReceiverStamina - 10);
 	}
 
 	//sponge: might need amp def

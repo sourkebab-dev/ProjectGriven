@@ -3,6 +3,7 @@
 
 #include "CharacterStatesSystem.h"
 #include "BaseState.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 
@@ -15,12 +16,12 @@ void UCharacterStatesSystem::Init()
 	Super::Init();
 	this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
 	this->InitializePersistantStates();
-	if (!this->CompContext.EventBus) return;
-	this->CompContext.EventBus->StateActionDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentActionHandler);
-	this->CompContext.EventBus->StateAxisDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentAxisHandler);
-	this->CompContext.EventBus->AnimDelegate.AddDynamic(this, &UCharacterStatesSystem::AnimEventsHandler);
-	this->CompContext.EventBus->DamagedDelegate.AddDynamic(this, &UCharacterStatesSystem::OnHit);
-	this->CompContext.EventBus->HitStopDelegate.BindUObject(this, &UCharacterStatesSystem::LockAnimation);
+	if (!this->CompContext->EventBus) return;
+	this->CompContext->EventBus->StateActionDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentActionHandler);
+	this->CompContext->EventBus->StateAxisDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentAxisHandler);
+	this->CompContext->EventBus->AnimDelegate.AddDynamic(this, &UCharacterStatesSystem::AnimEventsHandler);
+	this->CompContext->EventBus->DamagedDelegate.AddDynamic(this, &UCharacterStatesSystem::OnHit);
+	this->CompContext->EventBus->HitStopDelegate.BindUObject(this, &UCharacterStatesSystem::LockAnimation);
 }
 
 void UCharacterStatesSystem::InitializePersistantStates()
@@ -31,7 +32,7 @@ void UCharacterStatesSystem::InitializePersistantStates()
 		if (!DefaultObj) continue;
 		if (DefaultObj->IsPersistant) {
 			UBaseState* TempState = DuplicateObject(DefaultObj, this);
-			TempState->Init(this->CompContext, this);
+			TempState->Init(this);
 			this->PersistantStates.Add(TempState);
 		}
 	}
@@ -97,7 +98,7 @@ void UCharacterStatesSystem::ChangeState(FGameplayTag ChangeTo, EActionList NewE
 			if (!DefaultObj) continue;
 			if (ChangeTo.MatchesAnyExact(DefaultObj->ActionTag)) {
 				UBaseState* TempState = DuplicateObject(DefaultObj, this);
-				TempState->Init(this->CompContext, this);
+				TempState->Init(this);
 				ChangeToObj = TempState;
 				break;
 			}
@@ -128,7 +129,7 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 {
 
 	if (this->CurrentState->ActionTag.HasTag(FGameplayTag::RequestGameplayTag("ActionStates.Block")) 
-		&& UVectorMathLib::CheckBlockDirection(HitInstigator->GetActorLocation(), this->CompContext.CharacterActor->GetActorLocation(), this->CompContext.CharacterActor->GetActorForwardVector())) {
+		&& UVectorMathLib::CheckBlockDirection(HitInstigator->GetActorLocation(), this->CompContext->CharacterActor->GetActorLocation(), this->CompContext->CharacterActor->GetActorForwardVector())) {
 		GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "Blocked");
 		InDamageInfo.IsAbsorbed = true;
 		this->BlockHitDelegate.Broadcast(HitInstigator, InDamageInfo);
@@ -138,8 +139,8 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 		this->TrueHitDelegate.Broadcast(HitInstigator, InDamageInfo);
 	}
 
-	if (this->CompContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-		ICharacterSystemAvailable::Execute_InitEffectReceiveHit(this->CompContext.CharacterActor, HitInstigator, InDamageInfo);
+	if (this->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_InitEffectReceiveHit(this->CompContext->CharacterActor, HitInstigator, InDamageInfo);
 	}
 
 }
@@ -149,7 +150,7 @@ void UCharacterStatesSystem::LockAnimation(EDamageImpactType InDamageImpactTime,
 {
 	if (this->CrossStateData.IsHitStopped) return;
 	this->CrossStateData.IsHitStopped = true;
-	this->CompContext.CharacterAnim->Montage_Pause(this->CompContext.CharacterAnim->GetCurrentActiveMontage());
+	this->CompContext->CharacterAnim->Montage_Pause(this->CompContext->CharacterAnim->GetCurrentActiveMontage());
 	TMap<EDamageImpactType, float> LockTimeMap = {
 		{ EDamageImpactType::DI_LOW, 0.07 },
 		{ EDamageImpactType::DI_MEDIUM, 0.1 },
@@ -157,10 +158,10 @@ void UCharacterStatesSystem::LockAnimation(EDamageImpactType InDamageImpactTime,
 	};
 
 	float LockTime = LockTimeMap[InDamageImpactTime];
-	this->CompContext.CharacterActor->GetWorldTimerManager().SetTimer(this->AnimLockHandle, FTimerDelegate::CreateLambda([&, OnHitFinish] {
+	this->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->AnimLockHandle, FTimerDelegate::CreateLambda([&, OnHitFinish] {
 		this->CrossStateData.IsHitStopped = false;
 		this->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
 		OnHitFinish.ExecuteIfBound();
-		this->CompContext.CharacterAnim->Montage_Resume(this->CompContext.CharacterAnim->GetCurrentActiveMontage());
+		this->CompContext->CharacterAnim->Montage_Resume(this->CompContext->CharacterAnim->GetCurrentActiveMontage());
 	}), LockTime, false);
 }

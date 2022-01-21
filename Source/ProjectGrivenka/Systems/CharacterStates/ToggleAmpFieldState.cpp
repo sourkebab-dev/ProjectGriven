@@ -5,12 +5,13 @@
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 
 void UToggleAmpFieldState::RaiseAmpField()
 {
 	this->StatesComp->CrossStateData.IsAmpActivated = true;
-	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-		ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CharacterContext.CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Defaults.Regen.Amp"));
+	if (this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->StatesComp->CompContext->CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Defaults.Regen.Amp"));
 	}
 	this->EndAmpAction();
 }
@@ -18,8 +19,8 @@ void UToggleAmpFieldState::RaiseAmpField()
 void UToggleAmpFieldState::LowerAmpField()
 {
 	this->StatesComp->CrossStateData.IsAmpActivated = false;
-	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-		ICharacterSystemAvailable::Execute_InitEffectByRegenName(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, "Util_AmpRegen");
+	if (this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_InitEffectByRegenName(this->StatesComp->CompContext->CharacterActor, this->StatesComp->CompContext->CharacterActor, "Util_AmpRegen");
 	}
 	this->EndAmpAction();
 }
@@ -42,8 +43,8 @@ void UToggleAmpFieldState::OnStateEnter_Implementation(FGameplayTagContainer InP
 	else {
 		EndMontageDelegate.BindUFunction(this, "RaiseAmpField");
 	}
-	//this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndMontageDelegate, this->CharacterInstance->CommonAnimationData.ToggleAmpField);
-	//this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndMontageDelegate, this->CharacterInstance->CommonAnimationData.ToggleAmpField);
+	//this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndMontageDelegate, this->CharacterInstance->CommonAnimationData.ToggleAmpField);
+	//this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndMontageDelegate, this->CharacterInstance->CommonAnimationData.ToggleAmpField);
 
 }
 
@@ -51,5 +52,5 @@ void UToggleAmpFieldState::OnStateExit_Implementation()
 {
 	UGrivenkaDataSingleton* CommonData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	//this->CharacterInstance->SetRotationRate(CommonData->CommonRotationRate.NormalRotationRate);
-	this->CharacterContext.CharacterAnim->StopAllMontages(0.25);
+	this->StatesComp->CompContext->CharacterAnim->StopAllMontages(0.25);
 }

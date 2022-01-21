@@ -6,7 +6,6 @@
 #include "AIController.h"
 #include "GameplayTagContainer.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
-#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "BaseAIController.generated.h"
 
@@ -31,11 +30,11 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UBehaviorTree* BTree;
 
+	UPROPERTY(BlueprintReadWrite)
+	class UContextSystem* ActorCtx;
+
 	UPROPERTY(EditAnywhere)
 	UBlackboardComponent* BlackboardComp;
-	
-	UPROPERTY(EditAnywhere)
-	FCharacterContext ActorCtx;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TEnumAsByte<EAIStateType> DefaultAIState = EAIStateType::IDLE;

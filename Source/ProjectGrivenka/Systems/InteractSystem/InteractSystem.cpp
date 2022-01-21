@@ -5,17 +5,18 @@
 #include "Components/BoxComponent.h"
 #include "ProjectGrivenka/Interfaces/Interactable.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 
 void UInteractSystem::Init()
 {
 	Super::Init();
-	if (!this->CompContext.EventBus) {
+	if (!this->CompContext->EventBus) {
 		UE_LOG(LogTemp, Error, TEXT("Eventbus Initiation Failure"), *GetNameSafe(this)); return;
 	}
-	if (!this->CompContext.CharacterActor->Implements<UInteractable>()) {
+	if (!this->CompContext->CharacterActor->Implements<UInteractable>()) {
 		UE_LOG(LogTemp, Error, TEXT("InteractSystem Initiation Failure"), *GetNameSafe(this)); return;
 	}
-	UBoxComponent* InteractCollider = IInteractable::Execute_GetInteractionCollider(this->CompContext.CharacterActor);
+	UBoxComponent* InteractCollider = IInteractable::Execute_GetInteractionCollider(this->CompContext->CharacterActor);
 	if (!InteractCollider) {
 		UE_LOG(LogTemp, Error, TEXT("InteractSystem Collider Initiation Failure"), *GetNameSafe(this)); return;
 	}
@@ -27,7 +28,7 @@ void UInteractSystem::Init()
 void UInteractSystem::SaveInteractable(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	//SPONGE: need to check if player is looking at item
-	if (!OtherActor->Implements<UInteractable>()|| !IInteractable::Execute_CheckIsInteractable(OtherActor, this->CompContext.CharacterActor) || OtherActor == this->CompContext.CharacterActor) return;
+	if (!OtherActor->Implements<UInteractable>()|| !IInteractable::Execute_CheckIsInteractable(OtherActor, this->CompContext->CharacterActor) || OtherActor == this->CompContext->CharacterActor) return;
 	this->InteractableItem = OtherActor;
 }
 
@@ -46,10 +47,10 @@ AActor* UInteractSystem::GetInteractableItem()
 
 void UInteractSystem::Interact(AActor* InteractInstigator)
 {
-	if (!this->CompContext.CharacterActor->Implements<UInteractable>()) {
+	if (!this->CompContext->CharacterActor->Implements<UInteractable>()) {
 		UE_LOG(LogTemp, Error, TEXT("InteractSystem Initiation Failure"), *GetNameSafe(this)); return;
 	}
-	bool IsInteractable = IInteractable::Execute_CheckIsInteractable(this->CompContext.CharacterActor, InteractInstigator);
+	bool IsInteractable = IInteractable::Execute_CheckIsInteractable(this->CompContext->CharacterActor, InteractInstigator);
 	if (IsInteractable) {
 		this->OnInteract.Broadcast(InteractInstigator);
 	}

@@ -26,7 +26,6 @@ class PROJECTGRIVENKA_API UWaitComboOpen : public UBTTask_BlackboardBase
 
 	FTimerHandle ForceExitTimer;
 	FTimerHandle PaddingTimer;
-	FCharacterContext CharCtx;
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;

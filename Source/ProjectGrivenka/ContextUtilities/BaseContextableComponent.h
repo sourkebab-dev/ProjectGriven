@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "BaseContextableComponent.generated.h"
 
 
@@ -15,7 +14,7 @@ class PROJECTGRIVENKA_API UBaseContextableComponent : public UActorComponent
 
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FCharacterContext CompContext;
+	class UContextSystem* CompContext;
 
 protected:
 	UBaseContextableComponent();

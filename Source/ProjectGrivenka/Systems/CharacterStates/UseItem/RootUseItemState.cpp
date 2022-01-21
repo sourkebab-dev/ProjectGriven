@@ -8,13 +8,14 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "ProjectGrivenka/Items/BaseItem.h"
 #include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
-#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
+#include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 
 //sponge: need to accomodate cases for actors without inventory comp
 bool URootUseItemState::StateValidation_Implementation()
 {
-	return this->CharacterContext.CharacterActor->Implements<UCharacterInventoryAvailable>() 
-		&& ICharacterInventoryAvailable::Execute_GetSelectedItemCount(this->CharacterContext.CharacterActor) > 0;
+	return this->StatesComp->CompContext->CharacterActor->Implements<UCharacterInventoryAvailable>() 
+		&& ICharacterInventoryAvailable::Execute_GetSelectedItemCount(this->StatesComp->CompContext->CharacterActor) > 0;
 }
 
 void URootUseItemState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
@@ -33,7 +34,7 @@ void URootUseItemState::AxisHandler_Implementation(EActionList Action, float Axi
 
 	if (Action == EActionList::ActionMoveForward || Action == EActionList::ActionMoveRight)
 	{
-		this->CharacterContext.MovementComp->AddInputVector(this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir);
+		this->StatesComp->CompContext->MovementComp->AddInputVector(this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir);
 	}
 }
 
@@ -41,8 +42,8 @@ void URootUseItemState::OnStateEnter_Implementation(FGameplayTagContainer InPrev
 {
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
 
-	ICharacterInventoryAvailable::Execute_CommitItem(this->CharacterContext.CharacterActor);
-	switch (ICharacterInventoryAvailable::Execute_GetCommitedItem(this->CharacterContext.CharacterActor)->ItemInfo.UsageType)
+	ICharacterInventoryAvailable::Execute_CommitItem(this->StatesComp->CompContext->CharacterActor);
+	switch (ICharacterInventoryAvailable::Execute_GetCommitedItem(this->StatesComp->CompContext->CharacterActor)->ItemInfo.UsageType)
 	{
 		case EItemUsageType::IUT_ONEOFF:
 			this->CurrentUseItemState = NewObject<UOneOffUseItemState>(this);
@@ -57,7 +58,7 @@ void URootUseItemState::OnStateEnter_Implementation(FGameplayTagContainer InPrev
 			break;
 	}
 
-	this->CurrentUseItemState->Init_Implementation(this->CharacterContext, this->StatesComp);
+	this->CurrentUseItemState->Init_Implementation(this->StatesComp);
 	this->CurrentUseItemState->OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
 }
 

@@ -129,8 +129,8 @@ void ABaseCharacter::LoadData_Implementation()
 	this->GetMesh()->SetAnimInstanceClass(CharacterData.Appearance.AnimClass);
 
 	//Attributes Load
-	//this->CharacterContext.CharacterSystemComp->InitializeAttributes(CharacterData.Attributes);
-	//this->CharacterContext.EquipmentSystemComp->LoadEquipments(CharacterData);
+	//this->StatesComp->CompContext->CharacterSystemComp->InitializeAttributes(CharacterData.Attributes);
+	//this->StatesComp->CompContext->EquipmentSystemComp->LoadEquipments(CharacterData);
 
 
 	//AI Load
@@ -140,10 +140,6 @@ void ABaseCharacter::LoadData_Implementation()
 }
 
 #pragma region Character Functional Shit
-void ABaseCharacter::GetContext_Implementation(FCharacterContext& OutContext)
-{
-	OutContext = this->CharacterContext;
-}
 
 void ABaseCharacter::RotateToTarget()
 {

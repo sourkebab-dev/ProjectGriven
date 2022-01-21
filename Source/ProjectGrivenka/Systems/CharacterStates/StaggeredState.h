@@ -28,7 +28,7 @@ public:
 	void OnReceiveStagger(AActor* InHitInstigator, FDamageInfo InDamageInfo);
 	UFUNCTION(BlueprintCallable)
 	void OnStaggerEnd(UAnimMontage* Montage, bool bInterrupted);
-	virtual void Init_Implementation(FCharacterContext InContext, class UCharacterStatesSystem* InStatesComp) override;
+	virtual void Init_Implementation(class UCharacterStatesSystem* InStatesComp) override;
 	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
 	virtual void AxisHandler_Implementation(EActionList Action, float AxisValue) override;

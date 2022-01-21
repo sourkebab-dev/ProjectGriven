@@ -5,12 +5,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
-#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 
-void UDodgeState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
+void UDodgeState::Init_Implementation(UCharacterStatesSystem* InStatesComp)
 {
-	Super::Init_Implementation(InContext, InStatesComp);
+	Super::Init_Implementation(InStatesComp);
 	FOnTimelineFloat DodgeTick_ImplementationDelegate;
 	FOnTimelineEvent FinishDelegate;
 	DodgeTick_ImplementationDelegate.BindUFunction(this, "OnDodging");
@@ -23,8 +23,8 @@ void UDodgeState::Init_Implementation(FCharacterContext InContext, UCharacterSta
 }
 
 bool UDodgeState::StateValidation_Implementation() {
-	return this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>() 
-		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Stamina) > 0 : true;
+	return this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>() 
+		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->StatesComp->CompContext->CharacterActor, EAttributeCode::ATT_Stamina) > 0 : true;
 }
 
 void UDodgeState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
@@ -39,15 +39,15 @@ void UDodgeState::ActionHandler_Implementation(EActionList Action, EInputEvent E
 void UDodgeState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
 {
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
-	this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir = this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir.IsZero()
-		? this->CharacterContext.CharacterActor->GetActorForwardVector() * -1 : this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir;
-	this->TempCurrentLocation = this->CharacterContext.CharacterActor->GetActorLocation();
-	this->DodgeTargetLocation = this->TempCurrentLocation + this->CharacterContext.Store->MovementModule.WorldSpaceTargetDir * 250.0;
+	this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir = this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir.IsZero()
+		? this->StatesComp->CompContext->CharacterActor->GetActorForwardVector() * -1 : this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir;
+	this->TempCurrentLocation = this->StatesComp->CompContext->CharacterActor->GetActorLocation();
+	this->DodgeTargetLocation = this->TempCurrentLocation + this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir * 250.0;
 	this->DodgeTimeline.PlayFromStart();
-	this->CharacterContext.EventBus->AnimDelegate.Broadcast(EAnimEvt::START_DODGE);
+	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::START_DODGE);
 
 	//SPONGE: i should probably adjust this setting but it works anyway lol
-	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
+	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
 	this->TempWalkSpeed = MovementComp->MaxWalkSpeed;
 	this->TempGroundFriction = MovementComp->BrakingDecelerationWalking;
 	this->TempAcceleration = MovementComp->MaxAcceleration;
@@ -57,13 +57,13 @@ void UDodgeState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAction
 	MovementComp->MaxAcceleration = 3000;
 	MovementComp->MaxWalkSpeed = 999999;
 
-	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, 10);
+	if (this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->StatesComp->CompContext->CharacterActor, this->StatesComp->CompContext->CharacterActor, 10);
 	}
 
 
 	this->StatesComp->CrossStateData.IsLungeAvailable = false;
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->LungeTimer);
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->LungeTimer);
 }
 
 void UDodgeState::Tick_Implementation(float DeltaTime) {
@@ -78,24 +78,24 @@ void UDodgeState::OnStateExit_Implementation()
 	this->DodgeTargetLocation = FVector::ZeroVector;
 	this->DodgeTimeline.Stop();
 
-	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
+	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
 	MovementComp->MaxWalkSpeed = this->TempWalkSpeed;
 	MovementComp->MaxAcceleration = this->TempAcceleration;
 	MovementComp->BrakingDecelerationWalking = this->TempGroundFriction;
 	MovementComp->BrakingFrictionFactor = this->TempBrakingFriction;
-	this->CharacterContext.EventBus->AnimDelegate.Broadcast(EAnimEvt::END_DODGE);
+	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::END_DODGE);
 }
 
 void UDodgeState::OnDodging(float InterpValue) {
 	FVector Interpolation = FMath::Lerp(this->TempCurrentLocation, this->DodgeTargetLocation, InterpValue);
-	this->CharacterContext.MovementComp->AddInputVector(Interpolation - this->CharacterContext.CharacterActor->GetActorLocation());
+	this->StatesComp->CompContext->MovementComp->AddInputVector(Interpolation - this->StatesComp->CompContext->CharacterActor->GetActorLocation());
 	GLog->Log("OnDodging");
 }
 
 void UDodgeState::OnFinishDodging() {
 	this->StatesComp->CrossStateData.IsLungeAvailable = true;
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->LungeTimer, this, &UDodgeState::DeactivateLunge, 0.2, false, -1.0f);
-	this->CharacterContext.EventBus->AnimDelegate.Broadcast(EAnimEvt::END_DODGE);
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->LungeTimer, this, &UDodgeState::DeactivateLunge, 0.2, false, -1.0f);
+	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::END_DODGE);
 	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
 	GLog->Log("FinishDodge");
 }

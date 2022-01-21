@@ -6,7 +6,6 @@
 #include "GameplayTagContainer.h"
 #include "UObject/NoExportTypes.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
-#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "BaseState.generated.h"
 
 /**
@@ -17,8 +16,6 @@ class PROJECTGRIVENKA_API UBaseState : public UObject
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FCharacterContext CharacterContext;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UCharacterStatesSystem* StatesComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -36,8 +33,8 @@ public:
 	bool StateValidation();
 	virtual bool StateValidation_Implementation();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void Init(FCharacterContext InContext, class UCharacterStatesSystem* InStatesComp);
-	virtual void Init_Implementation(FCharacterContext InContext, class UCharacterStatesSystem* InStatesComp);
+	void Init(class UCharacterStatesSystem* InStatesComp);
+	virtual void Init_Implementation(class UCharacterStatesSystem* InStatesComp);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void ActionHandler(EActionList Action, EInputEvent EventType);
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType);

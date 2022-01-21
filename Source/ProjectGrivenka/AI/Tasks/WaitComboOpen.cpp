@@ -4,6 +4,7 @@
 #include "WaitComboOpen.h"
 #include "AIController.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 
 UWaitComboOpen::UWaitComboOpen() {
 	this->NodeName = TEXT("Wait Combo Open");
@@ -16,10 +17,10 @@ EBTNodeResult::Type UWaitComboOpen::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 	APawn* AIPawn = OwnerComp.GetAIOwner()->GetPawn();
 	if (!AIPawn->Implements<UContextAvailable>()) return EBTNodeResult::Failed;
-	IContextAvailable::Execute_GetContext(AIPawn, this->CharCtx);
-	if (!this->CharCtx.EventBus) return EBTNodeResult::Failed;
-	this->CharCtx.EventBus->AnimDelegate.RemoveDynamic(this, &UWaitComboOpen::OnOpenComboTriggered);
-	this->CharCtx.EventBus->AnimDelegate.AddDynamic(this, &UWaitComboOpen::OnOpenComboTriggered);
+	auto CharCtx = IContextAvailable::Execute_GetContext(AIPawn);
+	if (!CharCtx->EventBus) return EBTNodeResult::Failed;
+	CharCtx->EventBus->AnimDelegate.RemoveDynamic(this, &UWaitComboOpen::OnOpenComboTriggered);
+	CharCtx->EventBus->AnimDelegate.AddDynamic(this, &UWaitComboOpen::OnOpenComboTriggered);
 	this->GetWorld()->GetTimerManager().SetTimer(this->ForceExitTimer, this, &UWaitComboOpen::OnForceExitTimer, this->DefaultExitTime);
 	return EBTNodeResult::InProgress;
 }
@@ -31,8 +32,10 @@ void UWaitComboOpen::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* No
 		AIPawn->GetWorldTimerManager().ClearTimer(this->ForceExitTimer);
 		AIPawn->GetWorldTimerManager().ClearTimer(this->PaddingTimer);
 	}
-	if (this->CharCtx.EventBus) {
-		this->CharCtx.EventBus->AnimDelegate.RemoveDynamic(this, &UWaitComboOpen::OnOpenComboTriggered);
+
+	auto CharCtx = IContextAvailable::Execute_GetContext(AIPawn);
+	if (CharCtx->EventBus) {
+		CharCtx->EventBus->AnimDelegate.RemoveDynamic(this, &UWaitComboOpen::OnOpenComboTriggered);
 	}
 }
 

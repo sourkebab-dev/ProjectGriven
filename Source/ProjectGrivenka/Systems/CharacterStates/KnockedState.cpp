@@ -6,18 +6,20 @@
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 
-void UKnockedState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
+void UKnockedState::Init_Implementation(UCharacterStatesSystem* InStatesComp)
 {
-	Super::Init_Implementation(InContext, InStatesComp);
+	Super::Init_Implementation(InStatesComp);
 	this->StatesComp->TrueHitDelegate.AddDynamic(this, &UKnockedState::OnReceiveHit);
 }
 
 void UKnockedState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
 {
 	if (Action == EActionList::ActionDodge && EventType == IE_Pressed && this->StatesComp->CrossStateData.IsInterruptable) {
-		this->CharacterContext.CharacterAnim->Montage_Stop(0.25);
+		this->StatesComp->CompContext->CharacterAnim->Montage_Stop(0.25);
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Dodge"), EActionList::ActionDodge, IE_Pressed);
 	}
 }
@@ -26,18 +28,18 @@ void UKnockedState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageIn
 {
 	if (this->StatesComp->BlockedTags.HasAny(this->ActionTag)) return;
 
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 	this->HitInstigator = InHitInstigator;
 	this->DamageInfo = InDamageInfo;
 
-	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-		ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->CharacterContext.CharacterActor, InHitInstigator, this->DamageInfo);
-		float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Fortitude);
-		float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Fortitude);
+	if (this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->StatesComp->CompContext->CharacterActor, InHitInstigator, this->DamageInfo);
+		float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->StatesComp->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
+		float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->StatesComp->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
 
 
 		if (CurrentFortitude <= 0 && this->IsStaggeredOnEmptyFortitude) {
-			this->CharacterContext.EventBus->StaggerDelegate.Broadcast(this->HitInstigator, this->DamageInfo);
+			this->StatesComp->CompContext->EventBus->StaggerDelegate.Broadcast(this->HitInstigator, this->DamageInfo);
 		}
 		else if (CurrentFortitude / MaxFortitude < 0.6) {
 			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"), EActionList::ActionNone, EInputEvent::IE_Released);
@@ -59,13 +61,13 @@ void UKnockedState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActi
 	this->PushTargetLocation = FVector::ZeroVector;
 	this->PushStartLocation = FVector::ZeroVector;
 	this->StatesComp->CrossStateData.IsInterruptable = false;
-	if (!this->CharacterContext.CharacterAnim) { this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Pressed); return; }
+	if (!this->StatesComp->CompContext->CharacterAnim) { this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Pressed); return; }
 	this->StartHitReact();
 }
 
 void UKnockedState::StartHitReact()
 {
-	float Degrees = UVectorMathLib::DegreesBetweenVectors(this->CharacterContext.CharacterActor->GetActorForwardVector(), this->HitInstigator->GetActorForwardVector());
+	float Degrees = UVectorMathLib::DegreesBetweenVectors(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->HitInstigator->GetActorForwardVector());
 	FVector StunDirection = this->DamageInfo.DamageDirection.RotateAngleAxis(Degrees, FVector::UpVector);
 	StunDirection.Z *= -1;
 
@@ -87,31 +89,30 @@ void UKnockedState::StartHitReact()
 	else {
 		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunBackMontage.HeavyMontage : this->StunBackMontage.DefaultMontage;
 	}
-	this->CharacterContext.CharacterAnim->Montage_Play(this->CurrentStunMontage);
+	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->CurrentStunMontage);
 
 	FOnMontageEnded EndAttackDelegate;
 	EndAttackDelegate.BindUObject(this, &UKnockedState::OnHitReactEnd);
-	this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->CurrentStunMontage);
-	//this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentStunMontage);
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->CurrentStunMontage);
+	//this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentStunMontage);
 
 
 	//Sponge: try hitpause
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
 		if (this->HitInstigator) {
-			FCharacterContext InstigatorCtx;
-			IContextAvailable::Execute_GetContext(this->HitInstigator, InstigatorCtx);
-			InstigatorCtx.EventBus->HitStopDelegate.Execute(this->DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([] {}));
+			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->HitInstigator);
+			InstigatorCtx->EventBus->HitStopDelegate.Execute(this->DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([] {}));
 		}
 
 		//freeze -> onFreezefinish
 		this->StatesComp->LockAnimation(this->DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([&] {
-			UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->CharacterContext.MovementComp);
+			UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
 			if (!MovementComp) return;
 			FVector KnockBackDir = this->HitInstigator->GetActorForwardVector();
 			KnockBackDir.Normalize();
 			KnockBackDir.Z = 0;
-			this->PushStartLocation = this->CharacterContext.CharacterActor->GetActorLocation();
-			this->PushTargetLocation = this->CharacterContext.CharacterActor->GetActorLocation() + (KnockBackDir * this->PushDistanceMultiplier);
+			this->PushStartLocation = this->StatesComp->CompContext->CharacterActor->GetActorLocation();
+			this->PushTargetLocation = this->StatesComp->CompContext->CharacterActor->GetActorLocation() + (KnockBackDir * this->PushDistanceMultiplier);
 		}));
 
 	}), 0.005, false);
@@ -119,7 +120,7 @@ void UKnockedState::StartHitReact()
 
 void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
 {
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 
 	if (!bInterrupted) {
 		this->HitInstigator = nullptr;
@@ -130,15 +131,15 @@ void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
 
 void UKnockedState::OnStateExit_Implementation()
 {
-	this->CharacterContext.CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 	this->StatesComp->CrossStateData.IsInterruptable = true;
-	if (!this->CharacterContext.CharacterAnim) return;
-	FAnimMontageInstance* AnimMontageInstance = this->CharacterContext.CharacterAnim->GetActiveInstanceForMontage(this->CurrentStunMontage);
+	if (!this->StatesComp->CompContext->CharacterAnim) return;
+	FAnimMontageInstance* AnimMontageInstance = this->StatesComp->CompContext->CharacterAnim->GetActiveInstanceForMontage(this->CurrentStunMontage);
 	if (AnimMontageInstance) {
 		AnimMontageInstance->OnMontageEnded.Unbind();
 		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
 	}
-	this->CharacterContext.CharacterAnim->Montage_Stop(0.25);
+	this->StatesComp->CompContext->CharacterAnim->Montage_Stop(0.25);
 }
 
 void UKnockedState::Tick_Implementation(float DeltaTime)
@@ -147,7 +148,7 @@ void UKnockedState::Tick_Implementation(float DeltaTime)
 	if (this->PushTargetLocation.IsZero() || this->PooledTime >= this->TotalPushTime) return;
 	this->PooledTime += DeltaTime;
 	FVector InterpVector = FMath::Lerp(this->PushStartLocation, this->PushTargetLocation, this->PooledTime / this->TotalPushTime);
-	this->CharacterContext.CharacterActor->SetActorLocation(InterpVector, true);
+	this->StatesComp->CompContext->CharacterActor->SetActorLocation(InterpVector, true);
 }
 
 

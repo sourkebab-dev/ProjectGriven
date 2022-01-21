@@ -3,20 +3,15 @@
 
 #include "LungeAttackState.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
-#include "ProjectGrivenka/ContextUtilities/ContextStore.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemDefinitions.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 
-void ULungeAttackState::Init_Implementation(FCharacterContext InContext, UCharacterStatesSystem* InStatesComp)
-{
-	Super::Init_Implementation(InContext, InStatesComp);
-}
-
 bool ULungeAttackState::StateValidation_Implementation() {
-	return this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>() 
-		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CharacterContext.CharacterActor, EAttributeCode::ATT_Stamina) > 0 : true;
+	return this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>() 
+		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->StatesComp->CompContext->CharacterActor, EAttributeCode::ATT_Stamina) > 0 : true;
 }
 
 void ULungeAttackState::OnFinishLunge(UAnimMontage* Montage, bool bInterrupted)
@@ -36,41 +31,41 @@ void ULungeAttackState::OnStateEnter_Implementation(FGameplayTagContainer InPrev
 	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
 	this->StatesComp->CrossStateData.IsInterruptable = true;
 	this->StatesComp->CrossStateData.IsComboActive = false;
-	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_LUNGE, FAttackValues(), this->CharacterContext.Store->CombatModule.CurrentAttack);
-	UAnimMontage* LungeMontage = this->CharacterContext.Store->CombatModule.CurrentAttack.AttackMontage;
-	float MontageLength = this->CharacterContext.CharacterAnim->Montage_Play(LungeMontage);
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->StatesComp->CompContext->CharacterActor, EAttackMovementType::AM_LUNGE, FAttackValues(), this->StatesComp->CompContext->CombatModule.CurrentAttack);
+	UAnimMontage* LungeMontage = this->StatesComp->CompContext->CombatModule.CurrentAttack.AttackMontage;
+	float MontageLength = this->StatesComp->CompContext->CharacterAnim->Montage_Play(LungeMontage);
 	if (MontageLength) {
 		this->LungeEndDelegate.BindUObject(this, &ULungeAttackState::OnFinishLunge);
-		this->CharacterContext.CharacterAnim->Montage_SetEndDelegate(this->LungeEndDelegate, LungeMontage);
-		this->CharacterContext.CharacterAnim->Montage_SetBlendingOutDelegate(this->LungeEndDelegate, LungeMontage);
+		this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(this->LungeEndDelegate, LungeMontage);
+		this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(this->LungeEndDelegate, LungeMontage);
 	}
 
 	this->StatesComp->CrossStateData.IsLungeAvailable = false;
 
-	if (this->CharacterContext.CharacterActor->Implements<UCharacterSystemAvailable>()) {
-		float StaminaConsumption = this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>() ? IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->CharacterContext.CharacterActor, this->CharacterContext.Store->CombatModule.CurrentAttack) : 0;
-		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->CharacterContext.CharacterActor, this->CharacterContext.CharacterActor, StaminaConsumption);
+	if (this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
+		float StaminaConsumption = this->StatesComp->CompContext->CharacterActor->Implements<UEquipmentSystemAvailable>() ? IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->StatesComp->CompContext->CharacterActor, this->StatesComp->CompContext->CombatModule.CurrentAttack) : 0;
+		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->StatesComp->CompContext->CharacterActor, this->StatesComp->CompContext->CharacterActor, StaminaConsumption);
 	}
 }
 
 void ULungeAttackState::OnStateExit_Implementation()
 {
-	this->CharacterContext.EventBus->AnimDelegate.Broadcast(EAnimEvt::FULL_ROTATION);
+	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::FULL_ROTATION);
 
 	//Note: Unbind ended/blendingout delegate if interrupted by state changes
 	FAttackValues NewAttack;
-	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->CharacterContext.CharacterActor, EAttackMovementType::AM_LUNGE, FAttackValues(), NewAttack);
+	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->StatesComp->CompContext->CharacterActor, EAttackMovementType::AM_LUNGE, FAttackValues(), NewAttack);
 	UAnimMontage* LungeMontage = NewAttack.AttackMontage;
-	FAnimMontageInstance* AnimMontageInstance = this->CharacterContext.CharacterAnim->GetActiveInstanceForMontage(LungeMontage);
+	FAnimMontageInstance* AnimMontageInstance = this->StatesComp->CompContext->CharacterAnim->GetActiveInstanceForMontage(LungeMontage);
 	if (AnimMontageInstance) {
 		AnimMontageInstance->OnMontageEnded.Unbind();
 		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
 	}
-	this->CharacterContext.Store->CombatModule.CurrentAttack = FAttackValues();
+	this->StatesComp->CompContext->CombatModule.CurrentAttack = FAttackValues();
 	this->StatesComp->CrossStateData.IsComboActive = true;
 	this->StatesComp->CrossStateData.IsInterruptable = true;
-	this->CharacterContext.CharacterAnim->StopAllMontages(0.25);
-	if (this->CharacterContext.CharacterActor->Implements<UEquipmentSystemAvailable>()) {
-		IEquipmentSystemAvailable::Execute_DisableWeaponDamageColliders(this->CharacterContext.CharacterActor);
+	this->StatesComp->CompContext->CharacterAnim->StopAllMontages(0.25);
+	if (this->StatesComp->CompContext->CharacterActor->Implements<UEquipmentSystemAvailable>()) {
+		IEquipmentSystemAvailable::Execute_DisableWeaponDamageColliders(this->StatesComp->CompContext->CharacterActor);
 	}
 }
