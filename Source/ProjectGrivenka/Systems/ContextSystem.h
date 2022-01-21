@@ -43,7 +43,7 @@ struct FContextInfo
 };
 
 
-UCLASS()
+UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UContextSystem : public UObject
 {
 	GENERATED_BODY()

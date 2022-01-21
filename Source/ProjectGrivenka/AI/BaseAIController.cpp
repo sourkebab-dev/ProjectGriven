@@ -54,10 +54,9 @@ void ABaseAIController::OnUnPossess()
 //Right now it's currently being called in each BP Class after context init
 void ABaseAIController::OnContextSetup()
 {
-	if (this->GetPawn() && this->GetPawn()->Implements<UContextAvailable>()) {
-		this->ActorCtx = IContextAvailable::Execute_GetContext(this->GetPawn());
-		this->ActorCtx->Controller = this;
-	}
+	this->ActorCtx = IContextAvailable::Execute_GetContext(this->GetPawn());
+	if (!this->ActorCtx) return;
+	this->ActorCtx->Controller = this;
 
 	if (!this->ActorCtx || !this->ActorCtx->EventBus) return;
 
