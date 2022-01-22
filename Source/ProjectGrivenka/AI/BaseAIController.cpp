@@ -7,6 +7,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/Systems/AIContextSystem/AIContextSystemAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 
 ABaseAIController::ABaseAIController() : AAIController() {
@@ -18,9 +19,6 @@ void ABaseAIController::BeginPlay()
 	Super::BeginPlay();
 	this->BTStart();
 	this->BlackboardComp = this->GetBlackboardComponent();
-	//sponge: bb syncing might need to change ???
-	this->BlackboardComp->SetValueAsEnum("AIState", this->DefaultAIState);
-
 }
 
 //sponge: Might need to move this ai rotation func to somewhere else
@@ -138,50 +136,23 @@ void ABaseAIController::AggroRefresh()
 
 void ABaseAIController::OnActorSeen(AActor* SeenActor)
 {
-	if (CheckHostility(this->ActorCtx->CharacterActor, SeenActor) && !this->AggroMap.Find(SeenActor)) {
+	if (!this->ActorCtx->CharacterActor->Implements<UAIContextSystemAvailable>()) return;
+
+	if (IAIContextSystemAvailable::Execute_CheckHostility(this->ActorCtx->CharacterActor, SeenActor) && !this->AggroMap.Find(SeenActor)) {
 		if (this->AggroMap.Num() == 0) this->SetAggroTarget(SeenActor);
 		this->AddAggroActor(SeenActor , 0);
 		this->ChangeAIState(EAIStateType::COMBAT);
+
+		//sponge: might be a gank source
+		FCommandInfo Command;
+		Command.CommandTargetActor = SeenActor;
+		Command.CommandType = EAICommandType::ATTACK;
+		IAIContextSystemAvailable::Execute_SignalCommandToArea(this->ActorCtx->CharacterActor, Command);
 	}
 }
-
-bool ABaseAIController::CheckHostility(AActor* SourceActor, AActor* HostilityToCheck)
-{
-	UContextSystem* SourceCtx = IContextAvailable::Execute_GetContext(SourceActor);
-	UContextSystem* ToCheckCtx = IContextAvailable::Execute_GetContext(HostilityToCheck);
-
-	if (!SourceCtx->Controller || !ToCheckCtx->Controller) return false;
-
-	ABaseAIController* SourceAIController = Cast<ABaseAIController>(SourceCtx->Controller);
-	ABaseAIController* CheckedAIController = Cast<ABaseAIController>(ToCheckCtx->Controller);
-	EHostilityType TypeA, TypeB;
-	if (SourceCtx->Controller->IsPlayerController()) TypeA = EHostilityType::ALLY;
-	else TypeA = SourceAIController->HostilityType;
-
-	if (ToCheckCtx->Controller->IsPlayerController()) TypeB = EHostilityType::ALLY;
-	else TypeB = CheckedAIController->HostilityType;
-
-	switch (TypeA)
-	{
-	case EHostilityType::ALLY:
-		return TypeB == EHostilityType::WILD || TypeB == EHostilityType::HOSTILE;
-	case EHostilityType::HOSTILE:
-		return TypeB == EHostilityType::WILD || TypeB == EHostilityType::ALLY;
-	case EHostilityType::WILD:
-		return TypeB == EHostilityType::HOSTILE || TypeB == EHostilityType::NEUTRAL || TypeB == EHostilityType::ALLY;
-	case EHostilityType::NEUTRAL:
-		return false;
-	default:
-		return false;
-	}
-
-}
-
 
 void ABaseAIController::ChangeAIState(TEnumAsByte<EAIStateType> NewAIState)
 {
-	GLog->Log("ChangeONrun?");
-
 	if (this->BlackboardComp->GetValueAsEnum("AIState") == NewAIState) return;
 
 	this->BlackboardComp->SetValueAsEnum("AIState", NewAIState);
@@ -208,6 +179,11 @@ void ABaseAIController::OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo
 	}
 
 	this->AddAggroActor(DamageInstigator, InDamageInfo.RawPhysicalDamage);
+
+	FCommandInfo Command;
+	Command.CommandTargetActor = DamageInstigator;
+	Command.CommandType = EAICommandType::ATTACK;
+	IAIContextSystemAvailable::Execute_SignalCommandToArea(this->ActorCtx->CharacterActor, Command);
 }
 
 void ABaseAIController::AddAggroActor(AActor* AggroInstigator, float AggroPoints)
@@ -259,9 +235,9 @@ void ABaseAIController::HeavyAttackRelease() {
 	this->ActorCtx->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
 }
 
-void ABaseAIController::SetBBAggroTarget(AActor* NewAggroTarget)
+void ABaseAIController::SetBBMovementLocation(FVector TargetLocation)
 {
-	this->BlackboardComp->SetValueAsObject("TargetAggro", NewAggroTarget);
+	this->BlackboardComp->SetValueAsVector("TargetMovement", TargetLocation);
 }
 
 void ABaseAIController::SendAIEvent(TEnumAsByte<EAIEvent> InAIEvent)

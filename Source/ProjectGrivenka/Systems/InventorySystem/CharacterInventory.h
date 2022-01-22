@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CharacterInventoryAvailable.h"
 #include "ProjectGrivenka/ContextUtilities/BaseContextableComponent.h"
+#include "ProjectGrivenka/Items/ItemDefinitions.h"
 #include "CharacterInventory.generated.h"
 
 //Sponge: Need to handle, inventory stacking, change from inventory to itembelt, item use till 0 handle in itembelt, inventory available slot optimizations

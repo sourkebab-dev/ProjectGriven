@@ -7,6 +7,7 @@
 #include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
+#include "ProjectGrivenka/Systems/AIContextSystem/AIContextSystemAvailable.h"
 #include "ProjectGrivenka/AI/BaseAIController.h"
 
 // Sets default values
@@ -78,7 +79,7 @@ void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 			auto DamagableCtx = IContextAvailable::Execute_GetContext(OtherActor);
 			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->GetOwner());
 
-			if (!ABaseAIController::CheckHostility(DamagableCtx->CharacterActor, InstigatorCtx->CharacterActor)) return;
+			if (!IAIContextSystemAvailable::Execute_CheckHostility(this->GetOwner(), OtherActor)) return;
 
 			FDamageInfo DamageInfo;
 			DamageInfo.MovingValues = InstigatorCtx->CombatModule.CurrentAttack.MovingValues;

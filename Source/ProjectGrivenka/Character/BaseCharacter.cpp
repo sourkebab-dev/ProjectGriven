@@ -165,7 +165,7 @@ void ABaseCharacter::AISetAggroTargetFromList()
 void ABaseCharacter::AISetAggroTarget(ABaseCharacter* NewAggroTarget) {
 	this->AggroTarget = NewAggroTarget;
 	this->RotateTarget = NewAggroTarget;
-	this->AIController->SetBBAggroTarget(NewAggroTarget);
+	//this->AIController->SetBBAggroTarget(NewAggroTarget);
 }
 
 void ABaseCharacter::AISet(ABaseAIController* NewController) {

@@ -32,6 +32,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStateAxisDelegate, EActionList, In
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStateActionDelegate, EActionList, InActionType, EInputEvent, InEventType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPossessionDelegate, AController*, NewController);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnpossessionDelegate,  AController*, OldController);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAICommandDelegate, AActor*, CommandInstigator, FCommandInfo, CommandInfo );
 
 UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UEventBus : public UObject
@@ -39,6 +40,9 @@ class PROJECTGRIVENKA_API UEventBus : public UObject
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FAICommandDelegate AICommandDelegate;
+
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FDamagedDelegate StaggerDelegate;
 

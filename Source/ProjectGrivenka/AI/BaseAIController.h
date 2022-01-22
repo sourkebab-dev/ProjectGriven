@@ -37,12 +37,6 @@ public:
 	UBlackboardComponent* BlackboardComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TEnumAsByte<EAIStateType> DefaultAIState = EAIStateType::IDLE;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TEnumAsByte<EHostilityType> HostilityType = EHostilityType::NEUTRAL;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<AActor*, float> AggroMap;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -59,28 +53,26 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 public:
-	static bool CheckHostility(AActor* SourceActor, AActor* HostilityToCheck);
-
 	UFUNCTION(BlueprintCallable)
 	void OnContextSetup();
 	UFUNCTION()
 	void SetRotationRate(EAnimEvt InAnimEvt);
+	void ChangeAIState(TEnumAsByte<EAIStateType> NewAIState);
+	void SendAIEvent(TEnumAsByte<EAIEvent> InAIEvent);
+	void SightRefresh();
+	void AggroRefresh();
+	void AddAggroActor(AActor* AggroInstigator, float AggroPoints);
+	void SetAggroTarget(AActor* AggroInstigator);
+	void RemoveActorFromAggroList(AActor* AggroInstigator);
+	void BTStart();
+	void Dodge();
+	void Attack();
+	void HeavyAttackCharge();
+	void HeavyAttackRelease();
+	void SetBBMovementLocation(FVector TargetLocation);
+	virtual void OnActorSeen(AActor* SeenActor);
 	UFUNCTION()
 	virtual void OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo);
-	virtual void SightRefresh();
-	virtual void AggroRefresh();
-	virtual void OnActorSeen(AActor* SeenActor);
-	virtual void ChangeAIState(TEnumAsByte<EAIStateType> NewAIState);
-	virtual void AddAggroActor(AActor* AggroInstigator, float AggroPoints);
-	virtual void SetAggroTarget(AActor* AggroInstigator);
-	virtual void RemoveActorFromAggroList(AActor* AggroInstigator);
-	virtual void BTStart();
-	virtual void Dodge();
-	virtual void Attack();
-	virtual void HeavyAttackCharge();
-	virtual void HeavyAttackRelease();
-	virtual void SetBBAggroTarget(AActor* NewAggroTarget);
-	virtual void SendAIEvent(TEnumAsByte<EAIEvent> InAIEvent);
 
 
 	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }

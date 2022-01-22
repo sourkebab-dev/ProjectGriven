@@ -50,6 +50,30 @@ enum EDamageImpactType {
     DI_HIGH       UMETA(DisplayName = "Charged Attack Movement"),
 };
 
+
+UENUM(BlueprintType)
+enum EAICommandType {
+    ATTACK,
+    DEFEND,
+    MOVETO,
+    INTERACT,
+};
+
+USTRUCT(BlueprintType)
+struct FCommandInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EAICommandType> CommandType;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        AActor* CommandTargetActor;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FVector CommandTargetLocation;
+};
+
 USTRUCT(BlueprintType)
 struct FAttackValues
 {
