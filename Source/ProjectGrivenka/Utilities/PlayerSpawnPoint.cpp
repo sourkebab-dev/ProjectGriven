@@ -21,16 +21,16 @@ void APlayerSpawnPoint::BeginPlay()
 	
 }
 
-void APlayerSpawnPoint::SpawnPlayer_Implementation(FPersistedCharacterData CharacterData)
+AActor* APlayerSpawnPoint::SpawnPlayer_Implementation(FPersistedCharacterData CharacterData)
 {
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	AActor* PlayerCharacter = this->GetWorld()->SpawnActor<AActor>(CharacterData.Appearance.CharClass, this->GetActorLocation(), this->GetActorRotation(), SpawnInfo);
-	if (!PlayerCharacter || !PlayerCharacter->Implements<UICharacterPersistanceSystem>()) {GLog->Log("Player failed to spawn"); return;}
+	if (!PlayerCharacter || !PlayerCharacter->Implements<UICharacterPersistanceSystem>()) {GLog->Log("Player failed to spawn"); return nullptr;}
 	GLog->Log("Spawned Player");
 	IICharacterPersistanceSystem::Execute_LoadPersistance(PlayerCharacter, CharacterData);
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->UnPossess();
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->Possess(Cast<APawn>(PlayerCharacter));
+	Cast<APawn>(PlayerCharacter)->SpawnDefaultController();
+	return PlayerCharacter;
 }
 
 

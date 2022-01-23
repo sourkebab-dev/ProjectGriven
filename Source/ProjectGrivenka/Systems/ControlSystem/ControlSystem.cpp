@@ -2,12 +2,15 @@
 
 
 #include "ControlSystem.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "AIController.h"
 #include "Controllable.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/Systems/AIContextSystem/AIContextSystemAvailable.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
+#include "ProjectGrivenka/Utilities/BaseGameInstance.h"
 
 UControlSystem::UControlSystem() : UBaseContextableComponent() {
 	this->PrimaryComponentTick.bCanEverTick = true;
@@ -27,6 +30,7 @@ void UControlSystem::Init()
 		UE_LOG(LogTemp, Error, TEXT("ControlSystem Initiation Failure (Owner must be a pawn) & Implements IControllable"), *GetNameSafe(this)); return;
 	}
 	this->ControlSystemSetup(ActorPawn->GetController());
+	this->GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
 }
 
 void UControlSystem::ControlSystemSetup(AController* NewController)
@@ -46,6 +50,11 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAction("ToggleAmpField", IE_Pressed, this, &UControlSystem::ControlToggleAmpField);
 	InputComp->BindAction("VentAmp", IE_Pressed, this, &UControlSystem::ControlVentAmp);
 	InputComp->BindAction("UseItem", IE_Pressed, this, &UControlSystem::ControlUseItem);
+	InputComp->BindAction("Command1", IE_Pressed, this, &UControlSystem::ControlCommand1);
+	InputComp->BindAction("Command2", IE_Pressed, this, &UControlSystem::ControlCommand2);
+	InputComp->BindAction("Command3", IE_Pressed, this, &UControlSystem::ControlCommand3);
+	InputComp->BindAction("Command4", IE_Pressed, this, &UControlSystem::ControlCommand4);
+	InputComp->BindAction("CommandCancel", IE_Pressed, this, &UControlSystem::ControlCommandCancel);
 	InputComp->BindAxis("MoveForward", this, &UControlSystem::ControlMoveForward);
 	InputComp->BindAxis("MoveRight", this, &UControlSystem::ControlMoveRight);
 	InputComp->BindAxis("CycleItem", this, &UControlSystem::ControlCycleItem);
@@ -105,6 +114,11 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 	InputComp->RemoveActionBinding("ToggleAmpField", IE_Pressed);
 	InputComp->RemoveActionBinding("VentAmp", IE_Pressed);
 	InputComp->RemoveActionBinding("UseItem", IE_Pressed);
+	InputComp->RemoveActionBinding("Command1", IE_Pressed);
+	InputComp->RemoveActionBinding("Command2", IE_Pressed);
+	InputComp->RemoveActionBinding("Command3", IE_Pressed);
+	InputComp->RemoveActionBinding("Command4", IE_Pressed);
+	InputComp->RemoveActionBinding("CommandCancel", IE_Pressed);
 	InputComp->AxisBindings.Empty();
 	this->SetComponentTickEnabled(false);
 }
@@ -112,33 +126,20 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 {
 	APawn* OwnerPawn = Cast<APawn>(this->CompContext->CharacterActor);
-	APawn* InstigatorPawn = Cast<APawn>(PossessInstigator);
-	if (!OwnerPawn 
-		|| !InstigatorPawn 
-		|| !InstigatorPawn->GetController()  
-		|| !InstigatorPawn->GetController()->IsPlayerController()
-		|| !InstigatorPawn->Implements<UContextAvailable>()
-	) return;
+	if (!OwnerPawn) return;
 
-	auto InstigatorCtx = IContextAvailable::Execute_GetContext(InstigatorPawn);
 
-	AController* PlayerController = InstigatorCtx->Controller;
-	PlayerController->UnPossess();
-	
+	this->GetWorld()->GetFirstPlayerController()->UnPossess();
+	OwnerPawn->GetController()->UnPossess();
+	if(OwnerPawn->GetController()) OwnerPawn->GetController()->Destroy();
 
-	if (!InstigatorCtx->Controller) {
-		InstigatorPawn->SpawnDefaultController();
-		//Note: disabled cause controller is already set in BaseAIController OnPossess
-		//AAIController* InstigatorAIController = Cast<AAIController>(InstigatorPawn->GetController());
-		//if (InstigatorAIController) {
-		//	InstigatorCtx.AIController = InstigatorAIController;
-		//}
-	}
-	else {
-		InstigatorCtx->Controller->Possess(InstigatorPawn);
+	if (PossessInstigator) {
+		auto InstigatorCtx = IContextAvailable::Execute_GetContext(PossessInstigator);
+		AController* PlayerController = InstigatorCtx->Controller;
+		Cast<APawn>(PossessInstigator)->SpawnDefaultController();
 	}
 
-	PlayerController->Possess(OwnerPawn);
+	this->GetWorld()->GetFirstPlayerController()->Possess(OwnerPawn);
 
 	//sponge: need to set character id somewhere
 	//GameInstance->SetControlledCrewId(this->CharacterId);
@@ -207,4 +208,89 @@ void UControlSystem::ControlDodge()
 void UControlSystem::ControlInteract()
 {
 	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionInteract, IE_Pressed);
+}
+
+void UControlSystem::ControlCommand1()
+{
+
+	if (this->CommandedActor) {
+		auto CmdCtx = IContextAvailable::Execute_GetContext(this->CommandedActor);
+		FHitResult CommandHit, MouseHit;
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this->CommandedActor);
+		this->GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery1, false, MouseHit);
+
+		FCommandInfo CmdInfo;
+		if (UKismetSystemLibrary::SphereTraceSingle(this->GetWorld(), MouseHit.Location, MouseHit.Location, 50.0f, UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, CommandHit, true )) {
+			AActor* HitActor = CommandHit.Actor.Get();
+			if (HitActor->Implements<UAIContextSystemAvailable>()) {
+				CmdInfo.CommandTargetActor = HitActor;
+				if (IAIContextSystemAvailable::Execute_CheckHostility(this->CommandedActor, HitActor)) {
+					CmdInfo.CommandType = EAICommandType::ATTACK;
+					GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Attack this target!");
+
+				}
+				else {
+					CmdInfo.CommandType = EAICommandType::DEFEND;
+					GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Defend this target!");
+				}
+			}
+			else {
+				CmdInfo.CommandType = EAICommandType::MOVETO;
+				CmdInfo.CommandTargetLocation = HitActor->GetActorLocation();
+				GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Move to this position!");
+			}
+		}
+		else {
+			CmdInfo.CommandType = EAICommandType::MOVETO;
+			CmdInfo.CommandTargetLocation = MouseHit.Location;
+			GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Move to this position!");
+		}
+
+		CmdCtx->EventBus->AICommandDelegate.Broadcast(this->CompContext->CharacterActor, CmdInfo);
+		this->CommandedActor = nullptr;
+	}
+	else {
+		if (!this->GI->PartyInstance.IsValidIndex(0)) return;
+		this->CommandedActor = this->GI->PartyInstance[0];
+		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Companion 1, Hear me!");
+	}
+}
+
+void UControlSystem::ControlCommand2()
+{
+	if (this->CommandedActor) {
+		this->CommandedActor = nullptr;
+	}
+	else {
+		if (!this->GI->PartyInstance.IsValidIndex(1)) return;
+		this->CommandedActor = this->GI->PartyInstance[1];
+	}
+}
+
+void UControlSystem::ControlCommand3()
+{
+	if (this->CommandedActor) {
+		this->CommandedActor = nullptr;
+	}
+	else {
+		if (!this->GI->PartyInstance.IsValidIndex(2)) return;
+		this->CommandedActor = this->GI->PartyInstance[2];
+	}
+}
+
+void UControlSystem::ControlCommand4()
+{
+	if (this->CommandedActor) {
+		this->CommandedActor = nullptr;
+	}
+	else {
+		if (!this->GI->PartyInstance.IsValidIndex(3)) return;
+		this->CommandedActor = this->GI->PartyInstance[3];
+	}
+}
+
+void UControlSystem::ControlCommandCancel()
+{
+	this->CommandedActor = nullptr;
 }

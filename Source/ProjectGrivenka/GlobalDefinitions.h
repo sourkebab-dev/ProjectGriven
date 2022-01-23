@@ -157,10 +157,12 @@ enum EActionList {
     ActionUseItem      UMETA(DisplayName = "Use Item"),
     ActionMoveForward        UMETA(DisplayName="MoveForward"),
     ActionMoveRight        UMETA(DisplayName="MoveRight"),
-    ActionDodge UMETA(DisplayName="Dodge"),
+    ActionDodge     UMETA(DisplayName="Dodge"),
     ActionToggleAmpField UMETA(DisplayName="Toggle Amp Field"),
-    ActionVentAmp UMETA(DisplayName="Vent Amp"),
-    ActionBlock UMETA(DisplayName = "Block"),
+    ActionVentAmp   UMETA(DisplayName="Vent Amp"),
+    ActionBlock     UMETA(DisplayName = "Block"),
+    ActionCommand  UMETA(DisplayName = "Command"),
+    ActionCommandCancel UMETA(DisplayName = "Command Cancel"),
 };
 
 UENUM(BlueprintType)

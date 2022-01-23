@@ -20,6 +20,10 @@ class PROJECTGRIVENKA_API UControlSystem : public UBaseContextableComponent
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector RawInput;
+	UPROPERTY(BlueprintReadWrite)
+	AActor* CommandedActor;
+	UPROPERTY(BlueprintReadWrite)
+	class UBaseGameInstance* GI;
 
 	float RotationRate = 20;
 
@@ -36,7 +40,13 @@ protected:
 	void ControlVentAmp();
 	void ControlDodge();
 	void ControlInteract();
+	void ControlCommand1();
+	void ControlCommand2();
+	void ControlCommand3();
+	void ControlCommand4();
+	void ControlCommandCancel();
 	void UpdateWorldSpaceVectors();
+
 
 public:
 	void Init() override;
@@ -47,6 +57,6 @@ public:
 	void AnimHandler(EAnimEvt InAnimEvt);
 	UFUNCTION()
 	void ControlSystemDisable(AController* OldController);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void ControlSystemPossess(AActor* PossessInstigator);
 };
