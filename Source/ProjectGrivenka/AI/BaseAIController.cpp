@@ -235,6 +235,11 @@ void ABaseAIController::HeavyAttackRelease() {
 	this->ActorCtx->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
 }
 
+void ABaseAIController::SetBBDefendActor(AActor* DefendActor)
+{
+	this->BlackboardComp->SetValueAsObject("DefendActor", DefendActor);
+}
+
 void ABaseAIController::SetBBMovementLocation(FVector TargetLocation)
 {
 	this->BlackboardComp->SetValueAsVector("TargetMovement", TargetLocation);

@@ -31,7 +31,7 @@ void UAIContextSystem::SignalCommandToArea(FCommandInfo CommandInfo)
 	ActorsToIgnore.Add(this->CompContext->CharacterActor);
 
 	if (UKismetSystemLibrary::SphereTraceMulti(this->GetWorld(), this->CompContext->CharacterActor->GetActorLocation(), this->CompContext->CharacterActor->GetActorLocation(), 500.0f,
-		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutResults, true)) {
+		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::None, OutResults, true)) {
 		for (int i = 0; i < OutResults.Num(); i++) {
 			AActor* HitActor = OutResults[i].Actor.Get();
 			this->SignalCommandToActor(HitActor, CommandInfo);
@@ -45,17 +45,20 @@ void UAIContextSystem::OnCommanded(AActor* CommandInstigator, FCommandInfo Comma
 	if (!AIC) return;
 
 	if (CommandInfo.CommandType == EAICommandType::ATTACK) {
+		AIC->SetBBDefendActor(nullptr);
 		AIC->SetAggroTarget(CommandInfo.CommandTargetActor);
 		AIC->AddAggroActor(CommandInfo.CommandTargetActor, 0);
 		AIC->ChangeAIState(EAIStateType::COMBAT);
 	}
 	else if (CommandInfo.CommandType == EAICommandType::DEFEND) {
-
+		AIC->SetBBDefendActor(CommandInfo.CommandTargetActor);
+		AIC->SetBBMovementLocation(FVector::ZeroVector);
 	}
 	else if (CommandInfo.CommandType == EAICommandType::INTERACT) {
-
+		AIC->SetBBDefendActor(nullptr);
 	}
 	else if (CommandInfo.CommandType == EAICommandType::MOVETO) {
+		AIC->SetBBDefendActor(nullptr);
 		AIC->ChangeAIState(EAIStateType::IDLE);
 		AIC->SetBBMovementLocation(CommandInfo.CommandTargetLocation);
 	}

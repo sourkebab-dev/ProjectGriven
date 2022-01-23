@@ -43,7 +43,6 @@ protected:
 	void ControlCommand1();
 	void ControlCommand2();
 	void ControlCommand3();
-	void ControlCommand4();
 	void ControlCommandCancel();
 	void UpdateWorldSpaceVectors();
 

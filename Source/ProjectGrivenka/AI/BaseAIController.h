@@ -69,6 +69,7 @@ public:
 	void Attack();
 	void HeavyAttackCharge();
 	void HeavyAttackRelease();
+	void SetBBDefendActor(AActor* DefendActor);
 	void SetBBMovementLocation(FVector TargetLocation);
 	virtual void OnActorSeen(AActor* SeenActor);
 	UFUNCTION()

@@ -53,7 +53,6 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAction("Command1", IE_Pressed, this, &UControlSystem::ControlCommand1);
 	InputComp->BindAction("Command2", IE_Pressed, this, &UControlSystem::ControlCommand2);
 	InputComp->BindAction("Command3", IE_Pressed, this, &UControlSystem::ControlCommand3);
-	InputComp->BindAction("Command4", IE_Pressed, this, &UControlSystem::ControlCommand4);
 	InputComp->BindAction("CommandCancel", IE_Pressed, this, &UControlSystem::ControlCommandCancel);
 	InputComp->BindAxis("MoveForward", this, &UControlSystem::ControlMoveForward);
 	InputComp->BindAxis("MoveRight", this, &UControlSystem::ControlMoveRight);
@@ -117,7 +116,6 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 	InputComp->RemoveActionBinding("Command1", IE_Pressed);
 	InputComp->RemoveActionBinding("Command2", IE_Pressed);
 	InputComp->RemoveActionBinding("Command3", IE_Pressed);
-	InputComp->RemoveActionBinding("Command4", IE_Pressed);
 	InputComp->RemoveActionBinding("CommandCancel", IE_Pressed);
 	InputComp->AxisBindings.Empty();
 	this->SetComponentTickEnabled(false);
@@ -260,33 +258,45 @@ void UControlSystem::ControlCommand1()
 void UControlSystem::ControlCommand2()
 {
 	if (this->CommandedActor) {
+		auto CmdCtx = IContextAvailable::Execute_GetContext(this->CommandedActor);
+		FCommandInfo CmdInfo;
+		CmdInfo.CommandTargetActor = this->CompContext->CharacterActor;
+		CmdInfo.CommandType = EAICommandType::DEFEND;
+		CmdCtx->EventBus->AICommandDelegate.Broadcast(this->CompContext->CharacterActor, CmdInfo);
+		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Follow me!");
 		this->CommandedActor = nullptr;
 	}
 	else {
 		if (!this->GI->PartyInstance.IsValidIndex(1)) return;
 		this->CommandedActor = this->GI->PartyInstance[1];
+		GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Companion 1, Hear me!");
 	}
 }
 
 void UControlSystem::ControlCommand3()
 {
 	if (this->CommandedActor) {
+		auto CmdCtx = IContextAvailable::Execute_GetContext(this->CommandedActor);
+		FHitResult CommandHit;
+		TArray<AActor*> ActorsToIgnore;
+		ActorsToIgnore.Add(this->CommandedActor);
+		ActorsToIgnore.Add(this->CompContext->CharacterActor);
+
+		if (UKismetSystemLibrary::SphereTraceSingle(this->GetWorld(), this->CommandedActor->GetActorLocation(), this->CommandedActor->GetActorLocation(), 1000.0f, 
+			UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, CommandHit, true)) {
+			FCommandInfo CmdInfo;
+			AActor* HitActor = CommandHit.Actor.Get();
+			if (!HitActor->Implements<UAIContextSystemAvailable>() || !IAIContextSystemAvailable::Execute_CheckHostility(this->CommandedActor, HitActor)) return;
+			CmdInfo.CommandTargetActor = HitActor;
+			CmdInfo.CommandType = EAICommandType::ATTACK;
+			CmdCtx->EventBus->AICommandDelegate.Broadcast(this->CompContext->CharacterActor, CmdInfo);
+			GEngine->AddOnScreenDebugMessage(1, 1, FColor::Cyan, "Charge!");
+		}
 		this->CommandedActor = nullptr;
 	}
 	else {
 		if (!this->GI->PartyInstance.IsValidIndex(2)) return;
 		this->CommandedActor = this->GI->PartyInstance[2];
-	}
-}
-
-void UControlSystem::ControlCommand4()
-{
-	if (this->CommandedActor) {
-		this->CommandedActor = nullptr;
-	}
-	else {
-		if (!this->GI->PartyInstance.IsValidIndex(3)) return;
-		this->CommandedActor = this->GI->PartyInstance[3];
 	}
 }
 
