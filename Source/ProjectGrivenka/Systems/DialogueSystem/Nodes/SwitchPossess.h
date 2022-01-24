@@ -14,4 +14,8 @@ class PROJECTGRIVENKA_API USwitchPossess : public UBTTask_BlackboardBase
 {
 	GENERATED_BODY()
 	
+	USwitchPossess();
+
+	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
 };

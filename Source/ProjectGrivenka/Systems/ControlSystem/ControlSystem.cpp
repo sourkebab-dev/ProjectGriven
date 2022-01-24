@@ -59,6 +59,31 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAxis("CycleItem", this, &UControlSystem::ControlCycleItem);
 	this->SetComponentTickEnabled(true);
 	Cast<APlayerController>(NewController)->bShowMouseCursor = true;
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "Enable");
+
+}
+
+void UControlSystem::ControlSystemDisable(AController* OldController)
+{
+	if (!OldController || !OldController->IsPlayerController() || (!this->GetOwner()->InputComponent && !OldController->InputComponent)) return;
+	this->CompContext->Controller = nullptr;
+	UInputComponent* InputComp = this->GetOwner()->InputComponent ? this->GetOwner()->InputComponent : OldController->InputComponent;
+	InputComp->RemoveActionBinding("Interact", IE_Pressed);
+	InputComp->RemoveActionBinding("Attack", IE_Pressed);
+	InputComp->RemoveActionBinding("Attack", IE_Released);
+	InputComp->RemoveActionBinding("Block", IE_Pressed);
+	InputComp->RemoveActionBinding("Block", IE_Released);
+	InputComp->RemoveActionBinding("Dodge", IE_Pressed);
+	InputComp->RemoveActionBinding("ToggleAmpField", IE_Pressed);
+	InputComp->RemoveActionBinding("VentAmp", IE_Pressed);
+	InputComp->RemoveActionBinding("UseItem", IE_Pressed);
+	InputComp->RemoveActionBinding("Command1", IE_Pressed);
+	InputComp->RemoveActionBinding("Command2", IE_Pressed);
+	InputComp->RemoveActionBinding("Command3", IE_Pressed);
+	InputComp->RemoveActionBinding("CommandCancel", IE_Pressed);
+	InputComp->AxisBindings.Empty();
+	this->SetComponentTickEnabled(false);
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "Disable");
 
 }
 
@@ -99,28 +124,6 @@ void UControlSystem::UpdateWorldSpaceVectors() {
 	this->CompContext->MovementModule.WorldSpaceTargetDir = TempRotator.RotateVector(this->RawInput);
 }
 
-void UControlSystem::ControlSystemDisable(AController* OldController)
-{
-	if (!OldController || !OldController->IsPlayerController() || (!this->GetOwner()->InputComponent && !OldController->InputComponent)) return;
-	this->CompContext->Controller = nullptr;
-	UInputComponent* InputComp = this->GetOwner()->InputComponent ? this->GetOwner()->InputComponent : OldController->InputComponent;
-	InputComp->RemoveActionBinding("Interact", IE_Pressed);
-	InputComp->RemoveActionBinding("Attack", IE_Pressed);
-	InputComp->RemoveActionBinding("Attack", IE_Released);
-	InputComp->RemoveActionBinding("Block", IE_Pressed);
-	InputComp->RemoveActionBinding("Block", IE_Released);
-	InputComp->RemoveActionBinding("Dodge", IE_Pressed);
-	InputComp->RemoveActionBinding("ToggleAmpField", IE_Pressed);
-	InputComp->RemoveActionBinding("VentAmp", IE_Pressed);
-	InputComp->RemoveActionBinding("UseItem", IE_Pressed);
-	InputComp->RemoveActionBinding("Command1", IE_Pressed);
-	InputComp->RemoveActionBinding("Command2", IE_Pressed);
-	InputComp->RemoveActionBinding("Command3", IE_Pressed);
-	InputComp->RemoveActionBinding("CommandCancel", IE_Pressed);
-	InputComp->AxisBindings.Empty();
-	this->SetComponentTickEnabled(false);
-}
-
 void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 {
 	APawn* OwnerPawn = Cast<APawn>(this->CompContext->CharacterActor);
@@ -133,11 +136,11 @@ void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 
 	if (PossessInstigator) {
 		auto InstigatorCtx = IContextAvailable::Execute_GetContext(PossessInstigator);
-		AController* PlayerController = InstigatorCtx->Controller;
 		Cast<APawn>(PossessInstigator)->SpawnDefaultController();
 	}
 
 	this->GetWorld()->GetFirstPlayerController()->Possess(OwnerPawn);
+	this->GI->PartyInstance.Empty();
 
 	//sponge: need to set character id somewhere
 	//GameInstance->SetControlledCrewId(this->CharacterId);
@@ -165,6 +168,7 @@ void UControlSystem::ControlMoveRight(float Value)
 
 void UControlSystem::ControlAttack()
 {
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "Attack");
 	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
 }
 
@@ -205,6 +209,7 @@ void UControlSystem::ControlDodge()
 
 void UControlSystem::ControlInteract()
 {
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "itr");
 	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionInteract, IE_Pressed);
 }
 

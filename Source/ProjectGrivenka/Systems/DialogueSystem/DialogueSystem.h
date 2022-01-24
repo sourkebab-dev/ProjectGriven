@@ -8,6 +8,14 @@
 #include "DialogueSystem.generated.h"
 
 
+UENUM()
+enum EDialoguePendingActions
+{
+	NONE,
+	SWITCH,
+	INVITE,
+};
+
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTGRIVENKA_API UDialogueSystem : public UBaseContextableComponent
 {
@@ -16,6 +24,8 @@ class PROJECTGRIVENKA_API UDialogueSystem : public UBaseContextableComponent
 public:	
 	UPROPERTY(EditAnywhere)
 	class UBehaviorTree* DefaultDialogueTree;
+
+	TEnumAsByte<EDialoguePendingActions> PendingAction = EDialoguePendingActions::NONE;
 
 protected:
 
@@ -27,4 +37,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void StopDialogue();
+
+	void SetPendingActions(EDialoguePendingActions InActionType);
 };

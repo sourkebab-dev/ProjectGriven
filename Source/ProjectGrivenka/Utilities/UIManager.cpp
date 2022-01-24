@@ -46,6 +46,8 @@ void UUIManager::ShowDialogueReply(TArray<FReplyData> InReplyData, FDialogueData
 
 void UUIManager::OpenDialogueBox()
 {
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "dunnowhat");
+
 	//Sponge: idunno if i should spawn & despawn ui
 	if (!this->DialogueBoxUIIns) {
 		this->DialogueBoxUIIns =  Cast<UDialogueBox>(CreateWidget(this->GameIns, this->DialogueBoxUIClass, "Dialogue Box UI"));
@@ -58,7 +60,10 @@ void UUIManager::OpenDialogueBox()
 
 void UUIManager::CloseDialogueBox()
 {
-	if (this->DialogueBoxUIIns) this->DialogueBoxUIIns->RemoveFromViewport();
+	if (this->DialogueBoxUIIns)
+	{
+		this->DialogueBoxUIIns->RemoveFromViewport();
+	}
 }
 
 void UUIManager::EnqueueLootDisplay(FLootItem InLootItem)
