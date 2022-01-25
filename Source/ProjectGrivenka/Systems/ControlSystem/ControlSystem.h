@@ -19,6 +19,8 @@ class PROJECTGRIVENKA_API UControlSystem : public UBaseContextableComponent
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USpringArmComponent* SpringArm;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector RawInput;
 	UPROPERTY(BlueprintReadWrite)
 	AActor* CommandedActor;
@@ -29,6 +31,8 @@ public:
 
 protected:
 	void ControlCycleItem(float Value);
+	void ControlMouseX(float Value);
+	void ControlMouseY(float Value);
 	void ControlMoveForward(float Value);
 	void ControlMoveRight(float Value);
 	void ControlAttack();

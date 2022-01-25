@@ -25,6 +25,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	class UControlSystem* GetControlSystemComp();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	float GetControlledCameraYawRotation();
+	class USpringArmComponent* GetCameraSpringArm();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	class UCameraComponent* GetMainCamera();
 
 };

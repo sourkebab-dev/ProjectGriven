@@ -3,6 +3,8 @@
 
 #include "ControlSystem.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "AIController.h"
 #include "Controllable.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
@@ -31,6 +33,7 @@ void UControlSystem::Init()
 	}
 	this->ControlSystemSetup(ActorPawn->GetController());
 	this->GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
+	this->SpringArm = IControllable::Execute_GetCameraSpringArm(this->CompContext->CharacterActor);
 }
 
 void UControlSystem::ControlSystemSetup(AController* NewController)
@@ -57,8 +60,9 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAxis("MoveForward", this, &UControlSystem::ControlMoveForward);
 	InputComp->BindAxis("MoveRight", this, &UControlSystem::ControlMoveRight);
 	InputComp->BindAxis("CycleItem", this, &UControlSystem::ControlCycleItem);
+	InputComp->BindAxis("MouseX", this, &UControlSystem::ControlMouseX);
+	InputComp->BindAxis("MouseY", this, &UControlSystem::ControlMouseY);
 	this->SetComponentTickEnabled(true);
-	Cast<APlayerController>(NewController)->bShowMouseCursor = true;
 	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "Enable");
 
 }
@@ -90,14 +94,19 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 void UControlSystem::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	//sponge: change pers deprecated code
 	AController* PlayerController = this->GetWorld()->GetFirstPlayerController();
 	if (!PlayerController) {
 		GLog->Log("ControlSystem RotateTick PlayerController Failure");
 		return;
 	}
-	FHitResult MouseHit;
-	this->GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursorByChannel(ETraceTypeQuery::TraceTypeQuery1, false, MouseHit);
-	UVectorMathLib::RotateActorToTargetVector(this->GetOwner(), MouseHit.Location, this->RotationRate, DeltaTime);
+
+	FVector TargetLocRot = this->CompContext->MovementModule.WorldSpaceTargetDir;
+	if (TargetLocRot.IsZero()) {
+		TargetLocRot = this->CompContext->CharacterActor->GetActorForwardVector();
+	}
+
+	UVectorMathLib::RotateActorToTargetVector(this->GetOwner(), this->CompContext->CharacterActor->GetActorLocation() + TargetLocRot * 10, this->RotationRate, DeltaTime);
 }
 
 void UControlSystem::AnimHandler(EAnimEvt InAnimEvt)
@@ -105,10 +114,10 @@ void UControlSystem::AnimHandler(EAnimEvt InAnimEvt)
 	switch (InAnimEvt)
 	{
 	case FULL_ROTATION:
-		this->RotationRate = 20;
+		this->RotationRate = 8;
 		break;
 	case SLOW_ROTATION:
-		this->RotationRate = 8;
+		this->RotationRate = 5;
 		break;
 	case OFF_ROTATION:
 		this->RotationRate = 0.01;
@@ -119,7 +128,7 @@ void UControlSystem::AnimHandler(EAnimEvt InAnimEvt)
 }
 
 void UControlSystem::UpdateWorldSpaceVectors() {
-	float YawRotation = IControllable::Execute_GetControlledCameraYawRotation(this->CompContext->CharacterActor);
+	float YawRotation = this->SpringArm->GetComponentRotation().Yaw;
 	FRotator TempRotator = FRotator(0, YawRotation, 0);
 	this->CompContext->MovementModule.WorldSpaceTargetDir = TempRotator.RotateVector(this->RawInput);
 }
@@ -148,6 +157,20 @@ void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 
 void UControlSystem::ControlCycleItem(float Value)
 {
+}
+
+void UControlSystem::ControlMouseX(float Value)
+{
+	FRotator TempRotator = FRotator(0, Value, 0);
+	this->SpringArm->AddRelativeRotation(TempRotator);
+}
+
+void UControlSystem::ControlMouseY(float Value)
+{
+	FRotator TempRotator = FRotator(Value, 0, 0);
+	this->SpringArm->AddRelativeRotation(TempRotator);
+	float ClampedPitch = FMath::Clamp(this->SpringArm->GetRelativeRotation().Pitch, -60.0f, 60.0f);
+	this->SpringArm->SetRelativeRotation(FRotator(ClampedPitch, this->SpringArm->GetRelativeRotation().Yaw, 0.0));
 }
 
 void UControlSystem::ControlMoveForward(float Value)
