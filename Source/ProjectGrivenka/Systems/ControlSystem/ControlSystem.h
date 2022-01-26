@@ -19,6 +19,8 @@ class PROJECTGRIVENKA_API UControlSystem : public UBaseContextableComponent
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UCameraComponent* CameraMain;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USpringArmComponent* SpringArm;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector RawInput;
@@ -26,6 +28,8 @@ public:
 	AActor* CommandedActor;
 	UPROPERTY(BlueprintReadWrite)
 	class UBaseGameInstance* GI;
+	UPROPERTY(BlueprintReadWrite)
+	AActor* LockedActor;
 
 	float RotationRate = 20;
 
@@ -44,6 +48,7 @@ protected:
 	void ControlVentAmp();
 	void ControlDodge();
 	void ControlInteract();
+	void ControlLockOn();
 	void ControlCommand1();
 	void ControlCommand2();
 	void ControlCommand3();

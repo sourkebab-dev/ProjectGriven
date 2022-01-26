@@ -34,6 +34,7 @@ void UControlSystem::Init()
 	this->ControlSystemSetup(ActorPawn->GetController());
 	this->GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
 	this->SpringArm = IControllable::Execute_GetCameraSpringArm(this->CompContext->CharacterActor);
+	this->CameraMain = IControllable::Execute_GetMainCamera(this->CompContext->CharacterActor);
 }
 
 void UControlSystem::ControlSystemSetup(AController* NewController)
@@ -57,6 +58,7 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAction("Command2", IE_Pressed, this, &UControlSystem::ControlCommand2);
 	InputComp->BindAction("Command3", IE_Pressed, this, &UControlSystem::ControlCommand3);
 	InputComp->BindAction("CommandCancel", IE_Pressed, this, &UControlSystem::ControlCommandCancel);
+	InputComp->BindAction("LockOn", IE_Pressed, this, &UControlSystem::ControlLockOn);
 	InputComp->BindAxis("MoveForward", this, &UControlSystem::ControlMoveForward);
 	InputComp->BindAxis("MoveRight", this, &UControlSystem::ControlMoveRight);
 	InputComp->BindAxis("CycleItem", this, &UControlSystem::ControlCycleItem);
@@ -85,6 +87,7 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 	InputComp->RemoveActionBinding("Command2", IE_Pressed);
 	InputComp->RemoveActionBinding("Command3", IE_Pressed);
 	InputComp->RemoveActionBinding("CommandCancel", IE_Pressed);
+	InputComp->RemoveActionBinding("LockOn", IE_Pressed);
 	InputComp->AxisBindings.Empty();
 	this->SetComponentTickEnabled(false);
 	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "Disable");
@@ -101,12 +104,19 @@ void UControlSystem::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		return;
 	}
 
-	FVector TargetLocRot = this->CompContext->MovementModule.WorldSpaceTargetDir;
-	if (TargetLocRot.IsZero()) {
-		TargetLocRot = this->CompContext->CharacterActor->GetActorForwardVector();
+	FVector TargetLocRot = FVector::ZeroVector;
+	if (this->LockedActor) {
+		TargetLocRot = this->LockedActor->GetActorLocation();
+	}
+	else {
+		TargetLocRot = this->CompContext->MovementModule.WorldSpaceTargetDir;
+		if (TargetLocRot.IsZero()) {
+			TargetLocRot = this->CompContext->CharacterActor->GetActorForwardVector();
+		}
+		TargetLocRot = this->CompContext->CharacterActor->GetActorLocation() + TargetLocRot  * 10;
 	}
 
-	UVectorMathLib::RotateActorToTargetVector(this->GetOwner(), this->CompContext->CharacterActor->GetActorLocation() + TargetLocRot * 10, this->RotationRate, DeltaTime);
+	UVectorMathLib::RotateActorToTargetVector(this->GetOwner(), TargetLocRot, this->RotationRate, DeltaTime);
 }
 
 void UControlSystem::AnimHandler(EAnimEvt InAnimEvt)
@@ -232,8 +242,29 @@ void UControlSystem::ControlDodge()
 
 void UControlSystem::ControlInteract()
 {
-	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "itr");
 	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionInteract, IE_Pressed);
+}
+
+void UControlSystem::ControlLockOn()
+{
+
+	if (this->LockedActor) {
+		this->LockedActor = nullptr;
+		return;
+	}
+
+	FVector CameraLoc = this->CameraMain->GetComponentLocation();
+	FVector CameraForwardVec = this->CameraMain->GetForwardVector();
+	FVector RotateAxis = CameraForwardVec.RotateAngleAxis(-90, FVector::UpVector);
+	FVector TargetHit = CameraLoc +  CameraForwardVec.RotateAngleAxis(7.0f, RotateAxis) * 10000;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this->CompContext->CharacterActor);
+	FHitResult HitResult;
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "asu");
+
+	if (UKismetSystemLibrary::SphereTraceSingle(this->GetWorld(), CameraLoc, TargetHit, 30.0f, UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, HitResult, true)) {
+		this->LockedActor = HitResult.Actor.Get();
+	}
 }
 
 void UControlSystem::ControlCommand1()
