@@ -37,13 +37,13 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDialogueReplyDelegate DialogueReplyDelegate;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Instance")
+	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
 	class UDialogueBox* DialogueBoxUIIns;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Instance")
+	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
 	class UActiveItemBelt* ActiveItemBeltUIIns;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Instance")
+	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
 	class UUILootListNotify* LootListUIIns;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")

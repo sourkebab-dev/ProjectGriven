@@ -11,9 +11,9 @@ UCharacterStatesSystem::UCharacterStatesSystem() : UBaseContextableComponent() {
 	this->PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UCharacterStatesSystem::Init()
+void UCharacterStatesSystem::Init_Implementation()
 {
-	Super::Init();
+	Super::Init_Implementation();
 	this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
 	this->InitializePersistantStates();
 	if (!this->CompContext->EventBus) return;

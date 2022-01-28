@@ -39,9 +39,9 @@ void ULungeAttackState::OnStateEnter_Implementation(FGameplayTagContainer InPrev
 		this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(this->LungeEndDelegate, LungeMontage);
 		this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(this->LungeEndDelegate, LungeMontage);
 	}
-
+     
 	this->StatesComp->CrossStateData.IsLungeAvailable = false;
-
+	
 	if (this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
 		float StaminaConsumption = this->StatesComp->CompContext->CharacterActor->Implements<UEquipmentSystemAvailable>() ? IEquipmentSystemAvailable::Execute_GetCurrentAttackStaminaUsage(this->StatesComp->CompContext->CharacterActor, this->StatesComp->CompContext->CombatModule.CurrentAttack) : 0;
 		ICharacterSystemAvailable::Execute_InitEffectDepleteStamina(this->StatesComp->CompContext->CharacterActor, this->StatesComp->CompContext->CharacterActor, StaminaConsumption);

@@ -10,9 +10,9 @@
 #include "ProjectGrivenka/Utilities/UIManager.h"
 
 
-void UCharacterInventory::Init()
+void UCharacterInventory::Init_Implementation()
 {
-	Super::Init();	
+	Super::Init_Implementation();
 }
 
 void UCharacterInventory::LoadData(FPersistedInventory InInventory)

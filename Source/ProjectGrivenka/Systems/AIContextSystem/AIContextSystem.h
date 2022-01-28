@@ -22,7 +22,7 @@ public:
 	TEnumAsByte<EHostilityType> HostilityType = EHostilityType::NEUTRAL;
 
 public:
-	void Init() override;
+	void Init_Implementation() override;
 
 	UFUNCTION(BlueprintCallable)
 	void SignalCommandToActor(AActor* CommandReceiveActor, FCommandInfo CommandInfo);

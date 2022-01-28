@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "ProjectGrivenka/ContextUtilities/BaseContextableComponent.h"
+#include "ProjectGrivenka/GlobalDefinitions.h"
 #include "CharacterSystemDefinitions.h"
 #include "CharacterSystemAvailable.h"
 #include "CharacterSystem.generated.h"
@@ -32,7 +33,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	void Init();
+	void Init_Implementation() override;
 	UFUNCTION(BlueprintCallable)
 	void InitializeAttributes(FPersistedAttributes PersistedAttributes);
 	UFUNCTION(BlueprintCallable)
@@ -47,6 +48,8 @@ public:
 	void DeactivateAllEffects();
 	UFUNCTION(BlueprintCallable)
 	UBaseEffect* FindEffectsByTag(FGameplayTag EffectTag);
+	UFUNCTION(BlueprintCallable)
+	void SubscribeAttributeChanges(TEnumAsByte<EAttributeCode> InAttributeCode, FSimpleDynamicDelegate InDelegate);
 
 	//Sponge: maybe should use events for all of these?
 	#pragma region Primitive GetterSetters (should be called internally in the system)

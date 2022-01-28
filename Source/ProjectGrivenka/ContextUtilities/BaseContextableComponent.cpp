@@ -12,7 +12,7 @@ UBaseContextableComponent::UBaseContextableComponent() : UActorComponent()
 	this->bWantsInitializeComponent = true;
 }
 
-void UBaseContextableComponent::Init()
+void UBaseContextableComponent::Init_Implementation()
 {
 	if (!this->GetOwner()->Implements<UContextAvailable>()) {
 		GLog->Log(this->GetOwner()->GetFullName());

@@ -10,20 +10,20 @@
 #include "Effects/WeaponDamage.h"
 #include "Effects/FortitudeDamage.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
-#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/ContextUtilities/EventBus.h"
 
 
 // Called when the game starts
 void UCharacterSystem::BeginPlay()
 {
 	Super::BeginPlay();
-	this->Attributes = NewObject<UCharacterSystemAttributes>();
+	this->Attributes = NewObject<UCharacterSystemAttributes>(this);
 }
 
-void UCharacterSystem::Init()
+void UCharacterSystem::Init_Implementation()
 {
-	Super::Init();
+	Super::Init_Implementation();
 	if (!this->CompContext->EventBus) return;
 	//this->CompContext->EventBus->ItemUsageDelegate.AddUObject(this, &UCharacterSystem::InitFXByPrefab);
 	if (this->PrefabData) this->InitializeAttributes(this->PrefabData->CharacterData.Attributes);
@@ -142,6 +142,24 @@ UBaseEffect* UCharacterSystem::FindEffectsByTag(FGameplayTag EffectTag)
 	}
 
 	return Effect;
+}
+
+void UCharacterSystem::SubscribeAttributeChanges(TEnumAsByte<EAttributeCode> InAttributeCode, FSimpleDynamicDelegate InDelegate)
+{
+	switch (InAttributeCode)
+	{
+	case EAttributeCode::ATT_Health:
+		this->Attributes->HealthChangeDelegate.Add(InDelegate);
+		break;
+	case EAttributeCode::ATT_Stamina:
+		this->Attributes->StaminaChangeDelegate.Add(InDelegate);
+		break;
+	case EAttributeCode::ATT_Fortitude:
+		this->Attributes->FortitudeChangeDelegate.Add(InDelegate);
+		break;
+	default:
+		break;
+	}
 }
 
 float UCharacterSystem::GetAttributeBaseValue(TEnumAsByte<EAttributeCode> InAttributeCode)

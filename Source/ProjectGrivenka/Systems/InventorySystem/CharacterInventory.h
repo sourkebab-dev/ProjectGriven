@@ -32,7 +32,7 @@ public:
 	class ABaseItem* UsedItem;
 
 public:	
-	void Init() override;
+	void Init_Implementation() override;
 	UFUNCTION(BlueprintCallable)
 	void LoadData(FPersistedInventory InInventory);
 	UFUNCTION(BlueprintCallable)

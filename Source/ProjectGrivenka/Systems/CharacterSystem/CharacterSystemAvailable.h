@@ -106,4 +106,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	float GetAttributeMaxValue(EAttributeCode InAttributeCode);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SubscribeAttributeChanges(EAttributeCode InAttributeCode, const FSimpleDynamicDelegate& InDelegate);
+
 };

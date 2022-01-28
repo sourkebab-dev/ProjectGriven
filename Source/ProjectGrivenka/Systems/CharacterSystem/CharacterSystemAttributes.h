@@ -13,8 +13,10 @@
 
 #define ATTRIBUTE_ACCESSORS(AttributeName) \
 	FORCEINLINE float Get##AttributeName() const { return AttributeName##.CurrentValue; } \
-	FORCEINLINE void Set##AttributeName(float NewVal) { AttributeName##.CurrentValue = PreAttributeChange(EAttributeCode::ATT_##AttributeName##, NewVal); } \
+	FORCEINLINE void Set##AttributeName(float NewVal) { AttributeName##.CurrentValue = PreAttributeChange(EAttributeCode::ATT_##AttributeName##, NewVal); PostAttributeChange(EAttributeCode::ATT_##AttributeName##); } \
 	FORCEINLINE void Init##AttributeName(float NewVal){ AttributeName##.CurrentValue = NewVal; AttributeName##.BaseValue = NewVal; } 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAttrChangeDelegate);
 
 UCLASS()
 class PROJECTGRIVENKA_API UCharacterSystemAttributes : public UObject
@@ -108,6 +110,13 @@ public:
 		FAttributeData ElemPoisonPooledDamage;
 		ATTRIBUTE_ACCESSORS(ElemPoisonPooledDamage)
 
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FAttrChangeDelegate HealthChangeDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FAttrChangeDelegate StaminaChangeDelegate;
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FAttrChangeDelegate FortitudeChangeDelegate;
 
 	float PreAttributeChange(TEnumAsByte<EAttributeCode> Attribute, float NewValue);
+	void PostAttributeChange(TEnumAsByte<EAttributeCode> Attribute);
 };

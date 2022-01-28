@@ -10,9 +10,9 @@
 #include "ProjectGrivenka/AI/BaseAIController.h"
 
 
-void UAIContextSystem::Init()
+void UAIContextSystem::Init_Implementation()
 {
-	Super::Init();
+	Super::Init_Implementation();
 	if (!this->CompContext->EventBus) return;
 	this->CompContext->EventBus->AICommandDelegate.AddDynamic(this, &UAIContextSystem::OnCommanded);
 

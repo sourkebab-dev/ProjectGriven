@@ -57,7 +57,7 @@ protected:
 
 
 public:
-	void Init() override;
+	void Init_Implementation() override;
 	UFUNCTION()
 	void ControlSystemSetup(AController* NewController);
 	void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);

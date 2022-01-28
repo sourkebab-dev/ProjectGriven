@@ -8,9 +8,9 @@
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
 
-void UEquipmentSystem::Init()
+void UEquipmentSystem::Init_Implementation()
 {
-	Super::Init();
+	Super::Init_Implementation();
 }
 
 void UEquipmentSystem::DisableWeaponDamageColliders()

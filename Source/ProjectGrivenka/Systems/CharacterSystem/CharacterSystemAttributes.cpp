@@ -9,12 +9,16 @@ float UCharacterSystemAttributes::PreAttributeChange(TEnumAsByte<EAttributeCode>
     switch (Attribute)
     {
         case EAttributeCode::ATT_Health:
+            this->Health.TempValue = this->Health.CurrentValue;
             return FMath::Clamp(NewValue, 0.0f, this->MaxHealth.CurrentValue);
         case EAttributeCode::ATT_Stamina:
+            this->Stamina.TempValue = this->Stamina.CurrentValue;
             return FMath::Clamp(NewValue, 0.0f, this->MaxStamina.CurrentValue);
         case EAttributeCode::ATT_Amp:
+            this->Amp.TempValue = this->Amp.CurrentValue;
             return FMath::Clamp(NewValue, 0.0f, this->MaxAmp.CurrentValue);
         case EAttributeCode::ATT_Fortitude:
+            this->Fortitude.TempValue = this->Fortitude.CurrentValue;
             return FMath::Clamp(NewValue, 0.0f, this->MaxFortitude.CurrentValue);
         case EAttributeCode::ATT_ElemFirePooledDamage:
             return FMath::Clamp(NewValue, 0.0f, 100.0f);
@@ -31,4 +35,19 @@ float UCharacterSystemAttributes::PreAttributeChange(TEnumAsByte<EAttributeCode>
     }
 
 
+}
+
+void UCharacterSystemAttributes::PostAttributeChange(TEnumAsByte<EAttributeCode> Attribute)
+{
+    switch (Attribute) {
+    case EAttributeCode::ATT_Health:
+        if(this->Health.CurrentValue != this->Health.TempValue) this->HealthChangeDelegate.Broadcast();
+        break;
+    case EAttributeCode::ATT_Stamina:
+        if (this->Stamina.CurrentValue != this->Stamina.TempValue) this->StaminaChangeDelegate.Broadcast();
+        break;
+    case EAttributeCode::ATT_Fortitude:
+        if (this->Fortitude.CurrentValue != this->Fortitude.TempValue) this->FortitudeChangeDelegate.Broadcast();
+        break;
+    }
 }

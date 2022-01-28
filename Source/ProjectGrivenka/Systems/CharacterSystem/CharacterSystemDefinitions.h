@@ -63,6 +63,8 @@ struct FAttributeData
 {
     GENERATED_BODY()
 
+    float TempValue = 0.0f; //used for detecting changes
+
         UPROPERTY(EditAnywhere, BlueprintReadWrite)
         float BaseValue = 0.0f;
 

@@ -24,7 +24,7 @@ public:
 	FInteractSystemStart OnInteract;
 
 public:
-	void Init() override;
+	void Init_Implementation() override;
 	
 	UFUNCTION()
 	virtual void SaveInteractable(UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);

@@ -12,9 +12,9 @@
 #include "ProjectGrivenka/AI/BaseAIController.h"
 #include "ProjectGrivenka/Utilities/UIManager.h"
 
-void UDialogueSystem::Init()
+void UDialogueSystem::Init_Implementation()
 {
-	Super::Init();
+	Super::Init_Implementation();
 }
 
 void UDialogueSystem::StartDefaultDialogue()

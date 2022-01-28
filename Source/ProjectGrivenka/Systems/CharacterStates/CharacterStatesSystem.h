@@ -65,7 +65,7 @@ protected:
 	FTimerHandle AnimLockHandle;
 
 public:	
-	void Init() override;
+	void Init_Implementation() override;
 	void InitializePersistantStates();
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)

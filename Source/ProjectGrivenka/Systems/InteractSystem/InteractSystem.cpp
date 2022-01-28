@@ -7,9 +7,9 @@
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
 
-void UInteractSystem::Init()
+void UInteractSystem::Init_Implementation()
 {
-	Super::Init();
+	Super::Init_Implementation();
 	if (!this->CompContext->EventBus) {
 		UE_LOG(LogTemp, Error, TEXT("Eventbus Initiation Failure"), *GetNameSafe(this)); return;
 	}

@@ -6,6 +6,9 @@
 #include "Engine/DataTable.h"
 #include "GlobalDefinitions.generated.h"
 
+DECLARE_DYNAMIC_DELEGATE(FSimpleDynamicDelegate);
+
+
 UENUM(BlueprintType)
 enum EAIStateType
 {

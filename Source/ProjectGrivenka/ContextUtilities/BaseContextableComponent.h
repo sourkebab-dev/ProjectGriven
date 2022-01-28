@@ -7,7 +7,7 @@
 #include "BaseContextableComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTGRIVENKA_API UBaseContextableComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -20,6 +20,7 @@ protected:
 	UBaseContextableComponent();
 
 public:	
-	UFUNCTION(BlueprintCallable)
-	virtual void Init();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Init();
+	virtual void Init_Implementation();
 };

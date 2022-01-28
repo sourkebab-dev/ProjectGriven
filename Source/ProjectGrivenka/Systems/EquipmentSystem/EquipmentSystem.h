@@ -24,7 +24,7 @@ public:
 
 
 public:
-	void Init() override;
+	void Init_Implementation() override;
 
 	UFUNCTION(BlueprintCallable)
 	void DisableWeaponDamageColliders();
