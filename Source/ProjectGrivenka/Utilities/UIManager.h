@@ -46,6 +46,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
 	class UUILootListNotify* LootListUIIns;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
+	class UPlayerStatsContainer* PlayerStatsContainerUIIns;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
 	TSubclassOf<class UUILootListNotify> LootListUIClass;
 
@@ -55,6 +59,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
 	TSubclassOf<class UActiveItemBelt> ActiveItemBeltUIClass;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
+	TSubclassOf<class UPlayerStatsContainer> PlayerStatsContainerUIClass;
+
 public:
 
 	void Init(class UBaseGameInstance* InGameIns);

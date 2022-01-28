@@ -50,6 +50,8 @@ public:
 	UBaseEffect* FindEffectsByTag(FGameplayTag EffectTag);
 	UFUNCTION(BlueprintCallable)
 	void SubscribeAttributeChanges(TEnumAsByte<EAttributeCode> InAttributeCode, FSimpleDynamicDelegate InDelegate);
+	UFUNCTION(BlueprintCallable)
+	void UnSubscribeAttributeChanges(TEnumAsByte<EAttributeCode> InAttributeCode, FSimpleDynamicDelegate InDelegate);
 
 	//Sponge: maybe should use events for all of these?
 	#pragma region Primitive GetterSetters (should be called internally in the system)

@@ -7,6 +7,7 @@
 #include "ProjectGrivenka/UI/Dialogue/DialogueBox.h"
 #include "ProjectGrivenka/UI/ItemBelt/ActiveItemBelt.h"
 #include "ProjectGrivenka/UI/Loot/UILootListNotify.h"
+#include "ProjectGrivenka/UI/PlayerStatsContainer/PlayerStatsContainer.h"
 
 void UUIManager::Init(UBaseGameInstance* InGameIns) {
 	this->GameIns = InGameIns;
@@ -16,6 +17,8 @@ void UUIManager::LoadInGameUI()
 {
 	this->ActiveItemBeltUIIns = Cast<UActiveItemBelt>(CreateWidget(this->GameIns, this->ActiveItemBeltUIClass, "Active Item Belt UI"));
 	this->ActiveItemBeltUIIns->AddToViewport();
+	this->PlayerStatsContainerUIIns = Cast<UPlayerStatsContainer>(CreateWidget(this->GameIns, this->PlayerStatsContainerUIClass, "Player Stats Container UI"));
+	this->PlayerStatsContainerUIIns->AddToViewport();
 }
 
 void UUIManager::SetActiveItemImage(FItemInfo InItemInfo)

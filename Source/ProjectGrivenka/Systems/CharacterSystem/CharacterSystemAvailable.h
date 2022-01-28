@@ -109,4 +109,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void SubscribeAttributeChanges(EAttributeCode InAttributeCode, const FSimpleDynamicDelegate& InDelegate);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void UnSubscribeAttributeChanges(EAttributeCode InAttributeCode, const FSimpleDynamicDelegate& InDelegate);
 };

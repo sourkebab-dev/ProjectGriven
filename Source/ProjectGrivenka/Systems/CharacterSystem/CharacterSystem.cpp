@@ -162,6 +162,24 @@ void UCharacterSystem::SubscribeAttributeChanges(TEnumAsByte<EAttributeCode> InA
 	}
 }
 
+void UCharacterSystem::UnSubscribeAttributeChanges(TEnumAsByte<EAttributeCode> InAttributeCode, FSimpleDynamicDelegate InDelegate)
+{
+	switch (InAttributeCode)
+	{
+	case EAttributeCode::ATT_Health:
+		this->Attributes->HealthChangeDelegate.Remove(InDelegate);
+		break;
+	case EAttributeCode::ATT_Stamina:
+		this->Attributes->StaminaChangeDelegate.Remove(InDelegate);
+		break;
+	case EAttributeCode::ATT_Fortitude:
+		this->Attributes->FortitudeChangeDelegate.Remove(InDelegate);
+		break;
+	default:
+		break;
+	}
+}
+
 float UCharacterSystem::GetAttributeBaseValue(TEnumAsByte<EAttributeCode> InAttributeCode)
 {
 	switch (InAttributeCode) {
