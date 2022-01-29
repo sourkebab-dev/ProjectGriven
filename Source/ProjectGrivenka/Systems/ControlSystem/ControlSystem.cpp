@@ -13,6 +13,7 @@
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 #include "ProjectGrivenka/Utilities/BaseGameInstance.h"
+#include "ProjectGrivenka/Utilities/UIManager.h"
 
 UControlSystem::UControlSystem() : UBaseContextableComponent() {
 	this->PrimaryComponentTick.bCanEverTick = true;
@@ -160,6 +161,7 @@ void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 
 	this->GetWorld()->GetFirstPlayerController()->Possess(OwnerPawn);
 	this->GI->PartyInstance.Empty();
+	this->GI->UIManager->StatsSetup();
 
 	//sponge: need to set character id somewhere
 	//GameInstance->SetControlledCrewId(this->CharacterId);

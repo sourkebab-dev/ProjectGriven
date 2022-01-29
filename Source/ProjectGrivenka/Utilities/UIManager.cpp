@@ -21,6 +21,12 @@ void UUIManager::LoadInGameUI()
 	this->PlayerStatsContainerUIIns->AddToViewport();
 }
 
+void UUIManager::StatsSetup()
+{
+	if (!this->PlayerStatsContainerUIIns) return;
+	this->PlayerStatsContainerUIIns->Setup();
+}
+
 void UUIManager::SetActiveItemImage(FItemInfo InItemInfo)
 {
 	this->ActiveItemBeltUIIns->SetItemInfo(InItemInfo);

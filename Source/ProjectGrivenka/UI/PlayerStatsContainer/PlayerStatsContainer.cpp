@@ -7,6 +7,7 @@
 
 void UPlayerStatsContainer::Setup()
 {
+	this->Remove();
 	APawn* PlayerPawn = this->GetWorld()->GetFirstPlayerController()->GetPawn();
 	this->Healthbar->Setup(PlayerPawn);
 	this->StaminaBar->Setup(PlayerPawn);

@@ -67,6 +67,9 @@ public:
 	void Init(class UBaseGameInstance* InGameIns);
 
 	UFUNCTION(BlueprintCallable)
+	void StatsSetup();
+
+	UFUNCTION(BlueprintCallable)
 	void LoadInGameUI();
 
 	UFUNCTION(BlueprintCallable)

@@ -23,5 +23,6 @@ void UUIHealthBar::Render()
 
 void UUIHealthBar::OnRemove()
 {
+	if (!this->Owner) return;
 	ICharacterSystemAvailable::Execute_UnSubscribeAttributeChanges(this->Owner, EAttributeCode::ATT_Health, this->OnRender);
 }

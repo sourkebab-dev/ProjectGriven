@@ -23,5 +23,6 @@ void UUIStaminaBar::Render()
 
 void UUIStaminaBar::OnRemove()
 {
+	if (!this->Owner) return;
 	ICharacterSystemAvailable::Execute_UnSubscribeAttributeChanges(this->Owner, EAttributeCode::ATT_Stamina, this->OnRender);
 }
