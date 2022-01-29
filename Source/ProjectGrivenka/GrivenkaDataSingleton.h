@@ -27,14 +27,14 @@ public:
 	UDataTable* MaterialData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SingletonData")
 	UCurveFloat* CommonDodgeCurveFloat;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SingletonData")
-	FRotationRate CommonRotationRate = FRotationRate(0.01, 8, 20);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
 	UWeaponPrefabList* WeaponPrefabs;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
 	UEffectPrefabList* EffectPrefab;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
 	UItemPrefabList* ItemPrefab;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
+	UItemPrefabList* MaterialMasterData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
 	UBountyList* BountyList;
 

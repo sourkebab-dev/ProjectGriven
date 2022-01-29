@@ -32,6 +32,6 @@ public:
 	void ReceiveAction(FGameplayTag InAction);
 
 	UFUNCTION(BlueprintCallable)
-	void DebugBullshit();
+	void OnLooted(AActor* LootInstigator);
 
 };

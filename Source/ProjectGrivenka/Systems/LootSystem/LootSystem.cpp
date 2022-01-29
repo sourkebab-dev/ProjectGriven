@@ -3,6 +3,8 @@
 
 #include "LootSystem.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
+#include "ProjectGrivenka/Items/ItemPrefab.h"
+#include "ProjectGrivenka/Utilities/BaseGameInstance.h"
 
 TArray<FLootItem> ULootSystem::GenerateLoot()
 {
@@ -51,7 +53,18 @@ void ULootSystem::ReceiveAction(FGameplayTag InAction)
 	}
 }
 
-void ULootSystem::DebugBullshit()
+void ULootSystem::OnLooted(AActor* LootInstigator)
 {
-	GLog->Log("Bullshit");
+	TArray<FLootItem> Loot = this->GenerateLoot();
+	auto GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
+
+
+	for (int i = 0; i < Loot.Num(); i++) {
+		if (Loot[i].Item->ItemInfo.ItemType == EItemType::IT_MATERIAL) {
+			GI->StoreMaterial(Loot[i].Item->ItemInfo, Loot[i].Quantity);
+		}
+		else {
+			//add to instigator inventory
+		}
+	}
 }

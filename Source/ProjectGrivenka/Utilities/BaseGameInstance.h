@@ -6,6 +6,7 @@
 #include "Engine/GameInstance.h"
 #include "ProjectGrivenka/PersistedData/CharacterData.h"
 #include "ProjectGrivenka/Equipments/EquipmentDefinitions.h"
+#include "ProjectGrivenka/Items/ItemDefinitions.h"
 #include "ProjectGrivenka/Quest/BountyList.h"
 #include "BaseGameInstance.generated.h"
 
@@ -29,6 +30,10 @@ public:
 	TArray<FPersistedCharacterData> Crew;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TArray<FEquipmentBoxItem> EquipmentBox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<FPersistedInventoryItems> ItemBox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<FPersistedInventoryItems> MaterialBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	class UUIManager* UIManager;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
@@ -46,4 +51,6 @@ public:
 	FName GetAcceptedBountyContractId() { return this->AcceptedBountyContractId;  }
 	UFUNCTION(BlueprintCallable)
 	FBountyContract GetAcceptedBountyContract();
+	UFUNCTION(BlueprintCallable)
+	void StoreMaterial(FItemInfo MaterialInfo, int Count);
 };

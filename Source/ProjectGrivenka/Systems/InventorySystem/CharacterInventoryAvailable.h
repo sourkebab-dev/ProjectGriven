@@ -4,32 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "ProjectGrivenka/Items/ItemDefinitions.h"
 #include "CharacterInventoryAvailable.generated.h"
 
-USTRUCT(BlueprintType)
-struct FPersistedInventoryItems
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int SlotIndex;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int Count;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName ItemId;
-
-};
-
-USTRUCT(BlueprintType)
-struct FPersistedInventory
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FPersistedInventoryItems> Items;
-};
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, BlueprintType)

@@ -3,6 +3,7 @@
 
 #include "BaseGameInstance.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
+#include "ProjectGrivenka/Items/ItemPrefab.h"
 #include "UIManager.h"
 
 void UBaseGameInstance::Init()
@@ -26,4 +27,50 @@ FBountyContract UBaseGameInstance::GetAcceptedBountyContract()
     }
 
     return FBountyContract();
+}
+
+void UBaseGameInstance::StoreMaterial(FItemInfo MaterialInfo, int Count)
+{
+    UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
+    UItemPrefab* MaterialPrefab = AssetsData->MaterialMasterData->ItemAssets.FindRef(MaterialInfo.ItemId);
+    if (!MaterialPrefab) return;
+
+    int MaxStack = MaterialPrefab->ItemInfo.MaxStackAmount;
+    int CountRemain = Count;
+    bool isFillNewSlot = true;
+    TMap<int, bool> SlotFilledMap;
+    for (int i = 0; i < this->MaterialBox.Num(); i++) {
+        SlotFilledMap.Add(this->MaterialBox[i].SlotIndex, true);
+        if (this->MaterialBox[i].ItemId == MaterialInfo.ItemId) {
+            int TempRemain = CountRemain - (MaxStack - this->MaterialBox[i].Count);
+            int ToFill = TempRemain < 0 ? CountRemain  : CountRemain - TempRemain;
+            this->MaterialBox[i].Count += ToFill;
+            CountRemain = TempRemain;
+
+            if (CountRemain <= 0) {
+                isFillNewSlot = false;
+                break;
+            }
+        }
+    }
+    
+    if (!isFillNewSlot) return;
+
+    int TempSlotIdx = 0;
+    FPersistedInventoryItems PersistedInfo;
+    PersistedInfo.ItemId = MaterialInfo.ItemId;
+
+    while (CountRemain > 0) {
+        if (SlotFilledMap.Find(TempSlotIdx)) {
+            TempSlotIdx++;
+            continue;
+        }
+
+        int TempRemain = CountRemain - MaxStack;
+        int ToFill = TempRemain < 0 ? CountRemain : MaxStack;
+        PersistedInfo.Count = ToFill;
+        PersistedInfo.SlotIndex = TempSlotIdx;
+        this->MaterialBox.Add(PersistedInfo);
+        CountRemain = TempRemain;
+    }
 }

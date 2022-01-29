@@ -7,6 +7,7 @@
 #include "Engine/DataTable.h"
 #include "ItemDefinitions.generated.h"
 
+
 UENUM(BlueprintType)
 enum EItemType
 {
@@ -75,4 +76,29 @@ struct FItemInfo
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int MaxStackAmount;
     
+};
+
+USTRUCT(BlueprintType)
+struct FPersistedInventoryItems
+{
+    GENERATED_BODY()
+
+        UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        int SlotIndex;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        int Count;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FName ItemId;
+
+};
+
+USTRUCT(BlueprintType)
+struct FPersistedInventory
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FPersistedInventoryItems> Items;
 };
