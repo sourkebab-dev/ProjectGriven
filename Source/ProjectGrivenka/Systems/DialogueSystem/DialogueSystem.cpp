@@ -23,6 +23,8 @@ void UDialogueSystem::StartDefaultDialogue()
 	if (!GameInstance || !this->CompContext->Controller) return;
 	
 	this->GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeUIOnly());
+	this->GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+
 	GameInstance->UIManager->OpenDialogueBox();
 	auto AIController = Cast<AAIController>(this->CompContext->Controller);
 	if (!AIController) return;
@@ -53,6 +55,7 @@ void UDialogueSystem::StopDialogue()
 		IAIContextSystemAvailable::Execute_OnCommanded(this->CompContext->CharacterActor, CmdInfo.CommandTargetActor, CmdInfo);
 	}
 	this->PendingAction = EDialoguePendingActions::NONE;
+	this->GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
 }
 
 void UDialogueSystem::SetPendingActions(EDialoguePendingActions InActionType)

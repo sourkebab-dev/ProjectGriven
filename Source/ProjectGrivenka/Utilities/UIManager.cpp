@@ -7,7 +7,7 @@
 #include "ProjectGrivenka/UI/Dialogue/DialogueBox.h"
 #include "ProjectGrivenka/UI/ItemBelt/ActiveItemBelt.h"
 #include "ProjectGrivenka/UI/Loot/UILootListNotify.h"
-#include "ProjectGrivenka/UI/PlayerStatsContainer/PlayerStatsContainer.h"
+#include "ProjectGrivenka/UI/Stats/PlayerStatsContainer.h"
 
 void UUIManager::Init(UBaseGameInstance* InGameIns) {
 	this->GameIns = InGameIns;
