@@ -40,12 +40,15 @@ void ABaseAIController::OnPossess(APawn* PossesedPawn)
 
 void ABaseAIController::OnUnPossess()
 {
+	this->ActorCtx->EventBus->DamagedDelegate.RemoveDynamic(this, &ABaseAIController::OnHit);
+	this->ActorCtx->EventBus->AnimDelegate.RemoveDynamic(this, &ABaseAIController::SetRotationRate);
 	this->ActorCtx->CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);
 	this->ActorCtx->CharacterActor->GetWorldTimerManager().ClearTimer(this->SightRefreshTimer);
 
 	this->AggroTarget = nullptr;
 	this->AggroMap.Empty();
 	this->ActorCtx->EventBus->DamagedDelegate.RemoveAll(this);
+	Super::OnUnPossess();
 }
 
 //sponge: might be a better way to catch the context initialization
@@ -57,7 +60,6 @@ void ABaseAIController::OnContextSetup()
 	this->ActorCtx->Controller = this;
 
 	if (!this->ActorCtx || !this->ActorCtx->EventBus) return;
-
 	this->ActorCtx->EventBus->DamagedDelegate.AddDynamic(this, &ABaseAIController::OnHit);
 	this->ActorCtx->EventBus->AnimDelegate.AddDynamic(this, &ABaseAIController::SetRotationRate);
 }
@@ -186,6 +188,7 @@ void ABaseAIController::OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo
 	IAIContextSystemAvailable::Execute_SignalCommandToArea(this->ActorCtx->CharacterActor, Command);
 }
 
+
 void ABaseAIController::AddAggroActor(AActor* AggroInstigator, float AggroPoints)
 {
 	if (this->AggroMap.Find(AggroInstigator)) {
@@ -249,7 +252,6 @@ void ABaseAIController::SendAIEvent(TEnumAsByte<EAIEvent> InAIEvent)
 {
 	//sponge: dunno if this is the best way to do it
 	this->BlackboardComp->SetValueAsEnum("AIEvent", InAIEvent);
-	GEngine->AddOnScreenDebugMessage(12, 1, FColor::Red, "HitSignal");
 }
 
 

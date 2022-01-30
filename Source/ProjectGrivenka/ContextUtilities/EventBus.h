@@ -20,6 +20,7 @@ enum EAnimEvt {
 	OFF_ROTATION,
 	START_DODGE,
 	END_DODGE,
+	DEATH,
 };
 
 DECLARE_DELEGATE(FHitStopFinishDelegate);
@@ -42,6 +43,9 @@ class PROJECTGRIVENKA_API UEventBus : public UObject
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FAICommandDelegate AICommandDelegate;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FDamagedDelegate DeathDelegate;
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FDamagedDelegate StaggerDelegate;

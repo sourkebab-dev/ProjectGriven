@@ -16,7 +16,9 @@ struct FContextCombat
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool IsDead = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FAttackValues CurrentAttack;
 };
 

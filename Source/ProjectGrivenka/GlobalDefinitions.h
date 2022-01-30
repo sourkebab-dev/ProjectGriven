@@ -48,9 +48,10 @@ enum EAttackMovementType {
 
 UENUM(BlueprintType)
 enum EDamageImpactType {
-    DI_LOW       UMETA(DisplayName = "Default Attack Movement"),
-    DI_MEDIUM       UMETA(DisplayName = "Heavy Attack Movement"),
-    DI_HIGH       UMETA(DisplayName = "Charged Attack Movement"),
+    DI_LOW       UMETA(DisplayName = "Low Impact"),
+    DI_MEDIUM       UMETA(DisplayName = "Medium Impact"),
+    DI_HIGH       UMETA(DisplayName = "High Impact"),
+    DI_EXPLOSIVE       UMETA(DisplayName = "Explosive Impact"),
 };
 
 

@@ -72,21 +72,27 @@ void UKnockedState::StartHitReact()
 	StunDirection.Z *= -1;
 
 	if (FVector::DotProduct(StunDirection, FVector::LeftVector) >= DOTDIRECTIONTRESHOLD) {
+		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Left");
 		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunLeftMontage.HeavyMontage : this->StunLeftMontage.DefaultMontage;
 	}
 	else if (FVector::DotProduct(StunDirection, FVector::RightVector) >= DOTDIRECTIONTRESHOLD) {
+		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Right");
 		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunRightMontage.HeavyMontage : this->StunRightMontage.DefaultMontage;
 	}
 	else if (FVector::DotProduct(StunDirection, FVector::UpVector) >= DOTDIRECTIONTRESHOLD) {
+		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Up");
 		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunUpMontage.HeavyMontage : this->StunUpMontage.DefaultMontage;
 	}
 	else if (FVector::DotProduct(StunDirection, FVector::DownVector) >= DOTDIRECTIONTRESHOLD) {
+		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Down");
 		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunDownMontage.HeavyMontage : this->StunDownMontage.DefaultMontage;
 	}
 	else if (FVector::DotProduct(StunDirection, FVector::ForwardVector) >= DOTDIRECTIONTRESHOLD) {
+		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Front");
 		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunFrontMontage.HeavyMontage : this->StunFrontMontage.DefaultMontage;
 	}
 	else {
+		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Back");
 		this->CurrentStunMontage = this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH ? this->StunBackMontage.HeavyMontage : this->StunBackMontage.DefaultMontage;
 	}
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->CurrentStunMontage);
@@ -97,7 +103,6 @@ void UKnockedState::StartHitReact()
 	//this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentStunMontage);
 
 
-	//Sponge: try hitpause
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
 		if (this->HitInstigator) {
 			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->HitInstigator);

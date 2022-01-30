@@ -262,7 +262,6 @@ void UControlSystem::ControlLockOn()
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.Add(this->CompContext->CharacterActor);
 	FHitResult HitResult;
-	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "asu");
 
 	if (UKismetSystemLibrary::SphereTraceSingle(this->GetWorld(), CameraLoc, TargetHit, 30.0f, UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, HitResult, true)) {
 		this->LockedActor = HitResult.Actor.Get();

@@ -75,6 +75,5 @@ public:
 	UFUNCTION()
 	virtual void OnHit(AActor* DamageInstigator, FDamageInfo InDamageInfo);
 
-
 	FORCEINLINE UBlackboardComponent* GetBlackboardComp() const { return BlackboardComp; }
 };

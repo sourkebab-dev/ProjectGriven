@@ -141,6 +141,13 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 
 	if (this->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
 		ICharacterSystemAvailable::Execute_InitEffectReceiveHit(this->CompContext->CharacterActor, HitInstigator, InDamageInfo);
+
+		if (ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Health) <= 0) {
+			if (this->CompContext->Controller) {
+				this->CompContext->Controller->UnPossess();
+			}
+			this->CompContext->EventBus->DeathDelegate.Broadcast(HitInstigator, InDamageInfo);
+		}
 	}
 
 }
