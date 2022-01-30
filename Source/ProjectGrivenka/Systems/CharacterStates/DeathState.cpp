@@ -43,7 +43,7 @@ void UDeathState::StartDeathAnim()
 	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 6, FColor::Orange, "DeathImpact");
 	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 6, FColor::Orange, FString::FromInt(this->DeathBlow.ImpactType));
 
-	bool IsHeavyAnim =  this->DeathBlow.ImpactType == EDamageImpactType::DI_HIGH;
+	bool IsHeavyAnim =  this->DeathBlow.ImpactType == EDamageImpactType::DI_HIGH || this->DeathBlow.ImpactType == EDamageImpactType::DI_EXPLOSIVE;
 
 	//sponge: temporary removal 
 	/*

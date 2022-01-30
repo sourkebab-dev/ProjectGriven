@@ -30,6 +30,9 @@ void UFortitudeDamage::OnExecuteEffect()
 
 	float FortitudeDamage = 0.0;
 	switch (this->DamageInfo.ImpactType) {
+	case EDamageImpactType::DI_EXPLOSIVE:
+		FortitudeDamage = 32;
+		break;
 	case EDamageImpactType::DI_HIGH:
 		FortitudeDamage = 24;
 		break;

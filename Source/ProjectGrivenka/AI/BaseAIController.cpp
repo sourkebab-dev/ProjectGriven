@@ -107,6 +107,20 @@ void ABaseAIController::SightRefresh()
 		}
 	}
 
+
+
+	if (this->AggroMap.Num() == 0) return;
+	TArray<AActor*> Outkeys;
+	TArray<AActor*> ToRemove;
+	this->AggroMap.GetKeys(Outkeys);
+	for (int i = 0; i < Outkeys.Num(); i++) {
+		auto Ctx = IContextAvailable::Execute_GetContext(Outkeys[i]);
+		if (Ctx && Ctx->CombatModule.IsDead) ToRemove.Add(Outkeys[i]);
+	}
+	for (int i = 0; i < ToRemove.Num(); i++) {
+		this->AggroMap.Remove(ToRemove[i]);
+	}
+	if (this->AggroMap.Num() == 0) this->ChangeAIState(EAIStateType::IDLE);
 }
 
 void ABaseAIController::AggroRefresh()
@@ -131,6 +145,9 @@ void ABaseAIController::AggroRefresh()
 		}
 
 		this->AggroMap[Outkeys[i]] = 0;
+
+
+		//sponge: might be better using events/traces
 	}
 
 	this->SetAggroTarget(MaxAggroPoint == 0.0 ? ClosestAggro : TempAggroPoint);
