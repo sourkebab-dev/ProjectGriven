@@ -16,6 +16,9 @@ class PROJECTGRIVENKA_API ULootSystem : public UBaseContextableComponent
 
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsLooted = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FLootItem> DynamicLootItems;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

@@ -9,7 +9,6 @@
 /**
  * 
  */
-static const float DOTDIRECTIONTRESHOLD = 0.8;
 
 USTRUCT(BlueprintType)
 struct FDeathMontage

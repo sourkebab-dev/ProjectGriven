@@ -162,6 +162,8 @@ void UCharacterStatesSystem::LockAnimation(EDamageImpactType InDamageImpactTime,
 		{ EDamageImpactType::DI_LOW, 0.07 },
 		{ EDamageImpactType::DI_MEDIUM, 0.1 },
 		{ EDamageImpactType::DI_HIGH, 0.2 },
+		{ EDamageImpactType::DI_EXPLOSIVE, 0.25 },
+
 	};
 
 	float LockTime = LockTimeMap[InDamageImpactTime];
