@@ -16,6 +16,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipmentChangeDelegate, FGuid, CharacterId, FPersistedEquipmentItem, EquipmentInfo);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogueProceedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDialogueReplyDelegate, FName, ReplyId);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSmithFinishedDelegate, EEquipmentType, InEquipmentType, FGuid, EquipmentId, FName, SmithResultId);
 
 UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UUIManager : public UObject
@@ -27,6 +28,9 @@ public:
 	//SPONGE: maybe theres a better way to do this
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	class UBaseGameInstance* GameIns;
+
+	UPROPERTY(BlueprintAssignable)
+	FSmithFinishedDelegate SmithFinishDelegate;
 
 	UPROPERTY(BlueprintAssignable)
 	FEquipmentChangeDelegate EquipmentChangeDelegate;
@@ -75,6 +79,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetActiveItemImage(FItemInfo InItemInfo);
 
+#pragma region Equipment Box
+	UFUNCTION(BlueprintCallable)
+	void EmitChangeEquipment(FPersistedEquipmentItem EquipmentInfo);
+#pragma endregion
+
+#pragma region Loot System
+	UFUNCTION(BlueprintCallable)
+	void EnqueueLootDisplay(FLootItem InLootItem);
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveLootDisplay();
+#pragma endregion
+
+#pragma region Dialogue System
 	UFUNCTION(BlueprintCallable)
 	void ShowDialogue(FDialogueData InDialogueData);
 
@@ -88,18 +106,18 @@ public:
 	void CloseDialogueBox();
 
 	UFUNCTION(BlueprintCallable)
-	void EnqueueLootDisplay(FLootItem InLootItem);
-
-	UFUNCTION(BlueprintCallable)
-	void RemoveLootDisplay();
-
-	UFUNCTION(BlueprintCallable)
-	void EmitChangeEquipment(FPersistedEquipmentItem EquipmentInfo);
-
-	UFUNCTION(BlueprintCallable)
 	void EmitProceedDialogue();
 
 	UFUNCTION(BlueprintCallable)
 	void EmitReplyDialogue(FName InReplyId);
+#pragma endregion
 
+
+#pragma region Smith System
+	UFUNCTION(BlueprintCallable)
+	void OpenSmithUI();
+
+	UFUNCTION(BlueprintCallable)
+	void EmitSmithFinished(EEquipmentType InEquipmentType, FGuid EquipmentId, FName SmithResultId);
+#pragma endregion
 };

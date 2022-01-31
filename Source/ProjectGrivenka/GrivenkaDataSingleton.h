@@ -7,6 +7,8 @@
 #include "Engine/DataTable.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/EffectPrefabList.h"
 #include "ProjectGrivenka/Equipments/WeaponPrefabList.h"
+#include "ProjectGrivenka/Equipments/EquipmentDefinitions.h"
+#include "ProjectGrivenka/Equipments/SmithingRecipeTreePrefab.h"
 #include "ProjectGrivenka/Items/ItemPrefabList.h"
 #include "ProjectGrivenka/GlobalDefinitions.h"
 #include "ProjectGrivenka/Quest/BountyList.h"
@@ -35,6 +37,8 @@ public:
 	UItemPrefabList* ItemPrefab;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
 	UItemPrefabList* MaterialMasterData;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
+	TMap<TEnumAsByte<EWeaponTree>, USmithingRecipeTreePrefab*> SmithWeaponRecipe;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
 	UBountyList* BountyList;
 

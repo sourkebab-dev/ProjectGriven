@@ -53,4 +53,7 @@ public:
 	FBountyContract GetAcceptedBountyContract();
 	UFUNCTION(BlueprintCallable)
 	void StoreMaterial(FItemInfo MaterialInfo, int Count);
+	UFUNCTION(BlueprintCallable)
+	void DepleteMaterial(FItemInfo MaterialInfo, int Count);
+
 };

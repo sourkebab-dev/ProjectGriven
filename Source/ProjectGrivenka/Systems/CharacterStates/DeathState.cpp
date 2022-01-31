@@ -45,30 +45,6 @@ void UDeathState::StartDeathAnim()
 
 	bool IsHeavyAnim =  this->DeathBlow.ImpactType == EDamageImpactType::DI_HIGH || this->DeathBlow.ImpactType == EDamageImpactType::DI_EXPLOSIVE;
 
-	//sponge: temporary removal 
-	/*
-	float Degrees = UVectorMathLib::DegreesBetweenVectors(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->DeathInstigator->GetActorForwardVector());
-	FVector DeathDirection = this->DeathBlow.DamageDirection.RotateAngleAxis(Degrees, FVector::UpVector);
-	DeathDirection.Z *= -1;
-
-	if (FVector::DotProduct(DeathDirection, FVector::LeftVector) >= DOTDIRECTIONTRESHOLD) {
-		this->CurrentDeathMontage = IsHeavyAnim ? this->DeathLeftMontage.HeavyMontage : this->DeathLeftMontage.DefaultMontage;
-	}
-	else if (FVector::DotProduct(DeathDirection, FVector::RightVector) >= DOTDIRECTIONTRESHOLD) {
-		this->CurrentDeathMontage = IsHeavyAnim ? this->DeathRightMontage.HeavyMontage : this->DeathRightMontage.DefaultMontage;
-	}
-	else if (FVector::DotProduct(DeathDirection, FVector::UpVector) >= DOTDIRECTIONTRESHOLD) {
-		this->CurrentDeathMontage = IsHeavyAnim ? this->DeathUpMontage.HeavyMontage : this->DeathUpMontage.DefaultMontage;
-	}
-	else if (FVector::DotProduct(DeathDirection, FVector::DownVector) >= DOTDIRECTIONTRESHOLD) {
-		this->CurrentDeathMontage = IsHeavyAnim ? this->DeathDownMontage.HeavyMontage : this->DeathDownMontage.DefaultMontage;
-	}
-	else if (FVector::DotProduct(DeathDirection, FVector::ForwardVector) >= DOTDIRECTIONTRESHOLD) {
-		this->CurrentDeathMontage = IsHeavyAnim ? this->DeathFrontMontage.HeavyMontage : this->DeathFrontMontage.DefaultMontage;
-	}
-	else {
-		this->CurrentDeathMontage = IsHeavyAnim ? this->DeathBackMontage.HeavyMontage : this->DeathBackMontage.DefaultMontage;
-	} */
 	float DotProduct = FVector::DotProduct(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->DeathInstigator->GetActorForwardVector());
 	if (DotProduct > 0.3) {
 		this->CurrentDeathMontage = IsHeavyAnim ? this->DeathBackMontage.HeavyMontage : this->DeathBackMontage.DefaultMontage;

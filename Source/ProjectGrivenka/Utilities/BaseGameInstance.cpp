@@ -74,3 +74,7 @@ void UBaseGameInstance::StoreMaterial(FItemInfo MaterialInfo, int Count)
         CountRemain = TempRemain;
     }
 }
+
+void UBaseGameInstance::DepleteMaterial(FItemInfo MaterialInfo, int Count)
+{
+}

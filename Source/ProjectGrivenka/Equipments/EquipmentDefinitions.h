@@ -8,6 +8,21 @@
 #include "EquipmentDefinitions.generated.h"
 
 
+UENUM(BlueprintType)
+enum EWeaponTree
+{
+    KATANA_TREE UMETA(DisplayName = "KATANA TREE"),
+    HAMMER_TREE       UMETA(DisplayName = "HAMMER TREE"),
+};
+
+
+UENUM(BlueprintType)
+enum EEquipmentType
+{
+    Weapon UMETA(DisplayName = "Weapon Equipment"),
+    Armor       UMETA(DisplayName = "Armor Equipment"),
+};
+
 USTRUCT(BlueprintType)
 struct FPersistedEquipmentItem
 {
@@ -106,9 +121,29 @@ struct FEquipmentBoxItem
     int BoxIndex;
 };
 
-UENUM(BlueprintType)
-enum EEquipmentType
+
+USTRUCT(BlueprintType)
+struct FSmithingRecipeItem
 {
-    Weapon UMETA(DisplayName = "Weapon Equipment"),
-    Armor       UMETA(DisplayName = "Armor Equipment"),
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UItemPrefab* MaterialItem;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int Count;
 };
+
+
+USTRUCT(BlueprintType)
+struct FSmithingRecipeTreeItem
+{
+    GENERATED_BODY()
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class USmithingRecipePrefab* Recipe;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<int> ChildrenIndex;
+};
+

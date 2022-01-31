@@ -107,3 +107,12 @@ void UUIManager::EmitReplyDialogue(FName InReplyId)
 {
 	this->DialogueReplyDelegate.Broadcast(InReplyId);
 }
+
+void UUIManager::OpenSmithUI()
+{
+}
+
+void UUIManager::EmitSmithFinished(EEquipmentType InEquipmentType, FGuid EquipmentId, FName SmithResultId)
+{
+	this->SmithFinishDelegate.Broadcast(InEquipmentType, EquipmentId, SmithResultId);
+}
