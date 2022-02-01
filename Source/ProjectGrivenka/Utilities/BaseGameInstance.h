@@ -55,5 +55,6 @@ public:
 	void StoreMaterial(FItemInfo MaterialInfo, int Count);
 	UFUNCTION(BlueprintCallable)
 	void DepleteMaterial(FItemInfo MaterialInfo, int Count);
-
+	UFUNCTION(BlueprintCallable)
+	bool CheckSmithingRequirements(FItemInfo MaterialInfo, int Count);
 };

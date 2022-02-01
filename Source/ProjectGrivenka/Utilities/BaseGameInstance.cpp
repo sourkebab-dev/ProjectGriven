@@ -78,3 +78,8 @@ void UBaseGameInstance::StoreMaterial(FItemInfo MaterialInfo, int Count)
 void UBaseGameInstance::DepleteMaterial(FItemInfo MaterialInfo, int Count)
 {
 }
+
+bool UBaseGameInstance::CheckSmithingRequirements(FItemInfo MaterialInfo, int Count)
+{
+    return true;
+}

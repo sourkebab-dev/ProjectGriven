@@ -66,6 +66,9 @@ struct FEquipmentInfo
     TSubclassOf<class ABaseEquipment> EquipmentBaseClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName EquipmentId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FName EquipmentName;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)

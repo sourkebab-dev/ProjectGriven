@@ -10,7 +10,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class PROJECTGRIVENKA_API USmithingRecipePrefab : public UDataAsset
 {
 	GENERATED_BODY()

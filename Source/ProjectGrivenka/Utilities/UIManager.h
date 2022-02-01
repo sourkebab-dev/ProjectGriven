@@ -114,7 +114,7 @@ public:
 
 
 #pragma region Smith System
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void OpenSmithUI();
 
 	UFUNCTION(BlueprintCallable)
