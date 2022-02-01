@@ -40,9 +40,6 @@ void UDeathState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAction
 
 void UDeathState::StartDeathAnim()
 {
-	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 6, FColor::Orange, "DeathImpact");
-	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 6, FColor::Orange, FString::FromInt(this->DeathBlow.ImpactType));
-
 	bool IsHeavyAnim =  this->DeathBlow.ImpactType == EDamageImpactType::DI_HIGH || this->DeathBlow.ImpactType == EDamageImpactType::DI_EXPLOSIVE;
 
 	float DotProduct = FVector::DotProduct(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->DeathInstigator->GetActorForwardVector());
