@@ -26,6 +26,8 @@ public:
 	class UImage* SlotImage;
 
 	FEquipmentBoxItem SlotInfo;
+	TEnumAsByte<EEquipmentType> CurrentEqType;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual void NativeConstruct() override;
@@ -34,7 +36,7 @@ public:
 	virtual void NativeDestruct() override;
 
 	UFUNCTION(BlueprintCallable)
-	void SetSlotInfo(FEquipmentBoxItem ItemInfo);
+	void SetSlotInfo(FEquipmentBoxItem ItemInfo, EEquipmentType InEquipmentType);
 
 	UFUNCTION(BlueprintCallable)
 	void OnSlotClick();

@@ -13,10 +13,10 @@
 /**
  * 
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipmentChangeDelegate, FGuid, CharacterId, FPersistedEquipmentItem, EquipmentInfo);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipmentBoxClicked, FPersistedEquipmentItem, EquipmentInfo, EEquipmentType, EquipmentType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogueProceedDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDialogueReplyDelegate, FName, ReplyId);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSmithFinishedDelegate, EEquipmentType, InEquipmentType, FGuid, EquipmentId, FName, SmithResultId);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FSmithPickedDelegate, EEquipmentType, InEquipmentType, EEquipmentTree, InChosenEquipment, FGuid, EquipmentId, FName, SmithResultId);
 
 UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UUIManager : public UObject
@@ -30,16 +30,18 @@ public:
 	class UBaseGameInstance* GameIns;
 
 	UPROPERTY(BlueprintAssignable)
-	FSmithFinishedDelegate SmithFinishDelegate;
+	FSmithPickedDelegate SmithPickedDelegate;
 
 	UPROPERTY(BlueprintAssignable)
-	FEquipmentChangeDelegate EquipmentChangeDelegate;
+	FEquipmentBoxClicked EquipmentBoxClickedDelegate;
 
 	UPROPERTY(BlueprintAssignable)
 	FDialogueProceedDelegate DialogueProceedDelegate;
 
 	UPROPERTY(BlueprintAssignable)
 	FDialogueReplyDelegate DialogueReplyDelegate;
+
+	//Sponge: might need to remove these instances
 
 	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
 	class UDialogueBox* DialogueBoxUIIns;
@@ -53,6 +55,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
 	class UPlayerStatsContainer* PlayerStatsContainerUIIns;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
+	class UUIEquipmentBoxContainer* EquipmentBoxUIIns;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
+	class UUISmithTreeWrapper* SmithTreeWrapperUIIns;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
 	TSubclassOf<class UUILootListNotify> LootListUIClass;
@@ -65,6 +72,13 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
 	TSubclassOf<class UPlayerStatsContainer> PlayerStatsContainerUIClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
+	TSubclassOf<class UUISmithTreeWrapper> SmithTreeWrapperUIClass;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
+	TSubclassOf<class UUIEquipmentBoxContainer> EquipmentBoxUIClass;
+
 
 public:
 
@@ -81,7 +95,7 @@ public:
 
 #pragma region Equipment Box
 	UFUNCTION(BlueprintCallable)
-	void EmitChangeEquipment(FPersistedEquipmentItem EquipmentInfo);
+	void EmitEquipmentBoxClicked(FPersistedEquipmentItem EquipmentInfo, EEquipmentType InEquipmentType);
 #pragma endregion
 
 #pragma region Loot System
@@ -114,10 +128,19 @@ public:
 
 
 #pragma region Smith System
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	UFUNCTION(BlueprintCallable)
 	void OpenSmithUI();
 
 	UFUNCTION(BlueprintCallable)
-	void EmitSmithFinished(EEquipmentType InEquipmentType, FGuid EquipmentId, FName SmithResultId);
+	void CloseSmithUI();
+
+	UFUNCTION(BlueprintCallable)
+	void OnSmithBaseEqClosed(bool IsBack);
+
+	UFUNCTION(BlueprintCallable)
+	void OnSmithBaseEqChosen(FPersistedEquipmentItem EquipmentInfo, EEquipmentType InEquipmentType);
+
+	UFUNCTION(BlueprintCallable)
+	void EmitSmithPicked(FName SmithResultId);
 #pragma endregion
 };

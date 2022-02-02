@@ -31,6 +31,8 @@ FBountyContract UBaseGameInstance::GetAcceptedBountyContract()
 
 void UBaseGameInstance::StoreMaterial(FItemInfo MaterialInfo, int Count)
 {
+    //sponge: need to move the multislot stack system to inventory
+    //material should probably stay one stack to reduce lag
     UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
     UItemPrefab* MaterialPrefab = AssetsData->MaterialMasterData->ItemAssets.FindRef(MaterialInfo.ItemId);
     if (!MaterialPrefab) return;
@@ -77,9 +79,29 @@ void UBaseGameInstance::StoreMaterial(FItemInfo MaterialInfo, int Count)
 
 void UBaseGameInstance::DepleteMaterial(FItemInfo MaterialInfo, int Count)
 {
+
+    for (int i = 0; i < this->MaterialBox.Num(); i++) {
+        if (MaterialInfo.ItemId == this->MaterialBox[i].ItemId && this->MaterialBox[i].Count >= Count) {
+            this->MaterialBox[i].Count -= Count;
+            break;
+        }
+        else if (MaterialInfo.ItemId == this->MaterialBox[i].ItemId) {
+            GEngine->AddOnScreenDebugMessage(FMath::Rand(), 2, FColor::Yellow, "WARNING: MATERIAL DEPLETION COUNT ERROR");
+        }
+    }
 }
 
 bool UBaseGameInstance::CheckSmithingRequirements(FItemInfo MaterialInfo, int Count)
 {
-    return true;
+    bool IsRequirementFulfilled = false;
+
+    //sponge: should i look for another stack? thinking of moving the store to stack function to inventory 
+    for (int i = 0; i < this->MaterialBox.Num(); i++) {
+        if (MaterialInfo.ItemId == this->MaterialBox[i].ItemId && this->MaterialBox[i].Count >= Count) {
+            IsRequirementFulfilled = true;
+            break;
+        }
+    }
+
+    return IsRequirementFulfilled;
 }

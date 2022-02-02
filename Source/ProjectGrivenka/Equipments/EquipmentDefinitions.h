@@ -9,7 +9,7 @@
 
 
 UENUM(BlueprintType)
-enum EWeaponTree
+enum EEquipmentTree
 {
     KATANA_TREE UMETA(DisplayName = "KATANA TREE"),
     HAMMER_TREE       UMETA(DisplayName = "HAMMER TREE"),
@@ -64,6 +64,12 @@ struct FEquipmentInfo
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TSubclassOf<class ABaseEquipment> EquipmentBaseClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EEquipmentTree> EquipmentTree;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EEquipmentType> EquipmentType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FName EquipmentId;

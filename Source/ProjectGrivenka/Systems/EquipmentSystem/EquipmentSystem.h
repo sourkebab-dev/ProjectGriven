@@ -30,6 +30,9 @@ public:
 	void DisableWeaponDamageColliders();
 
 	UFUNCTION(BlueprintCallable)
+	virtual void SaveEquipments(FPersistedEquipments InPersistedEquipments);
+
+	UFUNCTION(BlueprintCallable)
 	virtual void LoadEquipments(FPersistedEquipments InPersistedEquipments);
 
 	UFUNCTION(BlueprintCallable)

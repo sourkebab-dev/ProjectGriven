@@ -7,6 +7,7 @@
 #include "ProjectGrivenka/Equipments/Weapons/BaseWeapon.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/Utilities/BaseGameInstance.h"
 
 void UEquipmentSystem::Init_Implementation()
 {
@@ -18,9 +19,30 @@ void UEquipmentSystem::DisableWeaponDamageColliders()
 	this->WeaponR->DisableCollision();
 }
 
+void UEquipmentSystem::SaveEquipments(FPersistedEquipments InPersistedEquipments)
+{
+	auto GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
+	int CrewIndex = -1;
+	for (int i = 0; i < GI->Crew.Num(); i++) {
+		if (GI->Crew[i].Info.CharacterId == this->CompContext->InfoModule.InstanceGuid) {
+			CrewIndex = i;
+			break;
+		}
+	}
+
+	if (CrewIndex < 0) return;
+
+	//Note: Empty String means unchanged
+	if (!InPersistedEquipments.WeaponInfo.VariantId.IsNone()) {
+		GI->Crew[CrewIndex].Equipments.WeaponInfo.EquipmentId = InPersistedEquipments.WeaponInfo.EquipmentId;
+		GI->Crew[CrewIndex].Equipments.WeaponInfo.VariantId = InPersistedEquipments.WeaponInfo.VariantId;
+	}
+}
+
 
 void UEquipmentSystem::LoadEquipments(FPersistedEquipments InPersistedEquipments)
 {
+	//Note: Empty String means unchanged
 	//Weapon Load
 	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	UWeaponPrefabs* WeaponPrefab = AssetsData->WeaponPrefabs->WeaponAssets.FindRef(InPersistedEquipments.WeaponInfo.VariantId);
@@ -47,8 +69,14 @@ void UEquipmentSystem::LoadEquipments(FPersistedEquipments InPersistedEquipments
 			}
 		}
 	}
-	else {
-		GLog->Log("Prefab not found");
+	else if(InPersistedEquipments.WeaponInfo.VariantId == "-") {
+		//Sponge: probably need to add to function
+		if (this->WeaponR) {
+			if (this->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
+				ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->CompContext->CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Weapon"));
+			}
+			this->WeaponR->Destroy();
+		}
 	}
 
 

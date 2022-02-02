@@ -30,6 +30,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	class UEquipmentSystem* GetEquipmentSystemComp();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void SaveEquipments(FPersistedEquipments InEquipments);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void LoadEquipments(FPersistedEquipments InEquipments);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void DisableWeaponDamageColliders();

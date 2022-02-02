@@ -20,8 +20,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TEnumAsByte<EEquipmentType> EquipmentType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "EquipmentType == EEquipmentType::Weapon", EditConditionHides))
-	TEnumAsByte<EWeaponTree> WeaponTreeType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TEnumAsByte<EEquipmentTree> EquipmentTreeType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FSmithingRecipeTreeItem> SmithingRecipeTree;

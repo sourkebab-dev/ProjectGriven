@@ -16,15 +16,9 @@ class PROJECTGRIVENKA_API USmithSystem : public UBaseContextableComponent
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadWrite)
-	AActor* SmithRequester;
-
-public:
-	void Init_Implementation() override;
+	UFUNCTION()
+	void OnReceiveSmithRequest();
 
 	UFUNCTION()
-	void OnReceiveSmithRequest(AActor* InSmithRequester);
-
-	UFUNCTION()
-	void OnSmithFinished(EEquipmentType InEquipmentType, FGuid EquipmentId, FName SmithResultId);
+	void OnSmithFinished(EEquipmentType InEquipmentType, EEquipmentTree InChosenEquipment, FGuid InstanceGuid, FName SmithResultId);
 };

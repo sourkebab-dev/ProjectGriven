@@ -38,7 +38,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
 	UItemPrefabList* MaterialMasterData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
-	TMap<TEnumAsByte<EWeaponTree>, USmithingRecipeTreePrefab*> SmithWeaponRecipe;
+	TMap<TEnumAsByte<EEquipmentTree>, USmithingRecipeTreePrefab*> SmithWeaponRecipe;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
 	UBountyList* BountyList;
 

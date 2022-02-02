@@ -7,8 +7,35 @@
 #include "Components/UniformGridSlot.h"
 #include "ProjectGrivenka/Utilities/BaseGameInstance.h"
 #include "Components/UniformGridPanel.h"
+#include "Components/Button.h"
 
-void UUIEquipmentBoxContainer::DataSetup(TSubclassOf<UUIEquipmentItem> EquipmentItemClass)
+void UUIEquipmentBoxContainer::NativeOnInitialized()
+{
+	this->ArmorTabButton->OnClicked.AddDynamic(this, &UUIEquipmentBoxContainer::OnArmorTabClick);
+	this->WeaponTabButton->OnClicked.AddDynamic(this, &UUIEquipmentBoxContainer::OnWeaponTabClick);
+}
+
+void UUIEquipmentBoxContainer::NativeDestruct()
+{
+	this->ArmorTabButton->OnClicked.RemoveDynamic(this, &UUIEquipmentBoxContainer::OnArmorTabClick);
+	this->WeaponTabButton->OnClicked.RemoveDynamic(this, &UUIEquipmentBoxContainer::OnWeaponTabClick);
+}
+
+void UUIEquipmentBoxContainer::OnArmorTabClick()
+{
+	if (this->CurrentEqType == EEquipmentType::Armor) return;
+	this->CurrentEqType = EEquipmentType::Armor;
+	this->DataSetup();
+}
+
+void UUIEquipmentBoxContainer::OnWeaponTabClick()
+{
+	if (this->CurrentEqType == EEquipmentType::Weapon) return;
+	this->CurrentEqType = EEquipmentType::Weapon;
+	this->DataSetup();
+}
+
+void UUIEquipmentBoxContainer::DataSetup()
 {
 	GLog->Log("EQBSetup");
 	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
@@ -17,20 +44,28 @@ void UUIEquipmentBoxContainer::DataSetup(TSubclassOf<UUIEquipmentItem> Equipment
 
 
 	for (int i = 0; i < this->SlotNumber; i++) {
-		UUIEquipmentItem* TempItem = this->WidgetTree->ConstructWidget<UUIEquipmentItem>(EquipmentItemClass);
+		UUIEquipmentItem* TempItem = this->WidgetTree->ConstructWidget<UUIEquipmentItem>(this->EquipmentItemClass);
 		UUniformGridSlot* GrdSlot = this->EquipmentGrid->AddChildToUniformGrid(TempItem, i / this->ColumnNumber, i % this->ColumnNumber);
 		GrdSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
 		GrdSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Fill);
 	}
 	
+	TArray<FEquipmentBoxItem> SelectedBox;
+	if (this->CurrentEqType == EEquipmentType::Armor) {
+		SelectedBox = GameInstance->ArmorBox;
+	}
+	else {
+		SelectedBox = GameInstance->WeaponBox;
+	}
 
-	for (int i = 0; i < GameInstance->EquipmentBox.Num(); i++) {
-		FEquipmentBoxItem Item = GameInstance->EquipmentBox[i];
+
+	for (int i = 0; i < SelectedBox.Num(); i++) {
+		FEquipmentBoxItem Item = SelectedBox[i];
 		if (!this->EquipmentGrid->GetChildAt(Item.BoxIndex)) { GLog->Log("Grid Child Invalid"); continue; };
 		UUIEquipmentItem* TempItem = Cast<UUIEquipmentItem>(this->EquipmentGrid->GetChildAt(Item.BoxIndex));
 		if (!TempItem) { GLog->Log("UI Class Invalid"); continue; }
 		GLog->Log("Set Slot");
-		TempItem->SetSlotInfo(Item);
+		TempItem->SetSlotInfo(Item, this->CurrentEqType);
 	}
 	
 }

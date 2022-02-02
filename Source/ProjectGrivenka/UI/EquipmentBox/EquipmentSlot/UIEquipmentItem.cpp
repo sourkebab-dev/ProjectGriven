@@ -24,7 +24,7 @@ void UUIEquipmentItem::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UUIEquipmentItem::SetSlotInfo(FEquipmentBoxItem ItemInfo)
+void UUIEquipmentItem::SetSlotInfo(FEquipmentBoxItem ItemInfo, EEquipmentType InEquipmentType)
 {
 	if (ItemInfo.EquipmentAbstraction.VariantId.IsNone()) return;
 	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
@@ -37,6 +37,7 @@ void UUIEquipmentItem::SetSlotInfo(FEquipmentBoxItem ItemInfo)
 
 	if (SlotIcon) this->SlotImage->SetBrushFromTexture(SlotIcon, true);
 	this->SlotInfo = ItemInfo;
+	this->CurrentEqType = InEquipmentType;
 	GLog->Log("Info Set");
 }
 
@@ -45,6 +46,5 @@ void UUIEquipmentItem::OnSlotClick()
 	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
 	if (!GameInstance || !GameInstance->UIManager) return;
 
-	GameInstance->UIManager->EmitChangeEquipment(this->SlotInfo.EquipmentAbstraction);
-	GLog->Log("OnSlotClick");
+	GameInstance->UIManager->EmitEquipmentBoxClicked(this->SlotInfo.EquipmentAbstraction, this->CurrentEqType);
 }

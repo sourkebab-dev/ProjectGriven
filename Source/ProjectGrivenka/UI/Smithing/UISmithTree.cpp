@@ -2,6 +2,7 @@
 
 
 #include "UISmithTree.h"
+#include "Components/GridPanel.h"
 #include "ProjectGrivenka/Equipments/SmithingRecipeTreePrefab.h"
 #include "ProjectGrivenka/Equipments/SmithingRecipePrefab.h"
 #include "ProjectGrivenka/Equipments/WeaponPrefabs.h"
@@ -9,13 +10,14 @@
 #include "ProjectGrivenka/Utilities/BaseGameInstance.h"
 #include "ProjectGrivenka/UI/Smithing/UISmithItem.h"
 
-void UUISmithTree::Render(FName EquipmentId)
+void UUISmithTree::Render(EEquipmentType InEquipmentType, EEquipmentTree InChosenEquipment, FGuid InEquipmentInsGuid, FName InEquipmentId)
 {
 	auto GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
 	FSmithingRecipeTreeItem CurrentRecipe;
+	
 	for (int i = 0; i < this->RecipeTree->SmithingRecipeTree.Num(); i++) {
 		//sponge: need to check if its an armor (if i want an armor upgrade)
-		if (this->RecipeTree->SmithingRecipeTree[i].Recipe->SmithingResultWeapon->WeaponInfo.GeneralInfo.EquipmentId == EquipmentId) {
+		if (this->RecipeTree->SmithingRecipeTree[i].Recipe->SmithingResultWeapon->WeaponInfo.GeneralInfo.EquipmentId == InEquipmentId) {
 			CurrentRecipe = this->RecipeTree->SmithingRecipeTree[i];
 			break;
 		}

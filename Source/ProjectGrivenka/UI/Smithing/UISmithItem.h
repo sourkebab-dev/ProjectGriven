@@ -25,12 +25,18 @@ public:
 	class USmithingRecipePrefab* RecipePrefab;
 
 public:
+	void NativeOnInitialized() override;
+	void NativeDestruct() override;
+
 	UFUNCTION(BlueprintCallable)
-	void RenderInfo();
+	void Render();
 
 	UFUNCTION(BlueprintCallable)
 	void Disable();
 
 	UFUNCTION(BlueprintCallable)
 	void Enable();
+
+	UFUNCTION(BlueprintCallable)
+	void OnClick();
 };

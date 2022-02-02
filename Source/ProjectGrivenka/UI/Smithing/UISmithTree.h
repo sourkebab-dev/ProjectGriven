@@ -23,6 +23,6 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void Render(FName EquipmentId);
+	void Render(enum EEquipmentType InEquipmentType, enum EEquipmentTree InChosenEquipment, FGuid InEquipmentInsGuid, FName InEquipmentId);
 
 };

@@ -29,7 +29,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player & Crew")
 	TArray<FPersistedCharacterData> Crew;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TArray<FEquipmentBoxItem> EquipmentBox;
+	TArray<FEquipmentBoxItem> ArmorBox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<FEquipmentBoxItem> WeaponBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TArray<FPersistedInventoryItems> ItemBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")

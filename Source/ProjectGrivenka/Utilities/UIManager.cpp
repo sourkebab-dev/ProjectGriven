@@ -4,10 +4,14 @@
 #include "UIManager.h"
 #include "Blueprint/UserWidget.h"
 #include "BaseGameInstance.h"
+#include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/UI/Dialogue/DialogueBox.h"
 #include "ProjectGrivenka/UI/ItemBelt/ActiveItemBelt.h"
 #include "ProjectGrivenka/UI/Loot/UILootListNotify.h"
 #include "ProjectGrivenka/UI/Stats/PlayerStatsContainer.h"
+#include "ProjectGrivenka/UI/Smithing/UISmithTreeWrapper.h"
+#include "ProjectGrivenka/UI/EquipmentBox/UIEquipmentBoxContainer.h"
+#include "ProjectGrivenka/Equipments/WeaponPrefabs.h"
 
 void UUIManager::Init(UBaseGameInstance* InGameIns) {
 	this->GameIns = InGameIns;
@@ -92,10 +96,10 @@ void UUIManager::RemoveLootDisplay()
 	if (this->LootListUIIns) this->LootListUIIns->RemoveFromViewport();
 }
 
-void UUIManager::EmitChangeEquipment(FPersistedEquipmentItem EquipmentInfo)
+void UUIManager::EmitEquipmentBoxClicked(FPersistedEquipmentItem EquipmentInfo, EEquipmentType InEquipmentType)
 {
 	if (!this->GameIns) return;
-	this->EquipmentChangeDelegate.Broadcast(this->GameIns->GetControlledCrewId(), EquipmentInfo);
+	this->EquipmentBoxClickedDelegate.Broadcast(EquipmentInfo, InEquipmentType);
 }
 
 void UUIManager::EmitProceedDialogue()
@@ -108,7 +112,67 @@ void UUIManager::EmitReplyDialogue(FName InReplyId)
 	this->DialogueReplyDelegate.Broadcast(InReplyId);
 }
 
-void UUIManager::EmitSmithFinished(EEquipmentType InEquipmentType, FGuid EquipmentId, FName SmithResultId)
+void UUIManager::OpenSmithUI()
 {
-	this->SmithFinishDelegate.Broadcast(InEquipmentType, EquipmentId, SmithResultId);
+	this->EquipmentBoxClickedDelegate.AddDynamic(this, &UUIManager::OnSmithBaseEqChosen);
+	if (!this->EquipmentBoxUIIns) {
+		this->EquipmentBoxUIIns = Cast<UUIEquipmentBoxContainer>(CreateWidget(this->GameIns, this->EquipmentBoxUIClass, "Equipment Box Container UI"));
+	}
+
+	if (this->EquipmentBoxUIIns) {
+		this->EquipmentBoxUIIns->DataSetup();
+		this->EquipmentBoxUIIns->AddToViewport();
+	}
+
+}
+
+void UUIManager::CloseSmithUI()
+{
+	this->EquipmentBoxClickedDelegate.RemoveDynamic(this, &UUIManager::OnSmithBaseEqChosen);
+	if (this->EquipmentBoxUIIns) {
+		this->EquipmentBoxUIIns->RemoveFromViewport();
+	}
+}
+
+void UUIManager::OnSmithBaseEqClosed(bool IsBack)
+{
+	if (this->SmithTreeWrapperUIIns) {
+		this->SmithTreeWrapperUIIns->RemoveFromViewport();
+	}
+	
+	if (IsBack) {
+		this->OpenSmithUI();
+	}
+}
+
+void UUIManager::OnSmithBaseEqChosen(FPersistedEquipmentItem EquipmentInfo, EEquipmentType InEquipmentType)
+{
+	if (!this->SmithTreeWrapperUIIns) {
+		this->SmithTreeWrapperUIIns = Cast<UUISmithTreeWrapper>(CreateWidget(this->GameIns, this->SmithTreeWrapperUIClass, "Smith Tree Wrapper UI"));
+	}
+
+	if (this->SmithTreeWrapperUIIns) {
+		UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
+		EEquipmentTree EquipmentTree;
+		if (InEquipmentType == EEquipmentType::Weapon) {
+			auto WeaponPrefab = AssetsData->WeaponPrefabs->WeaponAssets.FindRef(EquipmentInfo.VariantId);
+			EquipmentTree = WeaponPrefab->WeaponInfo.GeneralInfo.EquipmentTree;
+
+		}
+		else if (InEquipmentType == EEquipmentType::Armor) {
+			GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "Armor Not Yet Implemented");
+			return;
+		}
+
+		this->SmithTreeWrapperUIIns->Render(InEquipmentType, EquipmentTree, EquipmentInfo.EquipmentId, EquipmentInfo.VariantId);
+		this->SmithTreeWrapperUIIns->AddToViewport();
+	}
+}
+
+void UUIManager::EmitSmithPicked(FName SmithResultId)
+{
+	if (!this->SmithTreeWrapperUIIns) return;
+	this->SmithPickedDelegate.Broadcast(this->SmithTreeWrapperUIIns->EquipmentType, this->SmithTreeWrapperUIIns->ChosenEquipment, this->SmithTreeWrapperUIIns->EquipmentInsGuid, SmithResultId);
+	this->OnSmithBaseEqClosed(false);
+	this->CloseSmithUI();
 }
