@@ -46,6 +46,13 @@ void ABaseWeapon::Tick(float DeltaTime)
 void ABaseWeapon::LoadData(FWeaponInfo InWeaponInfo)
 {
 	this->EquipmentMesh->SetSkeletalMesh(InWeaponInfo.GeneralInfo.EquipmentMesh);
+
+	for (int i = 0; i < this->EquipmentMesh->GetNumMaterials(); i++) {
+		if (!InWeaponInfo.GeneralInfo.EquipmentMeshMaterials.IsValidIndex(i)) break;
+		if (!InWeaponInfo.GeneralInfo.EquipmentMeshMaterials[i]) continue;
+		this->EquipmentMesh->SetMaterial(i, InWeaponInfo.GeneralInfo.EquipmentMeshMaterials[i]);
+	}
+
 	this->ElementType = InWeaponInfo.ElementType;
 	this->ElementalDamage = InWeaponInfo.ElementalDamage;
 	this->RawStaminaCost = InWeaponInfo.RawStaminaCost;
@@ -59,9 +66,6 @@ void ABaseWeapon::LoadData(FWeaponInfo InWeaponInfo)
 	if (InWeaponInfo.BlockInfo.BlockPushMontage) {
 		this->BlockInfo.BlockPushMontage = InWeaponInfo.BlockInfo.BlockPushMontage;
 	}
-
-	//Sponge: Should i save variant id to weaponinfo?
-	//this->VariantId = InEquipmentInfo.VariantId;
 }
 #pragma endregion
 

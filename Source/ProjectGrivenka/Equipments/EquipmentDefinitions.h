@@ -82,6 +82,9 @@ struct FEquipmentInfo
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     USkeletalMesh* EquipmentMesh;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<UMaterialInterface*> EquipmentMeshMaterials;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     UTexture2D* EquipmentIcon;
