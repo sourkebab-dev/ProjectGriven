@@ -12,31 +12,40 @@ void USmithSystem::OnReceiveSmithRequest()
 {
 	auto GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
 	GI->UIManager->SmithPickedDelegate.AddDynamic(this, &USmithSystem::OnSmithFinished);
-	GI->UIManager->OpenSmithUI();
+	GI->UIManager->UICloseDelegate.AddDynamic(this, & USmithSystem::DisconnectUI);
+	this->GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeUIOnly());
+	this->GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 2, FColor::Yellow, "Smithy open");
+	GI->UIManager->OpenSmithEQBoxUI();
+}
+
+void USmithSystem::DisconnectUI()
+{
+	auto GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
+	GI->UIManager->SmithPickedDelegate.RemoveDynamic(this, &USmithSystem::OnSmithFinished);
+	GI->UIManager->UICloseDelegate.RemoveDynamic(this, &USmithSystem::DisconnectUI);
 }
 
 void USmithSystem::OnSmithFinished(EEquipmentType InEquipmentType, EEquipmentTree InChosenEquipment, FGuid InstanceGuid, FName SmithResultId)
 {
+	this->DisconnectUI();
 	auto GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
-	GI->UIManager->SmithPickedDelegate.RemoveDynamic(this, &USmithSystem::OnSmithFinished);
 	
-	TArray<FEquipmentBoxItem> SelectedEqBox;
+	TArray<FEquipmentBoxItem>* SelectedEqBox = nullptr;
 	if (InEquipmentType == EEquipmentType::Armor) {
-		SelectedEqBox = GI->ArmorBox;
+		SelectedEqBox = &GI->ArmorBox;
 	}
 	else if (InEquipmentType == EEquipmentType::Weapon) {
-		SelectedEqBox = GI->WeaponBox;
+		SelectedEqBox = &GI->WeaponBox;
 	}
 
-
-	for (int i = 0; i < SelectedEqBox.Num(); i++) {
-		if (SelectedEqBox[i].EquipmentAbstraction.EquipmentId == InstanceGuid) {
-			SelectedEqBox[i].EquipmentAbstraction.VariantId = SmithResultId;
+	for (int i = 0; i < SelectedEqBox->Num(); i++) {
+		if ((*SelectedEqBox)[i].EquipmentAbstraction.EquipmentId == InstanceGuid) {
+			(*SelectedEqBox)[i].EquipmentAbstraction.VariantId = SmithResultId;
 			break;
 		}
 	}
 
-	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 2, FColor::Yellow, "Sheeeshhh1");
 	int CrewIndex = -1;
 	for (int i = 0; i < GI->Crew.Num(); i++) {
 		if (InEquipmentType == EEquipmentType::Weapon && GI->Crew[i].Equipments.WeaponInfo.EquipmentId == InstanceGuid) {
@@ -45,24 +54,31 @@ void USmithSystem::OnSmithFinished(EEquipmentType InEquipmentType, EEquipmentTre
 		}
 	}
 
-	if (CrewIndex > 0) {
-		AActor* UpgradedCharInstance = nullptr;
+	if (CrewIndex < 0) return;
+
+	AActor* UpgradedCharInstance = nullptr;
+
+	auto PlayerCtx = IContextAvailable::Execute_GetContext(this->GetWorld()->GetFirstPlayerController()->GetPawn());
+	if (PlayerCtx->InfoModule.InstanceGuid == GI->Crew[CrewIndex].Info.CharacterId) {
+		UpgradedCharInstance = this->GetWorld()->GetFirstPlayerController()->GetPawn();
+	}
+	else {
 		for (int i = 0; i < GI->PartyInstance.Num(); i++) {
 			auto Ctx = IContextAvailable::Execute_GetContext(GI->PartyInstance[i]);
 			if (Ctx->InfoModule.InstanceGuid == GI->Crew[CrewIndex].Info.CharacterId) {
 				UpgradedCharInstance = GI->PartyInstance[i];
 			}
 		}
-
-		if (UpgradedCharInstance && UpgradedCharInstance->Implements<UEquipmentSystemAvailable>()) {
-			FPersistedEquipments EquipmentInfo;
-			if (InEquipmentType == EEquipmentType::Weapon) {
-				GI->Crew[CrewIndex].Equipments.WeaponInfo.VariantId = SmithResultId;
-				EquipmentInfo.WeaponInfo.EquipmentId = InstanceGuid;
-				EquipmentInfo.WeaponInfo.VariantId = SmithResultId;
-			}
-			IEquipmentSystemAvailable::Execute_LoadEquipments(UpgradedCharInstance, EquipmentInfo);
-		}
 	}
 
+	if (UpgradedCharInstance && UpgradedCharInstance->Implements<UEquipmentSystemAvailable>()) {
+		FPersistedEquipments EquipmentInfo;
+		if (InEquipmentType == EEquipmentType::Weapon) {
+			GI->Crew[CrewIndex].Equipments.WeaponInfo.VariantId = SmithResultId;
+			EquipmentInfo.WeaponInfo.EquipmentId = InstanceGuid;
+			EquipmentInfo.WeaponInfo.VariantId = SmithResultId;
+		}
+		IEquipmentSystemAvailable::Execute_LoadEquipments(UpgradedCharInstance, EquipmentInfo);
+		GEngine->AddOnScreenDebugMessage(FMath::Rand(), 2, FColor::Yellow, "Loaded");
+	}
 }

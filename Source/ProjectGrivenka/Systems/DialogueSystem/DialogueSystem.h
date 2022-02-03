@@ -14,6 +14,7 @@ enum EDialoguePendingActions
 	NONE,
 	SWITCH,
 	INVITE,
+	SMITH,
 };
 
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

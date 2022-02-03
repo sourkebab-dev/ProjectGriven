@@ -23,7 +23,7 @@ EBTNodeResult::Type UInviteToParty::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	GameInstance->PartyInstance.Add(DialogueReceiver);
 
 	auto DlgSys = IDialogueSystemAvailable::Execute_GetDialogueSystemComp(DialogueReceiver);
-	//note: this needs to be a pending actions because switching from dialogue controller to another controller is fucking up the input component for some reason
+	//note: this needs to be a pending actions because the bt got destroyed on end dialogue
 	DlgSys->SetPendingActions(EDialoguePendingActions::INVITE);
 	return EBTNodeResult::Succeeded;
 }

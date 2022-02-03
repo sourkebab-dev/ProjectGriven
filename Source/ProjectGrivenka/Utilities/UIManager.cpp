@@ -36,6 +36,21 @@ void UUIManager::SetActiveItemImage(FItemInfo InItemInfo)
 	this->ActiveItemBeltUIIns->SetItemInfo(InItemInfo);
 }
 
+void UUIManager::EmitUIClose()
+{
+	FInputModeGameOnly InputMode;
+	InputMode.SetConsumeCaptureMouseDown(false);
+	this->GetWorld()->GetFirstPlayerController()->SetInputMode(InputMode);
+	this->GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
+
+	this->UICloseDelegate.Broadcast();
+}
+
+void UUIManager::EmitUIBack()
+{
+	this->UIBackDelegate.Broadcast();
+}
+
 void UUIManager::ShowDialogue(FDialogueData InDialogueData)
 {
 	if (!this->DialogueBoxUIIns || !this->DialogueBoxUIIns->IsInViewport()) {
@@ -112,9 +127,11 @@ void UUIManager::EmitReplyDialogue(FName InReplyId)
 	this->DialogueReplyDelegate.Broadcast(InReplyId);
 }
 
-void UUIManager::OpenSmithUI()
+void UUIManager::OpenSmithEQBoxUI()
 {
-	this->EquipmentBoxClickedDelegate.AddDynamic(this, &UUIManager::OnSmithBaseEqChosen);
+	this->EquipmentBoxClickedDelegate.AddDynamic(this, &UUIManager::OnSmithEQBoxChosen);
+	this->UICloseDelegate.AddDynamic(this, &UUIManager::CloseSmithEQBoxUI);
+
 	if (!this->EquipmentBoxUIIns) {
 		this->EquipmentBoxUIIns = Cast<UUIEquipmentBoxContainer>(CreateWidget(this->GameIns, this->EquipmentBoxUIClass, "Equipment Box Container UI"));
 	}
@@ -123,30 +140,34 @@ void UUIManager::OpenSmithUI()
 		this->EquipmentBoxUIIns->DataSetup();
 		this->EquipmentBoxUIIns->AddToViewport();
 	}
-
 }
 
-void UUIManager::CloseSmithUI()
+void UUIManager::CloseSmithEQBoxUI()
 {
-	this->EquipmentBoxClickedDelegate.RemoveDynamic(this, &UUIManager::OnSmithBaseEqChosen);
+	this->UICloseDelegate.RemoveDynamic(this, &UUIManager::CloseSmithEQBoxUI);
+	this->EquipmentBoxClickedDelegate.RemoveDynamic(this, &UUIManager::OnSmithEQBoxChosen);
 	if (this->EquipmentBoxUIIns) {
 		this->EquipmentBoxUIIns->RemoveFromViewport();
 	}
 }
 
-void UUIManager::OnSmithBaseEqClosed(bool IsBack)
+void UUIManager::CloseSmithTree(bool IsBack)
 {
+	this->UIBackDelegate.RemoveDynamic(this, &UUIManager::OnSmithTreeBack);
+
 	if (this->SmithTreeWrapperUIIns) {
 		this->SmithTreeWrapperUIIns->RemoveFromViewport();
 	}
 	
 	if (IsBack) {
-		this->OpenSmithUI();
+		this->OpenSmithEQBoxUI();
 	}
 }
 
-void UUIManager::OnSmithBaseEqChosen(FPersistedEquipmentItem EquipmentInfo, EEquipmentType InEquipmentType)
+void UUIManager::OnSmithEQBoxChosen(FPersistedEquipmentItem EquipmentInfo, EEquipmentType InEquipmentType)
 {
+	this->CloseSmithEQBoxUI();
+	this->UIBackDelegate.AddDynamic(this, &UUIManager::OnSmithTreeBack);
 	if (!this->SmithTreeWrapperUIIns) {
 		this->SmithTreeWrapperUIIns = Cast<UUISmithTreeWrapper>(CreateWidget(this->GameIns, this->SmithTreeWrapperUIClass, "Smith Tree Wrapper UI"));
 	}
@@ -169,10 +190,19 @@ void UUIManager::OnSmithBaseEqChosen(FPersistedEquipmentItem EquipmentInfo, EEqu
 	}
 }
 
+void UUIManager::OnSmithTreeBack()
+{
+	this->CloseSmithTree(true);
+}
+
 void UUIManager::EmitSmithPicked(FName SmithResultId)
 {
 	if (!this->SmithTreeWrapperUIIns) return;
 	this->SmithPickedDelegate.Broadcast(this->SmithTreeWrapperUIIns->EquipmentType, this->SmithTreeWrapperUIIns->ChosenEquipment, this->SmithTreeWrapperUIIns->EquipmentInsGuid, SmithResultId);
-	this->OnSmithBaseEqClosed(false);
-	this->CloseSmithUI();
+	this->CloseSmithTree(false);
+	FInputModeGameOnly InputMode;
+	InputMode.SetConsumeCaptureMouseDown(false);
+	this->GetWorld()->GetFirstPlayerController()->SetInputMode(InputMode);
+	this->GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
+
 }

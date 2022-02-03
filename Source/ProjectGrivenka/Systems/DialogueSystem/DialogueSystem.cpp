@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "AIController.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/Systems/SmithSystem/SmithSystemAvailable.h"
 #include "ProjectGrivenka/Systems/AIContextSystem/AIContextSystemAvailable.h"
 #include "ProjectGrivenka/Systems/ControlSystem/Controllable.h"
 #include "ProjectGrivenka/Systems/ControlSystem/ControlSystem.h"
@@ -42,6 +43,7 @@ void UDialogueSystem::StopDialogue()
 	FInputModeGameOnly InputMode;
 	InputMode.SetConsumeCaptureMouseDown(false);
 	this->GetWorld()->GetFirstPlayerController()->SetInputMode(InputMode);
+	this->GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
 
 	//sponge: shit code tightcoupling
 	if (this->PendingAction == EDialoguePendingActions::SWITCH) {
@@ -54,8 +56,10 @@ void UDialogueSystem::StopDialogue()
 		CmdInfo.CommandType = EAICommandType::DEFEND;
 		IAIContextSystemAvailable::Execute_OnCommanded(this->CompContext->CharacterActor, CmdInfo.CommandTargetActor, CmdInfo);
 	}
+	else if (this->PendingAction == EDialoguePendingActions::SMITH) {
+		ISmithSystemAvailable::Execute_ReceiveSmithRequest(this->CompContext->CharacterActor);
+	}
 	this->PendingAction = EDialoguePendingActions::NONE;
-	this->GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
 }
 
 void UDialogueSystem::SetPendingActions(EDialoguePendingActions InActionType)

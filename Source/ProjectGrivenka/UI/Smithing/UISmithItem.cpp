@@ -10,9 +10,9 @@
 #include "ProjectGrivenka/Utilities/UIManager.h"
 
 
-void UUISmithItem::NativeOnInitialized()
+void UUISmithItem::NativeConstruct()
 {
-	Super::NativeOnInitialized();
+	Super::NativeConstruct();
 	this->SmithButton->OnClicked.AddDynamic(this, &UUISmithItem::OnClick);
 }
 
@@ -42,6 +42,7 @@ void UUISmithItem::Enable()
 
 void UUISmithItem::OnClick()
 {
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 2, FColor::Yellow, "OnClicked");
 	auto GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
 	//sponge: need to pass real guid & type
 	GI->UIManager->EmitSmithPicked(this->RecipePrefab->SmithingResultWeapon->WeaponInfo.GeneralInfo.EquipmentId);

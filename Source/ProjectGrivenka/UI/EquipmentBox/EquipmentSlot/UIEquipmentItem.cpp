@@ -44,7 +44,7 @@ void UUIEquipmentItem::SetSlotInfo(FEquipmentBoxItem ItemInfo, EEquipmentType In
 void UUIEquipmentItem::OnSlotClick()
 {
 	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
-	if (!GameInstance || !GameInstance->UIManager) return;
+	if (!GameInstance || !GameInstance->UIManager || this->SlotInfo.EquipmentAbstraction.VariantId.IsNone()) return;
 
 	GameInstance->UIManager->EmitEquipmentBoxClicked(this->SlotInfo.EquipmentAbstraction, this->CurrentEqType);
 }

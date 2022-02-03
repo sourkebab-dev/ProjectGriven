@@ -25,7 +25,7 @@ public:
 	class USmithingRecipePrefab* RecipePrefab;
 
 public:
-	void NativeOnInitialized() override;
+	void NativeConstruct() override;
 	void NativeDestruct() override;
 
 	UFUNCTION(BlueprintCallable)

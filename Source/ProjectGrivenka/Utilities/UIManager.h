@@ -14,7 +14,7 @@
  * 
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FEquipmentBoxClicked, FPersistedEquipmentItem, EquipmentInfo, EEquipmentType, EquipmentType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDialogueProceedDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FUISimpleDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDialogueReplyDelegate, FName, ReplyId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FSmithPickedDelegate, EEquipmentType, InEquipmentType, EEquipmentTree, InChosenEquipment, FGuid, EquipmentId, FName, SmithResultId);
 
@@ -26,6 +26,12 @@ class PROJECTGRIVENKA_API UUIManager : public UObject
 
 public:
 	//SPONGE: maybe theres a better way to do this
+	UPROPERTY(BlueprintAssignable)
+	FUISimpleDelegate UIBackDelegate;
+
+	UPROPERTY(BlueprintAssignable)
+	FUISimpleDelegate UICloseDelegate;
+
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	class UBaseGameInstance* GameIns;
 
@@ -36,7 +42,7 @@ public:
 	FEquipmentBoxClicked EquipmentBoxClickedDelegate;
 
 	UPROPERTY(BlueprintAssignable)
-	FDialogueProceedDelegate DialogueProceedDelegate;
+	FUISimpleDelegate DialogueProceedDelegate;
 
 	UPROPERTY(BlueprintAssignable)
 	FDialogueReplyDelegate DialogueReplyDelegate;
@@ -93,6 +99,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetActiveItemImage(FItemInfo InItemInfo);
 
+	UFUNCTION(BlueprintCallable)
+	void EmitUIClose();
+
+	UFUNCTION(BlueprintCallable)
+	void EmitUIBack();
+
 #pragma region Equipment Box
 	UFUNCTION(BlueprintCallable)
 	void EmitEquipmentBoxClicked(FPersistedEquipmentItem EquipmentInfo, EEquipmentType InEquipmentType);
@@ -129,16 +141,19 @@ public:
 
 #pragma region Smith System
 	UFUNCTION(BlueprintCallable)
-	void OpenSmithUI();
+	void OpenSmithEQBoxUI();
 
 	UFUNCTION(BlueprintCallable)
-	void CloseSmithUI();
+	void CloseSmithEQBoxUI();
 
 	UFUNCTION(BlueprintCallable)
-	void OnSmithBaseEqClosed(bool IsBack);
+	void OnSmithEQBoxChosen(FPersistedEquipmentItem EquipmentInfo, EEquipmentType InEquipmentType);
 
 	UFUNCTION(BlueprintCallable)
-	void OnSmithBaseEqChosen(FPersistedEquipmentItem EquipmentInfo, EEquipmentType InEquipmentType);
+	void CloseSmithTree(bool IsBack);
+	
+	UFUNCTION(BlueprintCallable)
+	void OnSmithTreeBack();
 
 	UFUNCTION(BlueprintCallable)
 	void EmitSmithPicked(FName SmithResultId);

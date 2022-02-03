@@ -10,15 +10,18 @@
 /**
  * 
  */
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTGRIVENKA_API USmithSystem : public UBaseContextableComponent
 {
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnReceiveSmithRequest();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
+	void DisconnectUI();
+
+	UFUNCTION(BlueprintCallable)
 	void OnSmithFinished(EEquipmentType InEquipmentType, EEquipmentTree InChosenEquipment, FGuid InstanceGuid, FName SmithResultId);
 };

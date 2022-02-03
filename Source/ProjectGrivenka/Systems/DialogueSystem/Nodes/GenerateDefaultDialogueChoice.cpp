@@ -9,7 +9,7 @@
 #include "ProjectGrivenka/Utilities/UIManager.h"
 #include "ProjectGrivenka/Systems/ControlSystem/Controllable.h"
 #include "ProjectGrivenka/Systems/AIContextSystem/AIContextSystemAvailable.h"
-
+#include "ProjectGrivenka/Systems/SmithSystem/SmithSystemAvailable.h"
 
 UGenerateDefaultDialogueChoice::UGenerateDefaultDialogueChoice() {
 	this->NodeName = TEXT("Generate Default Dialogue Choice");
@@ -23,7 +23,7 @@ EBTNodeResult::Type UGenerateDefaultDialogueChoice::ExecuteTask(UBehaviorTreeCom
 	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "ffeee");
 
 	TArray<FReplyData> ReplyData;
-	FReplyData Talk, Trade, Possess, InviteParty, End;
+	FReplyData Talk, Trade, Possess, InviteParty, Smith, End;
 	Talk.ReplyId = "TALK";
 	Talk.Text = FText::FromString("Got any news?");
 	Trade.ReplyId = "TRADE";
@@ -34,6 +34,8 @@ EBTNodeResult::Type UGenerateDefaultDialogueChoice::ExecuteTask(UBehaviorTreeCom
 	InviteParty.Text = FText::FromString("Wanna come with me?");
 	End.ReplyId = "END";
 	End.Text = FText::FromString("Nevermind");
+	Smith.ReplyId = "SMITH";
+	Smith.Text = FText::FromString("Can you upgrade my equipments?");
 
 	APawn* DialogueReceiver = OwnerComp.GetAIOwner()->GetPawn();
 
@@ -43,6 +45,9 @@ EBTNodeResult::Type UGenerateDefaultDialogueChoice::ExecuteTask(UBehaviorTreeCom
 	}
 	if (DialogueReceiver->Implements<UAIContextSystemAvailable>()) {
 		ReplyData.Add(InviteParty);
+	}
+	if (DialogueReceiver->Implements<USmithSystemAvailable>()) {
+		ReplyData.Add(Smith);
 	}
 	ReplyData.Add(End);
 

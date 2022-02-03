@@ -9,7 +9,7 @@
 #include "Components/UniformGridPanel.h"
 #include "Components/Button.h"
 
-void UUIEquipmentBoxContainer::NativeOnInitialized()
+void UUIEquipmentBoxContainer::NativeConstruct()
 {
 	this->ArmorTabButton->OnClicked.AddDynamic(this, &UUIEquipmentBoxContainer::OnArmorTabClick);
 	this->WeaponTabButton->OnClicked.AddDynamic(this, &UUIEquipmentBoxContainer::OnWeaponTabClick);
@@ -38,6 +38,7 @@ void UUIEquipmentBoxContainer::OnWeaponTabClick()
 void UUIEquipmentBoxContainer::DataSetup()
 {
 	GLog->Log("EQBSetup");
+	this->EquipmentGrid->ClearChildren();
 	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
 	if (!GameInstance) return;
 

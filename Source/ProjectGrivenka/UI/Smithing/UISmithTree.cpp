@@ -23,6 +23,13 @@ void UUISmithTree::Render(EEquipmentType InEquipmentType, EEquipmentTree InChose
 		}
 	}
 
+	TArray<USmithingRecipePrefab*> RecipeItems;
+	this->RecipeToUIMap.GetKeys(RecipeItems);
+	for (int i = 0; i < RecipeItems.Num(); i++) {
+		if (!RecipeItems[i]) continue;
+		this->RecipeToUIMap.FindRef(RecipeItems[i])->Disable();
+	}
+
 	for (int i = 0; i < CurrentRecipe.ChildrenIndex.Num(); i++) {
 		FSmithingRecipeTreeItem Child = this->RecipeTree->SmithingRecipeTree[CurrentRecipe.ChildrenIndex[i]];
 
@@ -33,6 +40,7 @@ void UUISmithTree::Render(EEquipmentType InEquipmentType, EEquipmentTree InChose
 				break;
 			};
 		}
+
 
 		if (isChildSmithable) {
 			auto UIIns = this->RecipeToUIMap.FindRef(Child.Recipe);
