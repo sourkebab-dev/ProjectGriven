@@ -21,7 +21,7 @@ ABaseWeapon::ABaseWeapon() : ABaseEquipment()
 	PrimaryActorTick.bCanEverTick = true;
 	this->DamageCollider = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Damage Collider"));
 	this->DamageCollider->SetupAttachment(RootComponent);
-	this->DamageCollider->SetCollisionProfileName("NoCollision");
+	this->DamageCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
 
 	this->EquipmentMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Equipment Mesh"));
 	this->EquipmentMesh->SetupAttachment(RootComponent);
@@ -35,6 +35,7 @@ void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	this->DamageCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseWeapon::OnWeaponOverlap);
+	
 }
 
 // Called every frame
@@ -72,7 +73,6 @@ void ABaseWeapon::LoadData(FWeaponInfo InWeaponInfo)
 #pragma region Event Handlers
 void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-
 	if (this->GetOwner() == OtherActor || this->Hitlist.Contains(OtherActor)) { 
 		return; 
 	}
@@ -100,11 +100,12 @@ void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 }
 
 void ABaseWeapon::ActivateCollision() {
-	this->DamageCollider->SetCollisionProfileName("OverlapAll");
+	GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "Activate collision");
+	this->DamageCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Overlap);
 }
 
 void ABaseWeapon::DisableCollision() {
-	this->DamageCollider->SetCollisionProfileName("NoCollision");
+	this->DamageCollider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
 	this->Hitlist.Empty();
 }
 
