@@ -22,6 +22,7 @@ class PROJECTGRIVENKA_API UDodgeState : public UBaseState
 	FVector TempCurrentLocation;
 	FVector DodgeTargetLocation;
 	FTimerHandle LungeTimer;
+	FTimerHandle DodgeTimer;
 	FTimeline DodgeTimeline;
 
 public:
@@ -45,4 +46,6 @@ public:
 	UFUNCTION()
 	void DeactivateLunge();
 
+	UFUNCTION()
+	void SetDamageCollider(bool IsActive);
 };

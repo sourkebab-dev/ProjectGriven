@@ -2,11 +2,13 @@
 
 
 #include "DodgeState.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
+
 
 void UDodgeState::Init_Implementation(UCharacterStatesSystem* InStatesComp)
 {
@@ -64,6 +66,11 @@ void UDodgeState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAction
 
 	this->StatesComp->CrossStateData.IsLungeAvailable = false;
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->LungeTimer);
+
+	this->SetDamageCollider(false);
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->DodgeTimer, FTimerDelegate::CreateLambda([&] {
+		this->SetDamageCollider(true);
+	}), 0.25, false);
 }
 
 void UDodgeState::Tick_Implementation(float DeltaTime) {
@@ -84,6 +91,8 @@ void UDodgeState::OnStateExit_Implementation()
 	MovementComp->BrakingDecelerationWalking = this->TempGroundFriction;
 	MovementComp->BrakingFrictionFactor = this->TempBrakingFriction;
 	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::END_DODGE);
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->DodgeTimer);
+	this->SetDamageCollider(true);
 }
 
 void UDodgeState::OnDodging(float InterpValue) {
@@ -104,4 +113,16 @@ void UDodgeState::DeactivateLunge()
 {
 	this->StatesComp->CrossStateData.IsLungePooling = false;
 	this->StatesComp->CrossStateData.IsLungeAvailable = false;
+}
+
+void UDodgeState::SetDamageCollider(bool IsActive)
+{
+	//sponge: might be bad perf
+	TArray<USceneComponent*> DamageColliders;
+	this->StatesComp->CompContext->SkeletalMeshComp->GetChildrenComponents(false, DamageColliders);
+	for (int i = 0; i < DamageColliders.Num(); i++) {
+		auto Collider = Cast<UCapsuleComponent>(DamageColliders[i]);
+		if (!Collider) continue;
+		Collider->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, IsActive ? ECollisionResponse::ECR_Overlap : ECollisionResponse::ECR_Ignore);
+	}
 }
