@@ -31,23 +31,30 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class ABaseItem* UsedItem;
 
+	bool IsUIShown = false;
+
 public:	
 	void Init_Implementation() override;
 	UFUNCTION(BlueprintCallable)
-	void LoadData(FPersistedInventory InInventory);
+	void SaveData();
 	UFUNCTION(BlueprintCallable)
-	virtual void SyncItemBeltUI();
+	void LoadData(FPersistedInventory InInventory);
 	UFUNCTION(BlueprintCallable)
 	virtual void SetSelectedItem(int Idx);
 	UFUNCTION(BlueprintCallable)
-	virtual FItemInfo GetSelectedItemInventory();
+	virtual class UItemPrefab* GetSelectedItemInventory();
 	UFUNCTION(BlueprintCallable)
 	virtual void UseSelectedItemBelt();
 	UFUNCTION(BlueprintCallable)
 	virtual void CommitItem();
 	UFUNCTION(BlueprintCallable)
-	virtual int GetAvailableSlotIdx(FName InItemId, int InItemCount);
-	UFUNCTION(BlueprintCallable)
 	virtual void AddItemToInventory(FName InItemId, int InItemCount);
-		
+	UFUNCTION(BlueprintCallable)
+	virtual void AddToStack(int InInventoryIndex, int InToFill);
+	UFUNCTION(BlueprintCallable)
+	virtual void SyncItemBeltUI();
+	UFUNCTION(BlueprintCallable)
+	virtual void ToggleShowInventory();
+	UFUNCTION(BlueprintCallable)
+	virtual void MoveSlot(FName ItemId, int SourceIndex, int NewSourceIndex);
 };

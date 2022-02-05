@@ -67,6 +67,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
 	class UUISmithTreeWrapper* SmithTreeWrapperUIIns;
 
+	UPROPERTY(BlueprintReadWrite, Category = "Main UI Instance")
+	TMap<AActor*, class UUIInventoryContainer*> InventoryUIIns;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
 	TSubclassOf<class UUILootListNotify> LootListUIClass;
 
@@ -85,6 +88,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
 	TSubclassOf<class UUIEquipmentBoxContainer> EquipmentBoxUIClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Main UI Classes")
+	TSubclassOf<class UUIInventoryContainer> InventoryUIClass;
 
 public:
 
@@ -96,14 +101,23 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LoadInGameUI();
 
-	UFUNCTION(BlueprintCallable)
-	void SetActiveItemImage(FItemInfo InItemInfo);
 
 	UFUNCTION(BlueprintCallable)
 	void EmitUIClose();
 
 	UFUNCTION(BlueprintCallable)
 	void EmitUIBack();
+
+#pragma region Inventory
+	UFUNCTION(BlueprintCallable)
+	void OpenInventoryUI(AActor* Owner);
+
+	UFUNCTION(BlueprintCallable)
+	void CloseInventoryUI(AActor* Owner);
+
+	UFUNCTION(BlueprintCallable)
+	void SetActiveItemImage(FItemInfo InItemInfo);
+#pragma endregion
 
 #pragma region Equipment Box
 	UFUNCTION(BlueprintCallable)
@@ -137,7 +151,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EmitReplyDialogue(FName InReplyId);
 #pragma endregion
-
 
 #pragma region Smith System
 	UFUNCTION(BlueprintCallable)

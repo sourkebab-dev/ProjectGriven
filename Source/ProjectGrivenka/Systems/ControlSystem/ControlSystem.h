@@ -48,6 +48,7 @@ protected:
 	void ControlVentAmp();
 	void ControlDodge();
 	void ControlInteract();
+	void ControlInventory();
 	void ControlLockOn();
 	void ControlCommand1();
 	void ControlCommand2();

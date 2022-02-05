@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/Items/BaseItem.h"
+#include "ProjectGrivenka/Items/ItemPrefab.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/Utilities/BaseGameInstance.h"
 #include "ProjectGrivenka/Utilities/UIManager.h"
@@ -15,17 +16,14 @@ void UCharacterInventory::Init_Implementation()
 	Super::Init_Implementation();
 }
 
+void UCharacterInventory::SaveData()
+{
+
+}
+
 void UCharacterInventory::LoadData(FPersistedInventory InInventory)
 {
 	this->InventoryList = InInventory;
-}
-
-void UCharacterInventory::SyncItemBeltUI()
-{
-	FItemInfo SelectedItemInfo = this->GetSelectedItemInventory();
-	if (SelectedItemInfo.ItemId.IsNone()) return;
-	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
-	GameInstance->UIManager->SetActiveItemImage(SelectedItemInfo);
 }
 
 void UCharacterInventory::SetSelectedItem(int Idx)
@@ -36,7 +34,6 @@ void UCharacterInventory::SetSelectedItem(int Idx)
 	else this->SelectedItemBeltIdx = Idx; 
 	
 
-	//SPONGE: DELETE LATER
 	if (this->SelectedItemBeltIdx != oldIdx) {
 		//Sponge: should probably check whether char controlled by player or not
 		this->SyncItemBeltUI();
@@ -44,15 +41,14 @@ void UCharacterInventory::SetSelectedItem(int Idx)
 
 }
 
-// Sponge: this should return item prefab
-FItemInfo UCharacterInventory::GetSelectedItemInventory()
+UItemPrefab* UCharacterInventory::GetSelectedItemInventory()
 {
-	if (!this->ItemBelt.IsValidIndex(this->SelectedItemBeltIdx)) return FItemInfo();
+	if (!this->ItemBelt.IsValidIndex(this->SelectedItemBeltIdx)) return nullptr;
 	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	int InventoryIdx = this->ItemBelt[this->SelectedItemBeltIdx];
-	if (!this->InventoryList.Items.IsValidIndex(InventoryIdx)) return FItemInfo();
+	if (!this->InventoryList.Items.IsValidIndex(InventoryIdx)) return nullptr;
 	UItemPrefab* ItemPrefab = AssetsData->ItemPrefab->ItemAssets.FindRef(this->InventoryList.Items[InventoryIdx].ItemId);
-	return ItemPrefab ? ItemPrefab->ItemInfo : FItemInfo();
+	return ItemPrefab;
 }
 
 void UCharacterInventory::UseSelectedItemBelt()
@@ -60,23 +56,25 @@ void UCharacterInventory::UseSelectedItemBelt()
 	if (!this->ItemBelt.IsValidIndex(this->CommitedItemBeltIdx)) return;
 	int InventoryIdx = this->ItemBelt[this->CommitedItemBeltIdx];
 	if (!this->InventoryList.Items.IsValidIndex(InventoryIdx)) return;
+	this->AddToStack(InventoryIdx, -1);
 	this->UsedItem->OnUse();
-	this->InventoryList.Items[InventoryIdx].Count -= 1;
+	this->SaveData();
 }
 
 void UCharacterInventory::CommitItem()
 {
-	//Sponge: should probably subtract inventory count
 	if (this->UsedItem) this->UsedItem->Destroy();
-	FItemInfo SelectedItemInfo = this->GetSelectedItemInventory();
-	if (!SelectedItemInfo.ItemId.IsNone()) {
+	UItemPrefab* SelectedItemPrefab = this->GetSelectedItemInventory();
+	if (SelectedItemPrefab) {
+		int InventoryIdx = this->ItemBelt[this->SelectedItemBeltIdx];
+
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		SpawnParameters.Owner = this->GetOwner();
 		if (!this->GetOwner()) return;
 		this->CommitedItemBeltIdx = this->SelectedItemBeltIdx;
-		this->UsedItem = this->CompContext->CharacterActor->GetWorld()->SpawnActor<ABaseItem>(SelectedItemInfo.ItemBaseClass, SpawnParameters);
-		this->UsedItem->LoadInfo(SelectedItemInfo);
+		this->UsedItem = this->CompContext->CharacterActor->GetWorld()->SpawnActor<ABaseItem>(SelectedItemPrefab->ItemInfo.ItemBaseClass, SpawnParameters);
+		this->UsedItem->LoadInfo(SelectedItemPrefab->ItemInfo);
 
 		//SPONGE: move item to hand ?
 		FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true);
@@ -89,38 +87,106 @@ void UCharacterInventory::CommitItem()
 	}
 }
 
-int UCharacterInventory::GetAvailableSlotIdx(FName InItemId, int InItemCount)
+void UCharacterInventory::AddItemToInventory(FName InItemId, int InItemCount)
 {
-	//sponge: should add stacking feature
-	if (this->InventoryList.Items.Num() == 40) { GLog->Log("Inventory Full"); return -1; }
-	int AvailableIndex = 0;
-	int MaxSlotIdx = 0;
-	TMap<int, FPersistedInventoryItems> InventoryMap;
+	UGrivenkaDataSingleton* AssetsData = UGrivenkaSingletonLibrary::GetGrivenkaData();
+	UItemPrefab* ItemPrefab = AssetsData->ItemPrefab->ItemAssets.FindRef(InItemId);
+	if (!ItemPrefab) return;
+
+	int MaxStack = ItemPrefab->ItemInfo.MaxStackAmount;
+	int CountRemain = InItemCount;
+	bool isFillNewSlot = true;
+
+	//Sponge: maybe i should cache this slots filled data?
+	TMap<int, bool> SlotFilledMap;
 	for (int i = 0; i < this->InventoryList.Items.Num(); i++) {
-		InventoryMap.Add(this->InventoryList.Items[i].SlotIndex, this->InventoryList.Items[i]);
-		if (MaxSlotIdx < this->InventoryList.Items[i].SlotIndex) {
-			MaxSlotIdx = this->InventoryList.Items[i].SlotIndex;
+		SlotFilledMap.Add(this->InventoryList.Items[i].SlotIndex, true);
+		if (this->InventoryList.Items[i].ItemId == InItemId) {
+			int TempRemain = CountRemain - (MaxStack - this->InventoryList.Items[i].Count);
+			int ToFill = TempRemain < 0 ? CountRemain : CountRemain - TempRemain;
+			this->AddToStack(i, ToFill);
+			CountRemain = TempRemain;
+
+			if (CountRemain <= 0) {
+				isFillNewSlot = false;
+				break;
+			}
 		}
 	}
 
-	for (int i = 0; i <= MaxSlotIdx + 1; i++) {
-		if (InventoryMap.FindRef(i).ItemId.IsNone()) {
-			AvailableIndex = i;
+	if (!isFillNewSlot) return;
+	if (this->InventoryList.Items.Num() >= 30) {
+		GEngine->AddOnScreenDebugMessage(FMath::Rand(), 2, FColor::Yellow, "Inventory Full");
+		return;
+	}
+
+
+	int TempSlotIdx = 0;
+	FPersistedInventoryItems PersistedInfo;
+	PersistedInfo.ItemId = InItemId;
+
+	while (CountRemain > 0) {
+		if (SlotFilledMap.Find(TempSlotIdx)) {
+			TempSlotIdx++;
+			continue;
+		}
+
+		int TempRemain = CountRemain - MaxStack;
+		int ToFill = TempRemain < 0 ? CountRemain : MaxStack;
+		PersistedInfo.Count = ToFill;
+		PersistedInfo.SlotIndex = TempSlotIdx;
+		this->InventoryList.Items.Add(PersistedInfo);
+		CountRemain = TempRemain;
+	}
+
+	this->SaveData();
+}
+
+void UCharacterInventory::AddToStack(int InInventoryIndex, int InToFill)
+{
+	this->InventoryList.Items[InInventoryIndex].Count += InToFill;
+	int ItemBeltIndex = this->ItemBelt.Find(InInventoryIndex);
+	if (ItemBeltIndex == INDEX_NONE) return;
+	if (this->InventoryList.Items[InInventoryIndex].Count <= 0) {
+		this->ItemBelt.RemoveAt(ItemBeltIndex);
+		this->SetSelectedItem(ItemBeltIndex + 1);
+	}
+	this->SyncItemBeltUI();
+}
+
+void UCharacterInventory::SyncItemBeltUI()
+{
+	UItemPrefab* ItemPrefab = this->GetSelectedItemInventory();
+	if (!ItemPrefab) return;
+	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
+	GameInstance->UIManager->SetActiveItemImage(ItemPrefab->ItemInfo);
+}
+
+void UCharacterInventory::ToggleShowInventory()
+{
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 3, FColor::Cyan, "Ontoggle");
+
+	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
+	if (this->IsUIShown) {
+		GameInstance->UIManager->CloseInventoryUI(this->CompContext->CharacterActor);
+	}
+	else {
+		GameInstance->UIManager->OpenInventoryUI(this->CompContext->CharacterActor);
+	}
+	this->IsUIShown = !this->IsUIShown;
+}
+
+void UCharacterInventory::MoveSlot(FName ItemId, int SourceIndex, int NewSourceIndex)
+{
+	GLog->Log(ItemId.ToString());
+	GLog->Log(FString::FromInt(SourceIndex));
+	GLog->Log(FString::FromInt(NewSourceIndex));
+
+	for (int i = 0; i < this->InventoryList.Items.Num(); i++) {
+		if (this->InventoryList.Items[i].SlotIndex == SourceIndex && this->InventoryList.Items[i].ItemId == ItemId) {
+			this->InventoryList.Items[i].SlotIndex = NewSourceIndex;
 			break;
 		}
 	}
-
-	return AvailableIndex;
-}
-
-void UCharacterInventory::AddItemToInventory(FName InItemId, int InItemCount)
-{
-	int AvailableIndex = this->GetAvailableSlotIdx(InItemId, InItemCount);
-	if (AvailableIndex < 0) return;
-	FPersistedInventoryItems InvSlotInfo;
-	InvSlotInfo.SlotIndex = AvailableIndex;
-	InvSlotInfo.ItemId = InItemId;
-	InvSlotInfo.Count = InItemCount;
-	int NewInvIdx = this->InventoryList.Items.Add(InvSlotInfo);
-	this->ItemBelt.Add(NewInvIdx);
+	this->SaveData();
 }

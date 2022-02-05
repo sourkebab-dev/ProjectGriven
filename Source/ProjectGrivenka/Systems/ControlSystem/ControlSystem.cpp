@@ -10,6 +10,7 @@
 #include "ProjectGrivenka/GlobalDefinitions.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/Systems/AIContextSystem/AIContextSystemAvailable.h"
+#include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 #include "ProjectGrivenka/Utilities/BaseGameInstance.h"
@@ -55,6 +56,7 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAction("ToggleAmpField", IE_Pressed, this, &UControlSystem::ControlToggleAmpField);
 	InputComp->BindAction("VentAmp", IE_Pressed, this, &UControlSystem::ControlVentAmp);
 	InputComp->BindAction("UseItem", IE_Pressed, this, &UControlSystem::ControlUseItem);
+	InputComp->BindAction("Inventory", IE_Pressed, this, &UControlSystem::ControlInventory);
 	InputComp->BindAction("Command1", IE_Pressed, this, &UControlSystem::ControlCommand1);
 	InputComp->BindAction("Command2", IE_Pressed, this, &UControlSystem::ControlCommand2);
 	InputComp->BindAction("Command3", IE_Pressed, this, &UControlSystem::ControlCommand3);
@@ -89,9 +91,9 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 	InputComp->RemoveActionBinding("Command3", IE_Pressed);
 	InputComp->RemoveActionBinding("CommandCancel", IE_Pressed);
 	InputComp->RemoveActionBinding("LockOn", IE_Pressed);
+	InputComp->RemoveActionBinding("Inventory", IE_Pressed);
 	InputComp->AxisBindings.Empty();
 	this->SetComponentTickEnabled(false);
-	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "Disable");
 
 }
 
@@ -245,6 +247,13 @@ void UControlSystem::ControlDodge()
 void UControlSystem::ControlInteract()
 {
 	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionInteract, IE_Pressed);
+}
+
+void UControlSystem::ControlInventory()
+{
+	if (this->CompContext->CharacterActor->Implements<UCharacterInventoryAvailable>()) {
+		ICharacterInventoryAvailable::Execute_ToggleShowInventory(this->CompContext->CharacterActor);
+	}
 }
 
 void UControlSystem::ControlLockOn()

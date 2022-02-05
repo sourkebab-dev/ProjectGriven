@@ -11,6 +11,7 @@
 #include "ProjectGrivenka/UI/Stats/PlayerStatsContainer.h"
 #include "ProjectGrivenka/UI/Smithing/UISmithTreeWrapper.h"
 #include "ProjectGrivenka/UI/EquipmentBox/UIEquipmentBoxContainer.h"
+#include "ProjectGrivenka/UI/Inventory/UIInventoryContainer.h"
 #include "ProjectGrivenka/Equipments/WeaponPrefabs.h"
 
 void UUIManager::Init(UBaseGameInstance* InGameIns) {
@@ -29,6 +30,35 @@ void UUIManager::StatsSetup()
 {
 	if (!this->PlayerStatsContainerUIIns) return;
 	this->PlayerStatsContainerUIIns->Setup();
+}
+
+void UUIManager::OpenInventoryUI(AActor* Owner)
+{
+	this->GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameAndUI());
+	this->GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
+
+	auto UIns = this->InventoryUIIns.FindRef(Owner);
+	if (!UIns) {
+		 UIns = Cast<UUIInventoryContainer>(CreateWidget(this->GameIns, this->InventoryUIClass, "Inventory UI"));
+		 this->InventoryUIIns.Add(Owner, UIns);
+	}
+	UIns->Render(Owner);
+	if (!UIns->IsInViewport()) {
+		UIns->AddToViewport();
+	}
+}
+
+void UUIManager::CloseInventoryUI(AActor* Owner)
+{
+	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 3, FColor::Cyan, "TryClose");
+	auto UIns = this->InventoryUIIns.FindRef(Owner);
+	if (!UIns) return;
+	this->InventoryUIIns.Remove(Owner);
+	UIns->RemoveFromViewport();
+	FInputModeGameOnly InputMode;
+	InputMode.SetConsumeCaptureMouseDown(false);
+	this->GetWorld()->GetFirstPlayerController()->SetInputMode(InputMode);
+	this->GetWorld()->GetFirstPlayerController()->bShowMouseCursor = false;
 }
 
 void UUIManager::SetActiveItemImage(FItemInfo InItemInfo)

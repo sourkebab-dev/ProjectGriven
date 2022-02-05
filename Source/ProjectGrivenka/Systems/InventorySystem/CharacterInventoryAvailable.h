@@ -34,5 +34,10 @@ public:
 	int GetSelectedItemCount();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	class ABaseItem* GetCommitedItem();
-
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	FPersistedInventory GetInventoryData();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void ToggleShowInventory();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void AddItemToInventory(FName InItemId, int InItemCount);
 };

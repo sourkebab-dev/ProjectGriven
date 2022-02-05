@@ -7,6 +7,7 @@
 #include "ProjectGrivenka/Utilities/BaseGameInstance.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
 #include "ProjectGrivenka/Utilities/UIManager.h"
 
 TArray<FLootItem> ULootSystem::GenerateLoot()
@@ -65,15 +66,18 @@ void ULootSystem::OnLooted(AActor* LootInstigator)
 	for (int i = 0; i < Loot.Num(); i++) {
 		if (Loot[i].Item->ItemInfo.ItemType == EItemType::IT_MATERIAL) {
 			GI->StoreMaterial(Loot[i].Item->ItemInfo, Loot[i].Quantity);
-			if (LootInstigator->Implements<UContextAvailable>()) {
-				auto Ctx = IContextAvailable::Execute_GetContext(LootInstigator);
-				if (Ctx->Controller && Ctx->Controller->IsPlayerController()) {
-					GI->UIManager->EnqueueLootDisplay(Loot[i]);
-				}
-			}
 		}
 		else {
-			//add to instigator inventory
+			if (LootInstigator->Implements<UCharacterInventoryAvailable>()) {
+				ICharacterInventoryAvailable::Execute_AddItemToInventory(LootInstigator, Loot[i].Item->ItemInfo.ItemId, Loot[i].Quantity);
+			}
+		}
+
+		if (LootInstigator->Implements<UContextAvailable>()) {
+			auto Ctx = IContextAvailable::Execute_GetContext(LootInstigator);
+			if (Ctx->Controller && Ctx->Controller->IsPlayerController()) {
+				GI->UIManager->EnqueueLootDisplay(Loot[i]);
+			}
 		}
 	}
 }
