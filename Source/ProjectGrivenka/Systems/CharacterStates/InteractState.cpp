@@ -31,9 +31,9 @@ void UInteractState::AxisHandler_Implementation(EActionList Action, float AxisVa
 	}
 }
 
-void UInteractState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
+void UInteractState::OnStateEnter_Implementation()
 {
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
 	AActor* InteractableItem = IInteractable::Execute_GetInteractableItem(this->StatesComp->CompContext->CharacterActor);
 	if (!InteractableItem) 	this->EndInteraction();
 	IInteractable::Execute_RequestInteractionInfo(InteractableItem, this->StatesComp->CompContext->CharacterActor, this->InteractionInfo);

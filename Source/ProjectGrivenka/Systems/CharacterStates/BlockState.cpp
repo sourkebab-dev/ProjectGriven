@@ -13,16 +13,16 @@
 
 
 //sponge: Might need to wait for block hit to end if release block in the middle of getting hit
-void UBlockState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) 
+void UBlockState::OnStateEnter_Implementation() 
 {
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
 	this->StatesComp->BlockHitDelegate.AddDynamic(this, &UBlockState::OnReceiveHit);
 
 	FBlockInfo BlockInfo;
 	float DamageAbsorption;
 	IEquipmentSystemAvailable::Execute_GetBlockInfo(this->StatesComp->CompContext->CharacterActor, BlockInfo, DamageAbsorption);
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(BlockInfo.BlockMontage);
-	this->IsParry = true;
+	this->StatesComp->CrossStateData.IsParry = true;
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->ParryTimer, this, &UBlockState::InvalidateParry, PARRYTIME);
 	
 	if (this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
@@ -76,7 +76,7 @@ void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo
 	float DamageAbsorption;
 	IEquipmentSystemAvailable::Execute_GetBlockInfo(this->StatesComp->CompContext->CharacterActor, BlockInfo, DamageAbsorption);
 
-	if (this->IsParry) {
+	if (this->StatesComp->CrossStateData.IsParry) {
 		this->StatesComp->CompContext->CharacterAnim->Montage_JumpToSection("Parry", BlockInfo.BlockMontage);
 
 		auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->HitInstigator);
@@ -84,38 +84,17 @@ void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo
 
 		FDamageInfo StaggerDamage;
 		StaggerDamage.ImpactType = EDamageImpactType::DI_HIGH;
-		if (this->HitInstigator->Implements<UCharacterSystemAvailable>()) {
-			ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(InHitInstigator, this->StatesComp->CompContext->CharacterActor, StaggerDamage);
-			float InstigatorFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(InHitInstigator, EAttributeCode::ATT_Fortitude);
-			if (InstigatorFortitude <= 0) {
-				InstigatorCtx->EventBus->StaggerDelegate.Broadcast(this->StatesComp->CompContext->CharacterActor, StaggerDamage);
-			}
-		}
-		else {
-			InstigatorCtx->EventBus->StaggerDelegate.Broadcast(this->StatesComp->CompContext->CharacterActor, StaggerDamage);
-
-		}
+		StaggerDamage.HitType = EDamageHitType::PARRY;
+		InstigatorCtx->EventBus->HitDelegate.Broadcast(this->StatesComp->CompContext->CharacterActor, StaggerDamage);
 	}
 	else {
-		if (this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
-			ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->StatesComp->CompContext->CharacterActor, InHitInstigator, this->DamageInfo);
-			float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->StatesComp->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
-			float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->StatesComp->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
-
-
-			if (CurrentFortitude <= 0) {
-				this->StatesComp->CompContext->EventBus->StaggerDelegate.Broadcast(this->HitInstigator, this->DamageInfo);
-			}
-		}
-
-
 		this->StatesComp->CompContext->CharacterAnim->Montage_JumpToSection("Hit", BlockInfo.BlockMontage);
 	}
 }
 
 void UBlockState::InvalidateParry()
 {
-	this->IsParry = false;
+	this->StatesComp->CrossStateData.IsParry = false;
 	if (this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
 		ICharacterSystemAvailable::Execute_RemoveEffectByTag(this->StatesComp->CompContext->CharacterActor, FGameplayTag::RequestGameplayTag("CharacterSystem.Effects.Equipment.Parry"));
 		FBlockInfo BlockInfo;

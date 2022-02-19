@@ -35,6 +35,7 @@ class PROJECTGRIVENKA_API UKnockedState : public UBaseState
 	FVector PushStartLocation;
 	FVector PushTargetLocation;
 	float PooledTime = 0.0;
+	float LastZpos = 0.0;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -45,10 +46,6 @@ public:
 	float PushDistanceMultiplier = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* CurrentStunMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AActor* HitInstigator;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FDamageInfo DamageInfo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FStunMontage StunLeftMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -63,15 +60,12 @@ public:
 	FStunMontage StunDownMontage;
 
 public:
-	virtual void Init_Implementation(class UCharacterStatesSystem* InStatesComp) override;
 	virtual void Tick_Implementation(float DeltaTime);
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
-	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;
+	virtual void OnStateEnter_Implementation() override;
 	virtual void OnStateExit_Implementation() override;
 	
 
-	UFUNCTION(BlueprintCallable)
-	void OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo);
 	UFUNCTION(BlueprintCallable)
 	void StartHitReact();
 	UFUNCTION(BlueprintCallable)

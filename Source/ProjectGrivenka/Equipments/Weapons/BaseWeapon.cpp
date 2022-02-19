@@ -93,7 +93,7 @@ void ABaseWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComp, AActor* O
 			DamageInfo.RawPhysicalDamage = this->RawDamage;
 			DamageInfo.RawElementalDamage = this->ElementalDamage;
 			DamageInfo.IsFixed = false;
-			DamagableCtx->EventBus->DamagedDelegate.Broadcast(this->GetOwner(), DamageInfo);
+			DamagableCtx->EventBus->HitDelegate.Broadcast(this->GetOwner(), DamageInfo);
 		}
 	}
 

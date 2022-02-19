@@ -57,26 +57,33 @@ void UWeaponDamage::OnExecuteEffect() {
 	float RawElementalDamage = this->DamageInfo.RawElementalDamage;
 	float CalculatedPhysicalDamage = 0.0;
 	float CalculatedElementalDamage = 0.0;
+
+	GLog->Log("RawDamage");
+	GLog->Log(FString::SanitizeFloat(RawDamage));
+
 	if (!this->DamageInfo.IsFixed) {
 		float InstigatorCritPower = InstigatorComp->GetAttributeCurrentValue(EAttributeCode::ATT_CriticalPower);
 		float InstigatorCritChance = InstigatorComp->GetAttributeCurrentValue(EAttributeCode::ATT_CriticalChance);
 		float MovingValues = this->DamageInfo.MovingValues;
-		float CritRand = FMath::RandRange(0, 100);
+		float CritRand = FMath::RandRange(1, 100);
 		bool isCritical = CritRand <= InstigatorCritChance;
-
 		float DamageByMovement = RawDamage * (MovingValues / 100);
 		float ElemDamageByMovement = RawElementalDamage * (MovingValues / 100);
-		CalculatedPhysicalDamage = isCritical ? DamageByMovement + InstigatorCritPower : DamageByMovement;
-		CalculatedElementalDamage = isCritical ? ElemDamageByMovement + InstigatorCritPower : ElemDamageByMovement;
+		GLog->Log("DamageByMovement");
+		GLog->Log(FString::SanitizeFloat(DamageByMovement));
+		CalculatedPhysicalDamage = isCritical ? DamageByMovement + ( InstigatorCritPower * DamageByMovement ) : DamageByMovement;
+		CalculatedElementalDamage = isCritical ? ElemDamageByMovement + (InstigatorCritPower * ElemDamageByMovement) : ElemDamageByMovement;
 	}
 	else {
 		CalculatedPhysicalDamage = RawDamage;
 		CalculatedElementalDamage = RawElementalDamage;
 	}
 	
+	GLog->Log("CalculatedPhysicalDamage");
+	GLog->Log(FString::SanitizeFloat(CalculatedPhysicalDamage));
 
 	//sponge: might need to make a common func for defense calculation
-	float TotalPhysicalDamage = CalculatedPhysicalDamage ? CalculatedPhysicalDamage * (CalculatedPhysicalDamage / (CalculatedPhysicalDamage + ReceiverDefense)) : 0.0;
+	float TotalPhysicalDamage = CalculatedPhysicalDamage > 0.0 ? CalculatedPhysicalDamage * (CalculatedPhysicalDamage / (CalculatedPhysicalDamage + ReceiverDefense)) : 0.0;
 	float TotalElementalDamage = CalculatedElementalDamage > 0.0 ? CalculatedElementalDamage * (CalculatedElementalDamage / (CalculatedElementalDamage + ReceiverElementalDefense)) : 0.0;
 	
 	//Shield Damage (elementals are not negated by shield)
@@ -85,6 +92,10 @@ void UWeaponDamage::OnExecuteEffect() {
 	}
 	float AccumulatedDamage = TotalPhysicalDamage + TotalElementalDamage;
 	
+	GLog->Log("Accumulated Damage");
+	GLog->Log(FString::SanitizeFloat(AccumulatedDamage));
+
+
 	if (this->DamageInfo.IsAbsorbed) {
 		//Sponge: need to recheck numbers
 		ReceiverComp->SetAttributeValue(EAttributeCode::ATT_Stamina, ReceiverStamina - 10);

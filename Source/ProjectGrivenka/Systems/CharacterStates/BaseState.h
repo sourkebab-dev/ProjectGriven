@@ -24,9 +24,6 @@ public:
 	FGameplayTagContainer BlockedTag;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsPersistant;
-	FGameplayTagContainer PrevActionTag;
-	TEnumAsByte<EActionList> EnterAction;
-	TEnumAsByte<EInputEvent> EnterEvent;
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -42,8 +39,8 @@ public:
 	void AxisHandler(EActionList Action, float AxisValue);
 	virtual void AxisHandler_Implementation(EActionList Action, float AxisValue);
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void OnStateEnter(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent);
-	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent);
+	void OnStateEnter();
+	virtual void OnStateEnter_Implementation();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Tick(float DeltaTime);
 	virtual void Tick_Implementation(float DeltaTime);

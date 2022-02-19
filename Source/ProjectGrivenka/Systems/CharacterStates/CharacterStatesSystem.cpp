@@ -15,28 +15,14 @@ void UCharacterStatesSystem::Init_Implementation()
 {
 	Super::Init_Implementation();
 	this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
-	this->InitializePersistantStates();
 	if (!this->CompContext->EventBus) return;
 	this->CompContext->EventBus->StateActionDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentActionHandler);
 	this->CompContext->EventBus->StateAxisDelegate.AddDynamic(this, &UCharacterStatesSystem::CurrentAxisHandler);
 	this->CompContext->EventBus->AnimDelegate.AddDynamic(this, &UCharacterStatesSystem::AnimEventsHandler);
-	this->CompContext->EventBus->DamagedDelegate.AddDynamic(this, &UCharacterStatesSystem::OnHit);
+	this->CompContext->EventBus->HitDelegate.AddDynamic(this, &UCharacterStatesSystem::OnHit);
 	this->CompContext->EventBus->HitStopDelegate.BindUObject(this, &UCharacterStatesSystem::LockAnimation);
 }
 
-void UCharacterStatesSystem::InitializePersistantStates()
-{
-	//sponge: might remove function when parallel/multiple states is implemented
-	for (TSubclassOf<UBaseState> StateClass : this->GrantedActions) {
-		UBaseState* DefaultObj = Cast<UBaseState>(StateClass->GetDefaultObject());
-		if (!DefaultObj) continue;
-		if (DefaultObj->IsPersistant) {
-			UBaseState* TempState = DuplicateObject(DefaultObj, this);
-			TempState->Init(this);
-			this->PersistantStates.Add(TempState);
-		}
-	}
-}
 
 void UCharacterStatesSystem::AnimEventsHandler(EAnimEvt InAnimEvent)
 {
@@ -77,26 +63,18 @@ void UCharacterStatesSystem::TickComponent(float DeltaTime, ELevelTick TickType,
 	this->CurrentState->Tick(DeltaTime);
 }
 
-void UCharacterStatesSystem::ChangeState(FGameplayTag ChangeTo, EActionList NewEnterAction, EInputEvent NewEnterEvent)
+bool UCharacterStatesSystem::ChangeState(FGameplayTag ChangeTo, EActionList NewEnterAction, EInputEvent NewEnterEvent)
 {
-	if (this->BlockedTags.HasTagExact(ChangeTo)) return;
+	if (this->BlockedTags.HasTagExact(ChangeTo)) return false;
 
 	UBaseState* ChangeToObj = nullptr;
 
-	//Get persistant state if available
-	for (UBaseState* State : this->PersistantStates)
-	{
-		if (ChangeTo.MatchesAnyExact(State->ActionTag)) {
-			ChangeToObj = State;
-			break;
-		}
-	}
 
 	if (!ChangeToObj) {
 		for (TSubclassOf<UBaseState> StateClass : this->GrantedActions) {
 			UBaseState* DefaultObj = Cast<UBaseState>(StateClass->GetDefaultObject());
 			if (!DefaultObj) continue;
-			if (ChangeTo.MatchesAnyExact(DefaultObj->ActionTag)) {
+			if (DefaultObj->ActionTag.HasTag(ChangeTo)) {
 				UBaseState* TempState = DuplicateObject(DefaultObj, this);
 				TempState->Init(this);
 				ChangeToObj = TempState;
@@ -106,7 +84,7 @@ void UCharacterStatesSystem::ChangeState(FGameplayTag ChangeTo, EActionList NewE
 	}
 
 
-	if (!ChangeToObj || !ChangeToObj->StateValidation()) return;
+	if (!ChangeToObj || !ChangeToObj->StateValidation()) return false;
 
 	FGameplayTagContainer From = FGameplayTagContainer();
 	if (this->CurrentState) {
@@ -116,8 +94,9 @@ void UCharacterStatesSystem::ChangeState(FGameplayTag ChangeTo, EActionList NewE
 
 	this->CurrentState = ChangeToObj;
 	this->BlockedTags = this->CurrentState->BlockedTag;
-	this->CurrentState->OnStateEnter(From, NewEnterAction, NewEnterEvent);
+	this->CurrentState->OnStateEnter();
 
+	return true;
 	/*
 	if (!this->IsPlayerControlled() && this->AIController) {
 		this->AIController->SetBBCharacterState(ChangeTo);
@@ -127,16 +106,14 @@ void UCharacterStatesSystem::ChangeState(FGameplayTag ChangeTo, EActionList NewE
 
 void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageInfo)
 {
+	this->CrossStateData.DamageInfo = InDamageInfo;
+	this->CrossStateData.DamageInstigator = HitInstigator;
 
 	if (this->CurrentState->ActionTag.HasTag(FGameplayTag::RequestGameplayTag("ActionStates.Block")) 
 		&& UVectorMathLib::CheckBlockDirection(HitInstigator->GetActorLocation(), this->CompContext->CharacterActor->GetActorLocation(), this->CompContext->CharacterActor->GetActorForwardVector())) {
 		GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "Blocked");
 		InDamageInfo.IsAbsorbed = true;
 		this->BlockHitDelegate.Broadcast(HitInstigator, InDamageInfo);
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "OnHit");
-		this->TrueHitDelegate.Broadcast(HitInstigator, InDamageInfo);
 	}
 
 	if (this->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
@@ -146,8 +123,35 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 			if (this->CompContext->Controller) {
 				this->CompContext->Controller->UnPossess();
 			}
-			this->CompContext->EventBus->DeathDelegate.Broadcast(HitInstigator, InDamageInfo);
+			this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Death"), EActionList::ActionNone, EInputEvent::IE_Released);
+			return;
 		}
+
+		if (!this->CrossStateData.IsParry) {
+			ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->CompContext->CharacterActor, HitInstigator, InDamageInfo);
+			float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
+			float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
+
+			//Note: if actor is launched && launchavailable -> skip stagger & knock
+			if (InDamageInfo.ImpactType >= this->LaunchByWhichImpact 
+				&& this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockedLaunch"), EActionList::ActionNone, EInputEvent::IE_Released)) {
+				return;
+			}
+
+
+			if (CurrentFortitude <= 0 && ( this->IsStaggeredOnEmptyFortitude || InDamageInfo.HitType != EDamageHitType::DEFAULT)) {
+				this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Staggered"), EActionList::ActionNone, EInputEvent::IE_Released);
+			}
+			else if (CurrentFortitude / MaxFortitude < 0.6 && InDamageInfo.HitType != EDamageHitType::PARRY) {
+				this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked"), EActionList::ActionNone, EInputEvent::IE_Released);
+			}
+			else {
+				//Sponge: need to add jitter effect
+			}
+		}
+	}
+	else {
+		this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked"), EActionList::ActionNone, EInputEvent::IE_Released);
 	}
 
 }
@@ -163,7 +167,6 @@ void UCharacterStatesSystem::LockAnimation(EDamageImpactType InDamageImpactTime,
 		{ EDamageImpactType::DI_MEDIUM, 0.1 },
 		{ EDamageImpactType::DI_HIGH, 0.2 },
 		{ EDamageImpactType::DI_EXPLOSIVE, 0.25 },
-
 	};
 
 	float LockTime = LockTimeMap[InDamageImpactTime];

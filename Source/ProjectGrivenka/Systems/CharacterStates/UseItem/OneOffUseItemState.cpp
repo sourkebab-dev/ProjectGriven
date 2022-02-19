@@ -13,9 +13,9 @@ void UOneOffUseItemState::ActionHandler_Implementation(EActionList Action, EInpu
 
 }
 
-void UOneOffUseItemState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
+void UOneOffUseItemState::OnStateEnter_Implementation()
 {
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
 	ABaseItem* UsedItem = ICharacterInventoryAvailable::Execute_GetCommitedItem(this->StatesComp->CompContext->CharacterActor);
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(UsedItem->ItemInfo.UsageAnimation);
 	FOnMontageEnded EndUseItemDelegate;

@@ -14,23 +14,33 @@ struct FCrossStateData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 		bool IsComboActive = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 		bool IsInterruptable = true;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 		bool IsAmpActivated = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 		bool IsLungeAvailable = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 		bool IsLungePooling = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 		bool IsHitStopped = false;
+
+	UPROPERTY(BlueprintReadWrite)
+		bool IsParry = false;
+	
+	UPROPERTY(BlueprintReadWrite)
+	FDamageInfo DamageInfo;
+
+	//Sponge: needs to be a weak pointer
+	UPROPERTY(BlueprintReadWrite)
+	AActor* DamageInstigator;
 };
 
 
@@ -55,10 +65,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<TSubclassOf<class UBaseState>> GrantedActions;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UBaseState*> PersistantStates;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Knock  & Stagger")
+	bool IsStaggeredOnEmptyFortitude = true; // Note: only affects when hit by an attack
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Knock  & Stagger")
+	TEnumAsByte<EDamageImpactType> HeavyKnockedByWhichImpact = DI_HIGH;
 
-	FDamagedDelegate TrueHitDelegate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Knock  & Stagger")
+	TEnumAsByte<EDamageImpactType> LaunchByWhichImpact = DI_EXPLOSIVE;
+
 	FDamagedDelegate BlockHitDelegate;
 
 protected:
@@ -66,7 +81,6 @@ protected:
 
 public:	
 	void Init_Implementation() override;
-	void InitializePersistantStates();
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
 	virtual void AnimEventsHandler(enum EAnimEvt InAnimEvent);
@@ -75,7 +89,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void CurrentAxisHandler(EActionList Action, float AxisValue);
 	UFUNCTION(BlueprintCallable)
-	virtual void ChangeState(FGameplayTag ChangeTo, EActionList NewEnterAction, EInputEvent NewEnterEvent);
+	virtual bool ChangeState(FGameplayTag ChangeTo, EActionList NewEnterAction, EInputEvent NewEnterEvent);
 	UFUNCTION(BlueprintCallable)
 	virtual class UBaseState* GetCurrentState() { return CurrentState;  };
 	UFUNCTION()

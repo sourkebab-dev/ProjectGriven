@@ -11,28 +11,13 @@
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
 
-void UDeathState::Init_Implementation(UCharacterStatesSystem* InStatesComp)
+
+void UDeathState::OnStateEnter_Implementation()
 {
-	Super::Init_Implementation(InStatesComp);
-
-	this->StatesComp->CompContext->EventBus->DeathDelegate.AddDynamic(this, &UDeathState::OnReceiveDeathBlow);
-}
-
-void UDeathState::OnReceiveDeathBlow(AActor* InDeathInstigator, FDamageInfo InDeathBlow)
-{
-	if (this->StatesComp->BlockedTags.HasAny(this->ActionTag)) return;
-	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
-	this->DeathInstigator = InDeathInstigator;
-	this->DeathBlow = InDeathBlow;
-
-	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Death"), EActionList::ActionNone, IE_Released);
-
-}
-
-void UDeathState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
-{
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
+	this->StatesComp->CompContext->EventBus->DeathDelegate.Broadcast(this->StatesComp->CrossStateData.DamageInstigator, this->StatesComp->CrossStateData.DamageInfo);
 	this->StatesComp->CompContext->CombatModule.IsDead = true;
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 	//FRotator RotateToInstigator = FRotator( 0 , UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->DeathInstigator->GetActorLocation()).Yaw, 0);
 	//this->StatesComp->CompContext->CharacterActor->SetActorRotation(RotateToInstigator);
 	this->StartDeathAnim();
@@ -40,14 +25,13 @@ void UDeathState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAction
 
 void UDeathState::StartDeathAnim()
 {
-	bool IsHeavyAnim =  this->DeathBlow.ImpactType == EDamageImpactType::DI_HIGH || this->DeathBlow.ImpactType == EDamageImpactType::DI_EXPLOSIVE;
-
-	float DotProduct = FVector::DotProduct(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->DeathInstigator->GetActorForwardVector());
+	bool IsHeavyAnim = this->StatesComp->CrossStateData.DamageInfo.ImpactType >= EDamageImpactType::DI_HIGH;
+	float DotProduct = FVector::DotProduct(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->StatesComp->CrossStateData.DamageInstigator->GetActorForwardVector());
 	if (DotProduct > 0.3) {
 		this->CurrentDeathMontage = IsHeavyAnim ? this->DeathBackMontage.HeavyMontage : this->DeathBackMontage.DefaultMontage;
 	}
 	else if (DotProduct > -0.3 && DotProduct < 0.3) {
-		FRotator RotateToInstigator = FRotator( 0 , UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->DeathInstigator->GetActorLocation()).Yaw, 0);
+		FRotator RotateToInstigator = FRotator( 0 , UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->StatesComp->CrossStateData.DamageInstigator->GetActorLocation()).Yaw, 0);
 		this->StatesComp->CompContext->CharacterActor->SetActorRotation(RotateToInstigator);
 		this->CurrentDeathMontage = IsHeavyAnim ? this->DeathFrontMontage.HeavyMontage : this->DeathFrontMontage.DefaultMontage;
 	}
@@ -58,14 +42,14 @@ void UDeathState::StartDeathAnim()
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->CurrentDeathMontage);
 
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
-		this->DeathBlow.ImpactType = EDamageImpactType::DI_HIGH;
-		if (this->DeathInstigator) {
-			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->DeathInstigator);
-			InstigatorCtx->EventBus->HitStopDelegate.Execute(this->DeathBlow.ImpactType, FHitStopFinishDelegate::CreateLambda([] {}));
+		this->StatesComp->CrossStateData.DamageInfo.ImpactType = EDamageImpactType::DI_HIGH;
+		if (this->StatesComp->CrossStateData.DamageInstigator) {
+			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->StatesComp->CrossStateData.DamageInstigator);
+			InstigatorCtx->EventBus->HitStopDelegate.Execute(this->StatesComp->CrossStateData.DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([] {}));
 		}
 
 		//freeze -> onFreezefinish
-		this->StatesComp->LockAnimation(this->DeathBlow.ImpactType, FHitStopFinishDelegate::CreateLambda([&] {}));
+		this->StatesComp->LockAnimation(this->StatesComp->CrossStateData.DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([&] {}));
 	}), 0.005, false);
 
 
@@ -77,6 +61,8 @@ void UDeathState::StartDeathAnim()
 		};
 		this->StatesComp->CompContext->SkeletalMeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		this->StatesComp->CompContext->SkeletalMeshComp->SetSimulatePhysics(true);
+		this->StatesComp->CrossStateData.DamageInstigator = nullptr;
+		this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
 	}), this->CurrentDeathMontage->GetPlayLength() - 0.5f, false);
 	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::DEATH);
 }

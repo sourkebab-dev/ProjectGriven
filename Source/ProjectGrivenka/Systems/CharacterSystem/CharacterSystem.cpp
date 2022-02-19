@@ -98,11 +98,14 @@ void UCharacterSystem::RemoveEffect(UBaseEffect* InEffect, bool isForceRemove)
 
 void UCharacterSystem::RemoveEffectsByTag(FGameplayTag EffectTag, bool isForceRemove)
 {
+	GLog->Log("TryRemoveEffect");
+	GLog->Log(EffectTag.ToString());
 	for (int i = 0; i < this->ActiveEffects.Num() ; i++)
 	{
 		UBaseEffect* Effect = this->ActiveEffects[i];
 		if (Effect->EffectInfo.EffectTags.HasTag(EffectTag))
 		{
+			GLog->Log("RemovedEffect");
 			this->RemoveEffect(Effect, isForceRemove);
 		}
 	}

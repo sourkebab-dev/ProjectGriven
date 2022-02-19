@@ -40,14 +40,14 @@ void ABaseAIController::OnPossess(APawn* PossesedPawn)
 
 void ABaseAIController::OnUnPossess()
 {
-	this->ActorCtx->EventBus->DamagedDelegate.RemoveDynamic(this, &ABaseAIController::OnHit);
+	this->ActorCtx->EventBus->HitDelegate.RemoveDynamic(this, &ABaseAIController::OnHit);
 	this->ActorCtx->EventBus->AnimDelegate.RemoveDynamic(this, &ABaseAIController::SetRotationRate);
 	this->ActorCtx->CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);
 	this->ActorCtx->CharacterActor->GetWorldTimerManager().ClearTimer(this->SightRefreshTimer);
 
 	this->AggroTarget = nullptr;
 	this->AggroMap.Empty();
-	this->ActorCtx->EventBus->DamagedDelegate.RemoveAll(this);
+	this->ActorCtx->EventBus->HitDelegate.RemoveAll(this);
 	Super::OnUnPossess();
 }
 
@@ -60,7 +60,7 @@ void ABaseAIController::OnContextSetup()
 	this->ActorCtx->Controller = this;
 
 	if (!this->ActorCtx || !this->ActorCtx->EventBus) return;
-	this->ActorCtx->EventBus->DamagedDelegate.AddDynamic(this, &ABaseAIController::OnHit);
+	this->ActorCtx->EventBus->HitDelegate.AddDynamic(this, &ABaseAIController::OnHit);
 	this->ActorCtx->EventBus->AnimDelegate.AddDynamic(this, &ABaseAIController::SetRotationRate);
 }
 

@@ -27,14 +27,13 @@ public:
 	FDamageInfo DamageInfo;
 
 	FTimerHandle ParryTimer;
-	bool IsParry = false;
 
 public:
 	UFUNCTION(BlueprintCallable)
 	void OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo);
 	void InvalidateParry();
 	virtual bool StateValidation_Implementation() override;
-	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;
+	virtual void OnStateEnter_Implementation() override;
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
 	virtual void AxisHandler_Implementation(EActionList Action, float AxisValue) override;
 	virtual void OnStateExit_Implementation() override;

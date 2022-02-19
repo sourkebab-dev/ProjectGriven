@@ -38,9 +38,9 @@ void URootUseItemState::AxisHandler_Implementation(EActionList Action, float Axi
 	}
 }
 
-void URootUseItemState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
+void URootUseItemState::OnStateEnter_Implementation()
 {
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
 
 	ICharacterInventoryAvailable::Execute_CommitItem(this->StatesComp->CompContext->CharacterActor);
 	switch (ICharacterInventoryAvailable::Execute_GetCommitedItem(this->StatesComp->CompContext->CharacterActor)->ItemInfo.UsageType)
@@ -59,7 +59,7 @@ void URootUseItemState::OnStateEnter_Implementation(FGameplayTagContainer InPrev
 	}
 
 	this->CurrentUseItemState->Init_Implementation(this->StatesComp);
-	this->CurrentUseItemState->OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	this->CurrentUseItemState->OnStateEnter_Implementation();
 }
 
 void URootUseItemState::OnStateExit_Implementation()

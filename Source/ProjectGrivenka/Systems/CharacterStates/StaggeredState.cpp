@@ -8,23 +8,10 @@
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 
-void UStaggeredState::Init_Implementation(UCharacterStatesSystem* InStatesComp)
-{
-	Super::Init_Implementation(InStatesComp);
-	this->StatesComp->CompContext->EventBus->StaggerDelegate.AddDynamic(this, &UStaggeredState::OnReceiveStagger);
-}
 
-
-void UStaggeredState::OnReceiveStagger(AActor* InHitInstigator, FDamageInfo InDamageInfo)
+void UStaggeredState::OnStateEnter_Implementation()
 {
-	this->StaggerInfo = InDamageInfo;
-	this->StaggerInstigator = InHitInstigator;
-	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Staggered"), EActionList::ActionNone, IE_Released);
-}
-
-void UStaggeredState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
-{
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->StaggerMontage);
 	FOnMontageEnded EndAttackDelegate;
 	EndAttackDelegate.BindUObject(this, &UStaggeredState::OnStaggerEnd);
@@ -32,8 +19,8 @@ void UStaggeredState::OnStateEnter_Implementation(FGameplayTagContainer InPrevAc
 	this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->StaggerMontage);
 
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->HitStopTimer, FTimerDelegate::CreateLambda([&] {
-		if (this->StaggerInstigator) {
-			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->StaggerInstigator);
+		if (this->StatesComp->CrossStateData.DamageInstigator) {
+			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->StatesComp->CrossStateData.DamageInstigator);
 			InstigatorCtx->EventBus->HitStopDelegate.Execute(EDamageImpactType::DI_HIGH, FHitStopFinishDelegate::CreateLambda([] {}));
 		}
 
@@ -51,6 +38,8 @@ void UStaggeredState::AxisHandler_Implementation(EActionList Action, float AxisV
 
 void UStaggeredState::OnStateExit_Implementation()
 {
+	this->StatesComp->CrossStateData.DamageInstigator = nullptr;
+	this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitStopTimer);
 
 	if (!this->StatesComp->CompContext->CharacterAnim) return;
@@ -66,8 +55,6 @@ void UStaggeredState::OnStateExit_Implementation()
 void UStaggeredState::OnStaggerEnd(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (!bInterrupted) {
-		this->StaggerInstigator = nullptr;
-		this->StaggerInfo = FDamageInfo();
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, EInputEvent::IE_Released);
 	}
 }

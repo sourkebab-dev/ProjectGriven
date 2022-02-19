@@ -30,9 +30,9 @@ void UToggleAmpFieldState::EndAmpAction()
 	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
 }
 
-void UToggleAmpFieldState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
+void UToggleAmpFieldState::OnStateEnter_Implementation()
 {
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
 	UGrivenkaDataSingleton* CommonData = UGrivenkaSingletonLibrary::GetGrivenkaData();
 	//this->CharacterInstance->SetRotationRate(CommonData->CommonRotationRate.OffRotationRate);
 	//this->CharacterInstance->CharacterContext.CharacterAnim->Montage_Play(this->CharacterInstance->CommonAnimationData.ToggleAmpField);

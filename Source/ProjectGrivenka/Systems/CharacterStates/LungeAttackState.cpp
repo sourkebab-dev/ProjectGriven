@@ -26,9 +26,9 @@ void ULungeAttackState::ActionHandler_Implementation(EActionList Action, EInputE
 	}
 }
 
-void ULungeAttackState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
+void ULungeAttackState::OnStateEnter_Implementation()
 {
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
 	this->StatesComp->CrossStateData.IsInterruptable = true;
 	this->StatesComp->CrossStateData.IsComboActive = false;
 	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->StatesComp->CompContext->CharacterActor, EAttackMovementType::AM_LUNGE, FAttackValues(), this->StatesComp->CompContext->CombatModule.CurrentAttack);

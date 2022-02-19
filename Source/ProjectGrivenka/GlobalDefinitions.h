@@ -54,6 +54,13 @@ enum EDamageImpactType {
     DI_EXPLOSIVE       UMETA(DisplayName = "Explosive Impact"),
 };
 
+UENUM(BlueprintType)
+enum EDamageHitType {
+    DEFAULT      UMETA(DisplayName = "Default"),
+    PUSH       UMETA(DisplayName = "Push"),
+    PARRY       UMETA(DisplayName = "Parry"),
+};
+
 
 UENUM(BlueprintType)
 enum EAICommandType {
@@ -111,10 +118,10 @@ struct FDamageInfo
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float RawPhysicalDamage;
+    float RawPhysicalDamage = 0.0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float RawElementalDamage;
+    float RawElementalDamage = 0.0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool IsFixed;
@@ -123,10 +130,13 @@ struct FDamageInfo
     bool IsAbsorbed;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float MovingValues;
+    float MovingValues = 0.0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TEnumAsByte<EDamageImpactType> ImpactType;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EDamageHitType> HitType = EDamageHitType::DEFAULT;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TEnumAsByte<EDamageElementType> ElementType;

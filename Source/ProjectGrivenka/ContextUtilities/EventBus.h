@@ -48,10 +48,7 @@ public:
 	FDamagedDelegate DeathDelegate;
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FDamagedDelegate StaggerDelegate;
-
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FDamagedDelegate DamagedDelegate;
+	FDamagedDelegate HitDelegate;
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FItemUsageDelegate ItemUsageDelegate;

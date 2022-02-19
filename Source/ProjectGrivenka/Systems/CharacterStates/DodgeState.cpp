@@ -38,9 +38,9 @@ void UDodgeState::ActionHandler_Implementation(EActionList Action, EInputEvent E
 }
 
 //SPONGE: Need to add setter for calculating walkspeed
-void UDodgeState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
+void UDodgeState::OnStateEnter_Implementation()
 {
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
 	this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir = this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir.IsZero()
 		? this->StatesComp->CompContext->CharacterActor->GetActorForwardVector() * -1 : this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir;
 	this->TempCurrentLocation = this->StatesComp->CompContext->CharacterActor->GetActorLocation();

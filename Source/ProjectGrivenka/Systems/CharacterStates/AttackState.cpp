@@ -50,9 +50,9 @@ void UAttackState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 }
 
 
-void UAttackState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
+void UAttackState::OnStateEnter_Implementation()
 {
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+	Super::OnStateEnter_Implementation();
 	this->StartAttack();
 
 }

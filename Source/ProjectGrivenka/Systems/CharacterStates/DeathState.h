@@ -32,10 +32,6 @@ class PROJECTGRIVENKA_API UDeathState : public UBaseState
 public:
 	UPROPERTY(BlueprintReadWrite)
 		UAnimMontage* CurrentDeathMontage;
-	UPROPERTY(BlueprintReadWrite)
-		AActor* DeathInstigator;
-	UPROPERTY(BlueprintReadWrite)
-		FDamageInfo DeathBlow;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FDeathMontage DeathLeftMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -52,10 +48,7 @@ public:
 
 
 public:
-	virtual void Init_Implementation(class UCharacterStatesSystem* InStatesComp) override;
-	UFUNCTION(BlueprintCallable)
-	void OnReceiveDeathBlow(AActor* InDeathInstigator, FDamageInfo InDeathBlow);
-	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;
+	virtual void OnStateEnter_Implementation() override;
 
 
 	UFUNCTION(BlueprintCallable)

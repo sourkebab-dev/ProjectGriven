@@ -26,7 +26,7 @@ class PROJECTGRIVENKA_API UAttackState : public UBaseState
 public:
 	virtual bool StateValidation_Implementation() override;
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
-	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;
+	virtual void OnStateEnter_Implementation() override;
 	virtual void OnStateExit_Implementation() override;
 
 

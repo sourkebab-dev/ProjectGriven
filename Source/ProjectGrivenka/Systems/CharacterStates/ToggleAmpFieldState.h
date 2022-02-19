@@ -21,6 +21,6 @@ class PROJECTGRIVENKA_API UToggleAmpFieldState : public UBaseState
 	void EndAmpAction();
 	
 public:
-	virtual void OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) override;
+	virtual void OnStateEnter_Implementation() override;
 	virtual void OnStateExit_Implementation() override;
 };

@@ -14,11 +14,8 @@ void UBaseState::Init_Implementation(UCharacterStatesSystem* InStatesComp)
 	this->StatesComp = InStatesComp;
 }
 
-void UBaseState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent)
+void UBaseState::OnStateEnter_Implementation()
 {
-	this->PrevActionTag = InPrevActionTag;
-	this->EnterAction = NewEnterAction;
-	this->EnterEvent = NewEnterEvent;
 }
 
 void UBaseState::Tick_Implementation(float DeltaTime)

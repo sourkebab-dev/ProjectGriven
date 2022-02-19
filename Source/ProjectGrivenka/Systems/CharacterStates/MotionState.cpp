@@ -59,8 +59,8 @@ void UMotionState::MoveCharacter() {
 	this->StatesComp->CompContext->MovementComp->AddInputVector(this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir);
 }
 
-void UMotionState::OnStateEnter_Implementation(FGameplayTagContainer InPrevActionTag, EActionList NewEnterAction, EInputEvent NewEnterEvent) {
-	Super::OnStateEnter_Implementation(InPrevActionTag, NewEnterAction, NewEnterEvent);
+void UMotionState::OnStateEnter_Implementation() {
+	Super::OnStateEnter_Implementation();
 	if (this->StatesComp->CrossStateData.IsLungePooling) {
 		this->StatesComp->CrossStateData.IsLungePooling = false;
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Attack.Lunge"), EActionList::ActionNone, IE_Released);
