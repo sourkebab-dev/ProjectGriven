@@ -16,14 +16,12 @@ class PROJECTGRIVENKA_API UBaseState : public UObject
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	class UCharacterStatesSystem* StatesComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTagContainer ActionTag;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTagContainer BlockedTag;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool IsPersistant;
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

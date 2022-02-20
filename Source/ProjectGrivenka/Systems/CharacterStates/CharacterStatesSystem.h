@@ -41,6 +41,9 @@ struct FCrossStateData
 	//Sponge: needs to be a weak pointer
 	UPROPERTY(BlueprintReadWrite)
 	AActor* DamageInstigator;
+
+	UPROPERTY(BlueprintReadWrite)
+	UAnimMontage* KnockDownMontage = nullptr;
 };
 
 
@@ -53,13 +56,13 @@ class PROJECTGRIVENKA_API UCharacterStatesSystem : public UBaseContextableCompon
 	UCharacterStatesSystem();
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	FCrossStateData CrossStateData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTagContainer BlockedTags;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite)
 	UBaseState* CurrentState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

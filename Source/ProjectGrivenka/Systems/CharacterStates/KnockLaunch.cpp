@@ -13,6 +13,7 @@
 
 void UKnockLaunch::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
 {
+	//Sponge: might need to add recover from launch
 }
 
 void UKnockLaunch::OnStateEnter_Implementation()
@@ -53,7 +54,8 @@ void UKnockLaunch::OnStateEnter_Implementation()
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->SelectedLaunch.LaunchMontage);
 	FOnMontageEnded EndAttackDelegate;
 	EndAttackDelegate.BindUObject(this, &UKnockLaunch::OnLaunchEnd);
-	this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->SelectedLaunch.LaunchMontage);
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->SelectedLaunch.LaunchMontage);
+	//this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->SelectedLaunch.LaunchMontage);
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
 		if (this->StatesComp->CrossStateData.DamageInstigator) {
 			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->StatesComp->CrossStateData.DamageInstigator);
@@ -65,6 +67,7 @@ void UKnockLaunch::OnStateEnter_Implementation()
 			this->IsProcessLaunch = true;
 		}));
 	}), 0.005, false);
+	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::OFF_ROTATION);
 }
 
 
@@ -97,7 +100,8 @@ void UKnockLaunch::Tick_Implementation(float DeltaTime)
 	FVector PelvisLocation = this->StatesComp->CompContext->SkeletalMeshComp->GetSocketLocation("pelvis");
 	TArray<AActor*> IgnoreActors;
 	FHitResult PelvisHitResult;
-	if (this->HitGroundDelegate.IsBound() && UKismetSystemLibrary::SphereTraceSingle(this->GetWorld(), PelvisLocation, PelvisLocation, 30.0f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, IgnoreActors, EDrawDebugTrace::ForOneFrame, PelvisHitResult, true)) { //hit
+	//Sponge: still need to add a force break if no trace were hit
+	if (this->HitGroundDelegate.IsBound() && UKismetSystemLibrary::SphereTraceSingle(this->GetWorld(), PelvisLocation, PelvisLocation, 30.0f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, IgnoreActors, EDrawDebugTrace::ForOneFrame, PelvisHitResult, true)) {
 		this->HitGroundDelegate.Execute();
 	}
 }
@@ -113,6 +117,7 @@ void UKnockLaunch::OnStateExit_Implementation()
 		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
 	}
 	this->StatesComp->CompContext->CharacterAnim->Montage_Stop(0.25);
+	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::FULL_ROTATION);
 
 }
 
@@ -153,5 +158,6 @@ void UKnockLaunch::OnLaunchEnd(UAnimMontage* Montage, bool bInterrupted)
 {
 	this->StatesComp->CrossStateData.DamageInstigator = nullptr;
 	this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
-	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockDown"), EActionList::ActionNone, IE_Pressed);
+	this->StatesComp->CrossStateData.KnockDownMontage = this->SelectedLaunch.DownMontage;
+	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockedDown"), EActionList::ActionNone, IE_Pressed);
 }
