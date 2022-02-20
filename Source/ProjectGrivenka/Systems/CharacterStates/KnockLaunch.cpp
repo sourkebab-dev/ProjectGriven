@@ -30,12 +30,13 @@ void UKnockLaunch::OnStateEnter_Implementation()
 	if (DotProduct < 0) {
 		FRotator RotateToInstigator = FRotator(0, UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->StatesComp->CrossStateData.DamageInstigator->GetActorLocation()).Yaw, 0);
 		this->StatesComp->CompContext->CharacterActor->SetActorRotation(RotateToInstigator);
-		LaunchType = this->LaunchFront;
+		LaunchType = this->LaunchBack;
 	}
 	else {
-		FRotator RotateToInstigator = FRotator(0, UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->StatesComp->CrossStateData.DamageInstigator->GetActorLocation()).Yaw, 0);
+		FRotator RotateToInstigator = FRotator(0, UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->StatesComp->CrossStateData.DamageInstigator->GetActorLocation()).Yaw + 180 , 0);
 		this->StatesComp->CompContext->CharacterActor->SetActorRotation(RotateToInstigator);
-		LaunchType = this->LaunchBack;
+		LaunchType = this->LaunchFront;
+		this->IsReverseCurve = true;
 	}
 	if (LaunchType.Num() == 0) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Pressed);
@@ -76,6 +77,9 @@ void UKnockLaunch::Tick_Implementation(float DeltaTime)
 		FVector AddedVectorVal = this->SelectedLaunch.LaunchCurve->GetVectorValue(this->PooledLaunchTime);
 		float Degrees = UVectorMathLib::DegreesBetweenVectors(FVector::ForwardVector, this->StatesComp->CompContext->CharacterActor->GetActorForwardVector());
 		AddedVectorVal = AddedVectorVal.RotateAngleAxis(Degrees, FVector::UpVector);
+		if (this->IsReverseCurve) {
+			AddedVectorVal = AddedVectorVal.RotateAngleAxis(180, FVector::UpVector);
+		}
 		FVector EndPosition = this->LaunchStartLocation + AddedVectorVal;
 		this->StatesComp->CompContext->CharacterActor->SetActorLocation(EndPosition, true);
 

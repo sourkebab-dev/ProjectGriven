@@ -36,6 +36,7 @@ class PROJECTGRIVENKA_API UKnockLaunch : public UBaseState
 	float PooledLaunchTime = 0.0f;
 	float PeakTime;
 	bool IsProcessLaunch = false;
+	bool IsReverseCurve = false;
 	FSimpleDynamicDelegate LaunchApexDelegate;
 	FSimpleDynamicDelegate HitGroundDelegate;
 
