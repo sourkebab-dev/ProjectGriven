@@ -2,6 +2,7 @@
 
 
 #include "KnockLaunch.h"
+#include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Curves/CurveVector.h"
@@ -48,9 +49,10 @@ void UKnockLaunch::OnStateEnter_Implementation()
 	float StartTime, MaxTime;
 	this->SelectedLaunch.LaunchCurve->GetTimeRange(StartTime, MaxTime);
 	this->PeakTime = this->FindPeakTime(StartTime / PEAKSTEPPER, MaxTime / PEAKSTEPPER);
-	GLog->Log("PeakTIme");
-	GLog->Log(FString::SanitizeFloat(this->PeakTime));
-
+	this->LastCurveDirection = this->SelectedLaunch.LaunchCurve->GetVectorValue(MaxTime) - this->SelectedLaunch.LaunchCurve->GetVectorValue(MaxTime - PEAKSTEPPER);
+	GLog->Log("lastcrvdir");
+	GLog->Log(this->LastCurveDirection.ToString());
+	
 	//Play Montage
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->SelectedLaunch.LaunchMontage);
 	FOnMontageEnded EndAttackDelegate;
@@ -65,6 +67,7 @@ void UKnockLaunch::OnStateEnter_Implementation()
 
 		//freeze -> onFreezefinish
 		this->StatesComp->LockAnimation(this->StatesComp->CrossStateData.DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([&] {
+			this->PlayerRotToForward = UVectorMathLib::DegreesBetweenVectors(FVector::ForwardVector, this->StatesComp->CompContext->CharacterActor->GetActorForwardVector());
 			this->IsProcessLaunch = true;
 		}));
 	}), 0.005, false);
@@ -79,8 +82,7 @@ void UKnockLaunch::Tick_Implementation(float DeltaTime)
 	if (this->IsProcessLaunch) {
 		this->PooledLaunchTime += DeltaTime;
 		FVector AddedVectorVal = this->SelectedLaunch.LaunchCurve->GetVectorValue(this->PooledLaunchTime);
-		float Degrees = UVectorMathLib::DegreesBetweenVectors(FVector::ForwardVector, this->StatesComp->CompContext->CharacterActor->GetActorForwardVector());
-		AddedVectorVal = AddedVectorVal.RotateAngleAxis(Degrees, FVector::UpVector);
+		AddedVectorVal = AddedVectorVal.RotateAngleAxis(this->PlayerRotToForward, FVector::UpVector);
 		if (this->IsReverseCurve) {
 			AddedVectorVal = AddedVectorVal.RotateAngleAxis(180, FVector::UpVector);
 		}
@@ -91,6 +93,18 @@ void UKnockLaunch::Tick_Implementation(float DeltaTime)
 		this->SelectedLaunch.LaunchCurve->GetTimeRange(StartTime, MaxTime);
 		if (this->PooledLaunchTime >= MaxTime) {
 			this->IsProcessLaunch = false;
+			auto Chr = Cast<ACharacter>(this->StatesComp->CompContext->CharacterActor);
+			if (Chr) {
+				this->LastCurveDirection = this->LastCurveDirection.RotateAngleAxis(this->PlayerRotToForward, FVector::UpVector);
+				if (this->IsReverseCurve) {
+					this->LastCurveDirection = this->LastCurveDirection.RotateAngleAxis(180, FVector::UpVector);
+				}
+				this->LastCurveDirection.X *= 60;
+				this->LastCurveDirection.Y *= 60;
+				//this->LastCurveDirection.Z *= 50;
+				//sponge: launch multiplier should probably be dynamic based on the pitch of the direction 
+				Chr->LaunchCharacter(this->LastCurveDirection, false, false);
+			}
 		}
 	}
 
@@ -127,40 +141,18 @@ float UKnockLaunch::FindPeakTime(int MultiplierStart, int MultiplierEnd)
 	float MinTR, MaxTR;
 	this->SelectedLaunch.LaunchCurve->GetTimeRange(MinTR, MaxTR);
 
-	GLog->Log("StartEnd");
-	GLog->Log(FString::SanitizeFloat(MultiplierStart));
-	GLog->Log(FString::SanitizeFloat(MultiplierEnd));
-
-
 	int MidMultiplier = ( MultiplierStart + MultiplierEnd ) / 2;
 	int PrevMultiplier = ( MultiplierStart + MultiplierEnd ) / 2 - 1;
 	int NextMultiplier = ( MultiplierStart + MultiplierEnd ) / 2 + 1;
-	GLog->Log("Node");
-	GLog->Log(FString::SanitizeFloat(MidMultiplier));
-	GLog->Log(FString::SanitizeFloat(PrevMultiplier));
-	GLog->Log(FString::SanitizeFloat(NextMultiplier));
 
-
-	GLog->Log("MidValue");
-	GLog->Log(FString::SanitizeFloat(MidMultiplier * PEAKSTEPPER));
-	GLog->Log(FString::SanitizeFloat(this->SelectedLaunch.LaunchCurve->GetVectorValue(MidMultiplier * PEAKSTEPPER).Z));
-	GLog->Log("PrevValue");
-	GLog->Log(FString::SanitizeFloat(PrevMultiplier * PEAKSTEPPER));
-	GLog->Log(FString::SanitizeFloat(this->SelectedLaunch.LaunchCurve->GetVectorValue(PrevMultiplier * PEAKSTEPPER).Z));
-	GLog->Log("NextValue");
-	GLog->Log(FString::SanitizeFloat(NextMultiplier * PEAKSTEPPER));
-	GLog->Log(FString::SanitizeFloat(this->SelectedLaunch.LaunchCurve->GetVectorValue(NextMultiplier * PEAKSTEPPER).Z));
 
 	if (PrevMultiplier >=  MinTR / PEAKSTEPPER && this->SelectedLaunch.LaunchCurve->GetVectorValue(PrevMultiplier * PEAKSTEPPER).Z > this->SelectedLaunch.LaunchCurve->GetVectorValue(MidMultiplier * PEAKSTEPPER).Z) {
-		GLog->Log("PrevChosen");
 		return FindPeakTime(MultiplierStart, PrevMultiplier);
 	}
 	else if (NextMultiplier <=  MaxTR / PEAKSTEPPER && this->SelectedLaunch.LaunchCurve->GetVectorValue(NextMultiplier * PEAKSTEPPER).Z > this->SelectedLaunch.LaunchCurve->GetVectorValue(MidMultiplier * PEAKSTEPPER).Z) {
-		GLog->Log("NextChosen");
 		return FindPeakTime(NextMultiplier, MultiplierEnd);
 	}
 	else {
-		GLog->Log("MidChosen");
 		return MidMultiplier * PEAKSTEPPER;
 	}
 }

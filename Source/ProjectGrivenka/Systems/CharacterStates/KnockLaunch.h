@@ -33,7 +33,9 @@ class PROJECTGRIVENKA_API UKnockLaunch : public UBaseState
 	
 	FTimerHandle HitPauseTimer;
 	FVector LaunchStartLocation;
+	FVector LastCurveDirection;
 	float PooledLaunchTime = 0.0f;
+	float PlayerRotToForward = 0.0f;
 	float PeakTime;
 	bool IsProcessLaunch = false;
 	bool IsReverseCurve = false;
