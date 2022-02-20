@@ -39,6 +39,7 @@ class PROJECTGRIVENKA_API UKnockLaunch : public UBaseState
 	bool IsReverseCurve = false;
 	FSimpleDynamicDelegate LaunchApexDelegate;
 	FSimpleDynamicDelegate HitGroundDelegate;
+	int TempIteration = 0;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

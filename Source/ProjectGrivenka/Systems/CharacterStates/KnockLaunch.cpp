@@ -48,7 +48,8 @@ void UKnockLaunch::OnStateEnter_Implementation()
 	float StartTime, MaxTime;
 	this->SelectedLaunch.LaunchCurve->GetTimeRange(StartTime, MaxTime);
 	this->PeakTime = this->FindPeakTime(StartTime / PEAKSTEPPER, MaxTime / PEAKSTEPPER);
-
+	GLog->Log("PeakTIme");
+	GLog->Log(FString::SanitizeFloat(this->PeakTime));
 
 	//Play Montage
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->SelectedLaunch.LaunchMontage);
@@ -125,23 +126,48 @@ float UKnockLaunch::FindPeakTime(int MultiplierStart, int MultiplierEnd)
 {
 	float MinTR, MaxTR;
 	this->SelectedLaunch.LaunchCurve->GetTimeRange(MinTR, MaxTR);
-	float MidMultiplier = MultiplierEnd / 2;
-	float PrevMultiplier = MultiplierEnd / 2 - 1;
-	float NextMultiplier = MultiplierEnd / 2 + 1;
 
-	if (PrevMultiplier >= MinTR && this->SelectedLaunch.LaunchCurve->GetVectorValue(PrevMultiplier * PEAKSTEPPER).Z > this->SelectedLaunch.LaunchCurve->GetVectorValue(MidMultiplier * PEAKSTEPPER).Z) {
+	GLog->Log("StartEnd");
+	GLog->Log(FString::SanitizeFloat(MultiplierStart));
+	GLog->Log(FString::SanitizeFloat(MultiplierEnd));
+
+
+	int MidMultiplier = ( MultiplierStart + MultiplierEnd ) / 2;
+	int PrevMultiplier = ( MultiplierStart + MultiplierEnd ) / 2 - 1;
+	int NextMultiplier = ( MultiplierStart + MultiplierEnd ) / 2 + 1;
+	GLog->Log("Node");
+	GLog->Log(FString::SanitizeFloat(MidMultiplier));
+	GLog->Log(FString::SanitizeFloat(PrevMultiplier));
+	GLog->Log(FString::SanitizeFloat(NextMultiplier));
+
+
+	GLog->Log("MidValue");
+	GLog->Log(FString::SanitizeFloat(MidMultiplier * PEAKSTEPPER));
+	GLog->Log(FString::SanitizeFloat(this->SelectedLaunch.LaunchCurve->GetVectorValue(MidMultiplier * PEAKSTEPPER).Z));
+	GLog->Log("PrevValue");
+	GLog->Log(FString::SanitizeFloat(PrevMultiplier * PEAKSTEPPER));
+	GLog->Log(FString::SanitizeFloat(this->SelectedLaunch.LaunchCurve->GetVectorValue(PrevMultiplier * PEAKSTEPPER).Z));
+	GLog->Log("NextValue");
+	GLog->Log(FString::SanitizeFloat(NextMultiplier * PEAKSTEPPER));
+	GLog->Log(FString::SanitizeFloat(this->SelectedLaunch.LaunchCurve->GetVectorValue(NextMultiplier * PEAKSTEPPER).Z));
+
+	if (PrevMultiplier >=  MinTR / PEAKSTEPPER && this->SelectedLaunch.LaunchCurve->GetVectorValue(PrevMultiplier * PEAKSTEPPER).Z > this->SelectedLaunch.LaunchCurve->GetVectorValue(MidMultiplier * PEAKSTEPPER).Z) {
+		GLog->Log("PrevChosen");
 		return FindPeakTime(MultiplierStart, PrevMultiplier);
 	}
-	else if (NextMultiplier <= MaxTR && this->SelectedLaunch.LaunchCurve->GetVectorValue(NextMultiplier * PEAKSTEPPER).Z > this->SelectedLaunch.LaunchCurve->GetVectorValue(MidMultiplier * PEAKSTEPPER).Z) {
+	else if (NextMultiplier <=  MaxTR / PEAKSTEPPER && this->SelectedLaunch.LaunchCurve->GetVectorValue(NextMultiplier * PEAKSTEPPER).Z > this->SelectedLaunch.LaunchCurve->GetVectorValue(MidMultiplier * PEAKSTEPPER).Z) {
+		GLog->Log("NextChosen");
 		return FindPeakTime(NextMultiplier, MultiplierEnd);
 	}
 	else {
+		GLog->Log("MidChosen");
 		return MidMultiplier * PEAKSTEPPER;
 	}
 }
 
 void UKnockLaunch::OnLaunchApex()
 {
+	GLog->Log("apex");
 	this->LaunchApexDelegate.Clear();
 	this->StatesComp->CompContext->CharacterAnim->Montage_JumpToSection("ApexEnd", this->SelectedLaunch.LaunchMontage);
 }
