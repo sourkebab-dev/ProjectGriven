@@ -131,7 +131,8 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 			ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->CompContext->CharacterActor, HitInstigator, InDamageInfo);
 			float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
 			float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
-
+			
+			GLog->Log("Here?");
 			//Note: if actor is launched && launchavailable -> skip stagger & knock
 			if (InDamageInfo.ImpactType >= this->LaunchByWhichImpact 
 				&& this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockedLaunch"), EActionList::ActionNone, EInputEvent::IE_Released)) {

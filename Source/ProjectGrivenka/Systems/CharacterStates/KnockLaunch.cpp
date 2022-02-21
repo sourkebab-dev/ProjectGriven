@@ -26,16 +26,20 @@ void UKnockLaunch::OnStateEnter_Implementation()
 	this->LaunchStartLocation = this->StatesComp->CompContext->CharacterActor->GetActorLocation();
 	this->LaunchApexDelegate.BindUFunction(this, "OnLaunchApex");
 	this->HitGroundDelegate.BindUFunction(this, "OnHitGround");
-	float DotProduct = FVector::DotProduct(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->StatesComp->CrossStateData.DamageInstigator->GetActorForwardVector());
+	this->HitWallDelegate.BindUFunction(this, "OnHitWall");
+	//sponge: wrong-ish launch direction
+	FVector DamageSourceLocation = this->StatesComp->CrossStateData.DamageInstigator ? this->StatesComp->CrossStateData.DamageInstigator->GetActorLocation() : this->StatesComp->CrossStateData.DamageInfo.DamageSourceOverride;
+	float DotProduct = FVector::DotProduct(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->StatesComp->CompContext->CharacterActor->GetActorLocation() - DamageSourceLocation);
 	TArray<FLaunchData> LaunchType;
+
 	//sponge: still needto facilitate launch up
 	if (DotProduct < 0) {
-		FRotator RotateToInstigator = FRotator(0, UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->StatesComp->CrossStateData.DamageInstigator->GetActorLocation()).Yaw, 0);
+		FRotator RotateToInstigator = FRotator(0, UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), DamageSourceLocation).Yaw, 0);
 		this->StatesComp->CompContext->CharacterActor->SetActorRotation(RotateToInstigator);
 		LaunchType = this->LaunchBack;
 	}
 	else {
-		FRotator RotateToInstigator = FRotator(0, UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->StatesComp->CrossStateData.DamageInstigator->GetActorLocation()).Yaw + 180 , 0);
+		FRotator RotateToInstigator = FRotator(0, UKismetMathLibrary::FindLookAtRotation(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), DamageSourceLocation).Yaw + 180, 0);
 		this->StatesComp->CompContext->CharacterActor->SetActorRotation(RotateToInstigator);
 		LaunchType = this->LaunchFront;
 		this->IsReverseCurve = true;
@@ -50,27 +54,31 @@ void UKnockLaunch::OnStateEnter_Implementation()
 	this->SelectedLaunch.LaunchCurve->GetTimeRange(StartTime, MaxTime);
 	this->PeakTime = this->FindPeakTime(StartTime / PEAKSTEPPER, MaxTime / PEAKSTEPPER);
 	this->LastCurveDirection = this->SelectedLaunch.LaunchCurve->GetVectorValue(MaxTime) - this->SelectedLaunch.LaunchCurve->GetVectorValue(MaxTime - PEAKSTEPPER);
-	GLog->Log("lastcrvdir");
-	GLog->Log(this->LastCurveDirection.ToString());
-	
+
 	//Play Montage
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->SelectedLaunch.LaunchMontage);
 	FOnMontageEnded EndAttackDelegate;
 	EndAttackDelegate.BindUObject(this, &UKnockLaunch::OnLaunchEnd);
 	this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->SelectedLaunch.LaunchMontage);
 	//this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->SelectedLaunch.LaunchMontage);
-	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
-		if (this->StatesComp->CrossStateData.DamageInstigator) {
-			auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->StatesComp->CrossStateData.DamageInstigator);
-			InstigatorCtx->EventBus->HitStopDelegate.Execute(this->StatesComp->CrossStateData.DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([] {}));
-		}
+	if (this->StatesComp->CrossStateData.DamageInfo.HitType != UNINSTIGATED) {
+		this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
+			if (this->StatesComp->CrossStateData.DamageInstigator && this->StatesComp->CrossStateData.DamageInstigator->Implements<UContextAvailable>()) {
+				auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->StatesComp->CrossStateData.DamageInstigator);
+				InstigatorCtx->EventBus->HitStopDelegate.Execute(this->StatesComp->CrossStateData.DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([] {}));
+			}
 
-		//freeze -> onFreezefinish
-		this->StatesComp->LockAnimation(this->StatesComp->CrossStateData.DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([&] {
-			this->PlayerRotToForward = UVectorMathLib::DegreesBetweenVectors(FVector::ForwardVector, this->StatesComp->CompContext->CharacterActor->GetActorForwardVector());
-			this->IsProcessLaunch = true;
-		}));
-	}), 0.005, false);
+			//freeze -> onFreezefinish
+			this->StatesComp->LockAnimation(this->StatesComp->CrossStateData.DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([&] {
+				this->PlayerRotToForward = UVectorMathLib::DegreesBetweenVectors(FVector::ForwardVector, this->StatesComp->CompContext->CharacterActor->GetActorForwardVector());
+				this->IsProcessLaunch = true;
+			}));
+		}), 0.005, false);
+	}
+	else {
+		this->PlayerRotToForward = UVectorMathLib::DegreesBetweenVectors(FVector::ForwardVector, this->StatesComp->CompContext->CharacterActor->GetActorForwardVector());
+		this->IsProcessLaunch = true;
+	}
 	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::OFF_ROTATION);
 }
 
@@ -101,7 +109,6 @@ void UKnockLaunch::Tick_Implementation(float DeltaTime)
 				}
 				this->LastCurveDirection.X *= 60;
 				this->LastCurveDirection.Y *= 60;
-				//this->LastCurveDirection.Z *= 50;
 				//sponge: launch multiplier should probably be dynamic based on the pitch of the direction 
 				Chr->LaunchCharacter(this->LastCurveDirection, false, false);
 			}
@@ -113,16 +120,31 @@ void UKnockLaunch::Tick_Implementation(float DeltaTime)
 	}
 
 	FVector PelvisLocation = this->StatesComp->CompContext->SkeletalMeshComp->GetSocketLocation("pelvis");
+	FVector HeadLocation = this->StatesComp->CompContext->SkeletalMeshComp->GetSocketLocation("head");
 	TArray<AActor*> IgnoreActors;
+	FHitResult HeadHitResult;
 	FHitResult PelvisHitResult;
 	//Sponge: still need to add a force break if no trace were hit
-	if (this->HitGroundDelegate.IsBound() && UKismetSystemLibrary::SphereTraceSingle(this->GetWorld(), PelvisLocation, PelvisLocation, 30.0f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, IgnoreActors, EDrawDebugTrace::ForOneFrame, PelvisHitResult, true)) {
-		this->HitGroundDelegate.Execute();
+	if (this->HitWallDelegate.IsBound() && this->HitGroundDelegate.IsBound()) {
+		bool IsPelvisHit = UKismetSystemLibrary::SphereTraceSingle(this->GetWorld(), PelvisLocation, PelvisLocation, 30.0f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, IgnoreActors, EDrawDebugTrace::None, PelvisHitResult, true);
+		bool IsHeadHit = UKismetSystemLibrary::SphereTraceSingle(this->GetWorld(), HeadLocation, HeadLocation, 30.0f, UEngineTypes::ConvertToTraceType(ECC_Visibility), false, IgnoreActors, EDrawDebugTrace::None, HeadHitResult, true);
+		if (!IsHeadHit && !IsPelvisHit) return;
+		FVector HitNormal = IsHeadHit ? HeadHitResult.Normal : PelvisHitResult.Normal;
+		FVector ImpactLoc = IsHeadHit ? HeadHitResult.ImpactPoint : PelvisHitResult.ImpactPoint;
+		if (FVector::DotProduct(HitNormal, FVector::UpVector) > 0.3) {
+			this->HitGroundDelegate.Execute();
+		}
+		else {
+			this->WallImpactLocation = ImpactLoc;
+			this->WallHitNormal = HitNormal;
+			this->HitWallDelegate.Execute();
+		}
 	}
 }
 
 void UKnockLaunch::OnStateExit_Implementation()
 {
+
 	UContextHelperLib::SetDamageCollider(this->StatesComp->CompContext, true);
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 	if (!this->StatesComp->CompContext->CharacterAnim) return;
@@ -134,6 +156,22 @@ void UKnockLaunch::OnStateExit_Implementation()
 	this->StatesComp->CompContext->CharacterAnim->Montage_Stop(0.25);
 	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::FULL_ROTATION);
 
+}
+
+void UKnockLaunch::OnHitWall()
+{
+	this->HitWallDelegate.Clear();
+	//sponge: probably shitty code
+	FDamageInfo Damage;
+	Damage.DamageDirection = FVector::ForwardVector;
+	Damage.HitType = UNINSTIGATED;
+	Damage.IsFixed = true;
+	Damage.ImpactType = DI_EXPLOSIVE;
+	Damage.DamageSourceOverride = this->WallImpactLocation;
+	this->StatesComp->CrossStateData.DamageInfo =  Damage;
+	this->StatesComp->CrossStateData.DamageInstigator = nullptr;
+	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Wall"), EActionList::ActionNone, IE_Pressed);
+	//this->StatesComp->CompContext->EventBus->HitDelegate.Broadcast(nullptr, Damage);
 }
 
 float UKnockLaunch::FindPeakTime(int MultiplierStart, int MultiplierEnd)
@@ -159,7 +197,6 @@ float UKnockLaunch::FindPeakTime(int MultiplierStart, int MultiplierEnd)
 
 void UKnockLaunch::OnLaunchApex()
 {
-	GLog->Log("apex");
 	this->LaunchApexDelegate.Clear();
 	this->StatesComp->CompContext->CharacterAnim->Montage_JumpToSection("ApexEnd", this->SelectedLaunch.LaunchMontage);
 }
@@ -174,8 +211,10 @@ void UKnockLaunch::OnHitGround()
 
 void UKnockLaunch::OnLaunchEnd(UAnimMontage* Montage, bool bInterrupted)
 {
-	this->StatesComp->CrossStateData.DamageInstigator = nullptr;
-	this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
-	this->StatesComp->CrossStateData.KnockDownMontage = this->SelectedLaunch.DownMontage;
-	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockedDown"), EActionList::ActionNone, IE_Pressed);
+	if (!bInterrupted) {
+		this->StatesComp->CrossStateData.DamageInstigator = nullptr;
+		this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
+		this->StatesComp->CrossStateData.KnockDownMontage = this->SelectedLaunch.DownMontage;
+		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockedDown"), EActionList::ActionNone, IE_Pressed);
+	}
 }

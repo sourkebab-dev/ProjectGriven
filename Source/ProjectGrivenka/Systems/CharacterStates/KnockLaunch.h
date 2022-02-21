@@ -34,6 +34,8 @@ class PROJECTGRIVENKA_API UKnockLaunch : public UBaseState
 	FTimerHandle HitPauseTimer;
 	FVector LaunchStartLocation;
 	FVector LastCurveDirection;
+	FVector WallImpactLocation;
+	FVector WallHitNormal;
 	float PooledLaunchTime = 0.0f;
 	float PlayerRotToForward = 0.0f;
 	float PeakTime;
@@ -41,6 +43,7 @@ class PROJECTGRIVENKA_API UKnockLaunch : public UBaseState
 	bool IsReverseCurve = false;
 	FSimpleDynamicDelegate LaunchApexDelegate;
 	FSimpleDynamicDelegate HitGroundDelegate;
+	FSimpleDynamicDelegate HitWallDelegate;
 	int TempIteration = 0;
 
 public:
@@ -60,6 +63,8 @@ public:
 	void OnLaunchApex();
 	UFUNCTION()
 	void OnHitGround();
+	UFUNCTION()
+	void OnHitWall();
 	float FindPeakTime(int MultiplierStart, int MultiplierEnd);
 	virtual void Tick_Implementation(float DeltaTime);
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;

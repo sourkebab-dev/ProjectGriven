@@ -59,6 +59,7 @@ enum EDamageHitType {
     DEFAULT      UMETA(DisplayName = "Default"),
     PUSH       UMETA(DisplayName = "Push"),
     PARRY       UMETA(DisplayName = "Parry"),
+    UNINSTIGATED       UMETA(DisplayName = "Uninstigated"),
 };
 
 
@@ -138,11 +139,15 @@ struct FDamageInfo
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TEnumAsByte<EDamageHitType> HitType = EDamageHitType::DEFAULT;
 
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TEnumAsByte<EDamageElementType> ElementType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector DamageDirection; // 0.0.0 for radial
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector DamageSourceOverride = FVector::ZeroVector; // Used for damages that are instigated by empty actors (wall damage & so on)
 };
 
 USTRUCT(BlueprintType)

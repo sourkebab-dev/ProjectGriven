@@ -21,7 +21,6 @@ void UWeaponDamage::OnExecuteEffect() {
 
 	//Health Damage Calculation
 	UCharacterSystem* ReceiverComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectReceiver);
-	UCharacterSystem* InstigatorComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectInstigator);
 
 	float ReceiverDefense = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Defense);
 	float ReceiverHealth = ReceiverComp->GetAttributeCurrentValue(EAttributeCode::ATT_Health);
@@ -62,6 +61,7 @@ void UWeaponDamage::OnExecuteEffect() {
 	GLog->Log(FString::SanitizeFloat(RawDamage));
 
 	if (!this->DamageInfo.IsFixed) {
+		UCharacterSystem* InstigatorComp = ICharacterSystemAvailable::Execute_GetCharacterSystemComp(this->EffectInstigator);
 		float InstigatorCritPower = InstigatorComp->GetAttributeCurrentValue(EAttributeCode::ATT_CriticalPower);
 		float InstigatorCritChance = InstigatorComp->GetAttributeCurrentValue(EAttributeCode::ATT_CriticalChance);
 		float MovingValues = this->DamageInfo.MovingValues;
