@@ -38,8 +38,6 @@ void UStaggeredState::AxisHandler_Implementation(EActionList Action, float AxisV
 
 void UStaggeredState::OnStateExit_Implementation()
 {
-	this->StatesComp->CrossStateData.DamageInstigator = nullptr;
-	this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitStopTimer);
 
 	if (!this->StatesComp->CompContext->CharacterAnim) return;
@@ -55,6 +53,8 @@ void UStaggeredState::OnStateExit_Implementation()
 void UStaggeredState::OnStaggerEnd(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (!bInterrupted) {
+		this->StatesComp->CrossStateData.DamageInstigator = nullptr;
+		this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, EInputEvent::IE_Released);
 	}
 }

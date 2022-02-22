@@ -38,9 +38,8 @@ struct FCrossStateData
 	UPROPERTY(BlueprintReadWrite)
 	FDamageInfo DamageInfo;
 
-	//Sponge: needs to be a weak pointer
 	UPROPERTY(BlueprintReadWrite)
-	AActor* DamageInstigator;
+	AActor* DamageInstigator = nullptr;
 
 	UPROPERTY(BlueprintReadWrite)
 	UAnimMontage* KnockDownMontage = nullptr;
