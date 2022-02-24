@@ -101,6 +101,9 @@ public:
 	void RemoveEffectByTag(FGameplayTag EffectTag);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void RemoveEffectById(FName EffectId);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	float GetAttributeCurrentValue(EAttributeCode InAttributeCode);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

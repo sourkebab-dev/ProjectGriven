@@ -23,6 +23,7 @@ void APlayerSpawnPoint::BeginPlay()
 
 AActor* APlayerSpawnPoint::SpawnPlayer_Implementation(FPersistedCharacterData CharacterData)
 {
+
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	AActor* PlayerCharacter = this->GetWorld()->SpawnActor<AActor>(CharacterData.Appearance.CharClass, this->GetActorLocation(), this->GetActorRotation(), SpawnInfo);

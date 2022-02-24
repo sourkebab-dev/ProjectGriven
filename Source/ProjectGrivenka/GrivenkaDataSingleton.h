@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Engine/DataTable.h"
+#include "ProjectGrivenka/Systems/TraitSystem/TraitListPrefab.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/EffectPrefabList.h"
 #include "ProjectGrivenka/Equipments/WeaponPrefabList.h"
 #include "ProjectGrivenka/Equipments/EquipmentDefinitions.h"
@@ -29,6 +30,8 @@ public:
 	UDataTable* MaterialData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SingletonData")
 	UCurveFloat* CommonDodgeCurveFloat;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
+	UTraitListPrefab* TraitPrefab;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")
 	UWeaponPrefabList* WeaponPrefabs;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PrefabData")

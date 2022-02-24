@@ -85,6 +85,10 @@ public:
 	void Init_Implementation() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	UFUNCTION(BlueprintCallable)
+	virtual void GrantAction(TSubclassOf<class UBaseState> InGrantedAction);
+	UFUNCTION(BlueprintCallable)
+	void RemoveAction(TSubclassOf<class UBaseState> InGrantedAction);
+	UFUNCTION(BlueprintCallable)
 	virtual void AnimEventsHandler(enum EAnimEvt InAnimEvent);
 	UFUNCTION(BlueprintCallable)
 	virtual void CurrentActionHandler(EActionList Action, EInputEvent InputEvent);

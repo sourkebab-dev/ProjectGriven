@@ -23,6 +23,16 @@ void UCharacterStatesSystem::Init_Implementation()
 	this->CompContext->EventBus->HitStopDelegate.BindUObject(this, &UCharacterStatesSystem::LockAnimation);
 }
 
+void UCharacterStatesSystem::GrantAction(TSubclassOf<class UBaseState> InGrantedAction)
+{
+	this->GrantedActions.Add(InGrantedAction);
+}
+
+void UCharacterStatesSystem::RemoveAction(TSubclassOf<class UBaseState> InGrantedAction)
+{
+	this->GrantedActions.Remove(InGrantedAction);
+}
+
 
 void UCharacterStatesSystem::AnimEventsHandler(EAnimEvt InAnimEvent)
 {

@@ -3,6 +3,7 @@
 
 #include "CharacterPersistanceSystem.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/Systems/TraitSystem/TraitSystemAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 #include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
@@ -19,6 +20,10 @@ void UCharacterPersistanceSystem::LoadData(FPersistedCharacterData InCharacterDa
 	if (this->CompContext->CharacterActor->Implements<UCharacterInventoryAvailable>()) {
 		ICharacterInventoryAvailable::Execute_LoadInventory(this->CompContext->CharacterActor, InCharacterData.Inventory);
 	}
+	if (this->CompContext->CharacterActor->Implements<UTraitSystemAvailable>()) {
+		ITraitSystemAvailable::Execute_LoadTraits(this->CompContext->CharacterActor, InCharacterData.Traits);
+	}
+
 	this->CompContext->InfoModule.InstanceGuid = InCharacterData.Info.CharacterId;
 	this->CompContext->InfoModule.InstanceName = InCharacterData.Info.CharacterName;
 

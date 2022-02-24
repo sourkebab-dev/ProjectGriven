@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ProjectGrivenka/Systems/TraitSystem/TraitSystemAvailable.h"
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 #include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
@@ -65,7 +66,7 @@ struct FPersistedCharacterData
 	FPersistedCharacterAppearance Appearance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FPersistedCharacterBehavior Behavior;
+	FPersistedTraitData Traits;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FPersistedAttributes Attributes;
