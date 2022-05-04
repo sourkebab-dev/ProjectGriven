@@ -4,25 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "BaseState.h"
-#include "BlockPushState.generated.h"
+#include "JumpAttackState.generated.h"
 
 /**
  * 
  */
 UCLASS(Blueprintable)
-class PROJECTGRIVENKA_API UBlockPushState : public UBaseState
+class PROJECTGRIVENKA_API UJumpAttackState : public UBaseState
 {
 	GENERATED_BODY()
 	
 public:
-	UFUNCTION()
-	void OnPushEnd(UAnimMontage* Montage, bool bInterrupted);
+	UPROPERTY(BlueprintReadOnly)
+	class UCharacterMovementComponent* CharMove;
 
+
+public:
 	virtual bool StateValidation_Implementation() override;
 	virtual void OnStateEnter_Implementation() override;
 	virtual void OnStateExit_Implementation() override;
-	
 	UFUNCTION()
-	void OnBlockPushTriggered(enum EAnimEvt EventType);
-
+	void OnAttackEnd(UAnimMontage* Montage, bool bInterrupted);
 };

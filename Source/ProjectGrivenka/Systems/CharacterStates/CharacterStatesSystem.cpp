@@ -3,6 +3,8 @@
 
 #include "CharacterStatesSystem.h"
 #include "BaseState.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
@@ -21,6 +23,7 @@ void UCharacterStatesSystem::Init_Implementation()
 	this->CompContext->EventBus->AnimDelegate.AddDynamic(this, &UCharacterStatesSystem::AnimEventsHandler);
 	this->CompContext->EventBus->HitDelegate.AddDynamic(this, &UCharacterStatesSystem::OnHit);
 	this->CompContext->EventBus->HitStopDelegate.BindUObject(this, &UCharacterStatesSystem::LockAnimation);
+	Cast<ACharacter>(this->CompContext->CharacterActor)->MovementModeChangedDelegate.AddDynamic(this, &UCharacterStatesSystem::OnMovementModeChanged);
 }
 
 void UCharacterStatesSystem::GrantAction(TSubclassOf<class UBaseState> InGrantedAction)
@@ -165,6 +168,17 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 		this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked"), EActionList::ActionNone, EInputEvent::IE_Released);
 	}
 
+}
+
+void UCharacterStatesSystem::OnMovementModeChanged(ACharacter* InCharacter, EMovementMode PrevMovementMode, uint8 PrevCustomMode)
+{
+	auto CharMove = Cast<UCharacterMovementComponent>(this->CompContext->MovementComp);
+	if (CharMove->MovementMode == EMovementMode::MOVE_Walking || CharMove->MovementMode == EMovementMode::MOVE_NavWalking) {
+		this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
+	}
+	else if (CharMove->MovementMode == EMovementMode::MOVE_Falling) {
+		this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.InAir"), EActionList::ActionNone, IE_Released);
+	}
 }
 
 //sponge: dunno if it's a good way to put it here, also might need to clear delegate

@@ -41,6 +41,10 @@ void UBlockState::ActionHandler_Implementation(EActionList Action, EInputEvent E
 	if (Action == EActionList::ActionBlock && EventType == IE_Released) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), Action, EventType);
 	}
+
+	if (Action == EActionList::ActionAttack && EventType == IE_Pressed) {
+		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.BlockPush"), Action, EventType);
+	}
 }
 
 void UBlockState::AxisHandler_Implementation(EActionList Action, float AxisValue)

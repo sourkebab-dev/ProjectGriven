@@ -62,6 +62,8 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 	InputComp->BindAction("Command3", IE_Pressed, this, &UControlSystem::ControlCommand3);
 	InputComp->BindAction("CommandCancel", IE_Pressed, this, &UControlSystem::ControlCommandCancel);
 	InputComp->BindAction("LockOn", IE_Pressed, this, &UControlSystem::ControlLockOn);
+	InputComp->BindAction("Crouch", IE_Pressed, this, &UControlSystem::ControlCrouch);
+	InputComp->BindAction("Jump", IE_Pressed, this, &UControlSystem::ControlJump);
 	InputComp->BindAxis("MoveForward", this, &UControlSystem::ControlMoveForward);
 	InputComp->BindAxis("MoveRight", this, &UControlSystem::ControlMoveRight);
 	InputComp->BindAxis("CycleItem", this, &UControlSystem::ControlCycleItem);
@@ -256,6 +258,17 @@ void UControlSystem::ControlInventory()
 	}
 }
 
+void UControlSystem::ControlCrouch()
+{
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionCrouch, IE_Pressed);
+}
+
+void UControlSystem::ControlJump()
+{
+	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionJump, IE_Pressed);
+}
+
+
 void UControlSystem::ControlLockOn()
 {
 
@@ -373,3 +386,4 @@ void UControlSystem::ControlCommandCancel()
 {
 	this->CommandedActor = nullptr;
 }
+

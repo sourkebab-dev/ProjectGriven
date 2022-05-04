@@ -54,6 +54,8 @@ protected:
 	void ControlCommand2();
 	void ControlCommand3();
 	void ControlCommandCancel();
+	void ControlCrouch();
+	void ControlJump();
 	void UpdateWorldSpaceVectors();
 
 

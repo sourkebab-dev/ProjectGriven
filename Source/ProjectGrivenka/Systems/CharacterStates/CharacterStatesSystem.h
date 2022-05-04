@@ -9,12 +9,13 @@
 #include "ProjectGrivenka/ContextUtilities/EventBus.h"
 #include "CharacterStatesSystem.generated.h"
 
+
 USTRUCT(BlueprintType)
 struct FCrossStateData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite)
+		UPROPERTY(BlueprintReadWrite)
 		bool IsComboActive = true;
 
 	UPROPERTY(BlueprintReadWrite)
@@ -34,17 +35,16 @@ struct FCrossStateData
 
 	UPROPERTY(BlueprintReadWrite)
 		bool IsParry = false;
-	
-	UPROPERTY(BlueprintReadWrite)
-	FDamageInfo DamageInfo;
 
 	UPROPERTY(BlueprintReadWrite)
-	AActor* DamageInstigator = nullptr;
+		FDamageInfo DamageInfo;
 
 	UPROPERTY(BlueprintReadWrite)
-	UAnimMontage* KnockDownMontage = nullptr;
+		AActor* DamageInstigator = nullptr;
+
+	UPROPERTY(BlueprintReadWrite)
+		UAnimMontage* KnockDownMontage = nullptr;
 };
-
 
 
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -100,5 +100,8 @@ public:
 	virtual class UBaseState* GetCurrentState() { return CurrentState;  };
 	UFUNCTION()
 	void OnHit(AActor* HitInstigator, FDamageInfo InDamageInfo);
+	UFUNCTION()
+	void OnMovementModeChanged(class ACharacter* InCharacter, EMovementMode PrevMovementMode, uint8 PrevCustomMode);
+
 	void LockAnimation(EDamageImpactType InDamageImpactTime, FHitStopFinishDelegate OnHitFinish);
 };

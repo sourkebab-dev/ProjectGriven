@@ -21,6 +21,8 @@ enum EAnimEvt {
 	START_DODGE,
 	END_DODGE,
 	DEATH,
+	BLOCK_PUSH,
+	LAUNCH_JUMP,
 };
 
 DECLARE_DELEGATE(FHitStopFinishDelegate);

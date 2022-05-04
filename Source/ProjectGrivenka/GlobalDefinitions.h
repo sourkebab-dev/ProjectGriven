@@ -44,6 +44,9 @@ enum EAttackMovementType {
     AM_HEAVY       UMETA(DisplayName = "Heavy Attack Movement"),
     AM_CHARGED       UMETA(DisplayName = "Charged Attack Movement"),
     AM_LUNGE       UMETA(DisplayName = "Lunge Attack Movement"),
+    AM_AIR UMETA(DisplayName = "Air Attack Movement"),
+    AM_SLAM UMETA(DisplayName = "Air Slam Movement"),
+    AM_SLIDEATTACK UMETA(DisplayName = "Slide Attack Movement"),
 };
 
 UENUM(BlueprintType)
@@ -182,6 +185,8 @@ enum EActionList {
     ActionBlock     UMETA(DisplayName = "Block"),
     ActionCommand  UMETA(DisplayName = "Command"),
     ActionCommandCancel UMETA(DisplayName = "Command Cancel"),
+    ActionJump UMETA(DisplayName = "Jump"),
+    ActionCrouch UMETA(DisplayName = "Crouch"),
 };
 
 UENUM(BlueprintType)
