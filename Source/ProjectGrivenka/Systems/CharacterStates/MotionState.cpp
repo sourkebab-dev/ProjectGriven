@@ -42,6 +42,11 @@ void UMotionState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 	if (Action == EActionList::ActionBlock && EventType == IE_Pressed) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Block"), EActionList::ActionBlock, IE_Pressed);
 	}
+
+
+	if (Action == EActionList::ActionJump && EventType == IE_Pressed) {
+		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Jump"), EActionList::ActionJump, IE_Pressed);
+	}
 }
 
 void UMotionState::AxisHandler_Implementation(EActionList Action, float AxisValue)

@@ -94,6 +94,8 @@ void UControlSystem::ControlSystemDisable(AController* OldController)
 	InputComp->RemoveActionBinding("CommandCancel", IE_Pressed);
 	InputComp->RemoveActionBinding("LockOn", IE_Pressed);
 	InputComp->RemoveActionBinding("Inventory", IE_Pressed);
+	InputComp->RemoveActionBinding("Crouch", IE_Pressed);
+	InputComp->RemoveActionBinding("Jump", IE_Pressed);
 	InputComp->AxisBindings.Empty();
 	this->SetComponentTickEnabled(false);
 

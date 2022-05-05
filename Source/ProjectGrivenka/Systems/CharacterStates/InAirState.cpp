@@ -14,6 +14,16 @@ void UInAirState::ActionHandler_Implementation(EActionList Action, EInputEvent E
 	}
 }
 
+
+void UInAirState::AxisHandler_Implementation(EActionList Action, float AxisValue)
+{
+
+	if (Action == EActionList::ActionMoveForward || Action == EActionList::ActionMoveRight)
+	{
+		this->StatesComp->CompContext->MovementComp->AddInputVector(this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir);
+	}
+}
+
 void UInAirState::OnStateEnter_Implementation()
 {
 }

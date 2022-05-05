@@ -18,6 +18,9 @@ class PROJECTGRIVENKA_API UJumpState : public UBaseState
 
 public:
 	UPROPERTY(BlueprintReadOnly)
+	class ACharacter* CharAct;
+
+	UPROPERTY(BlueprintReadOnly)
 	class UCharacterMovementComponent* CharMove;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -26,14 +29,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float JumpZVelocity = 1500.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float GravityScaleModifier = 2.0f;
+
 public:
 	virtual bool StateValidation_Implementation() override;
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
-	virtual void Tick_Implementation(float DeltaTime);
+	virtual void AxisHandler_Implementation(EActionList Action, float AxisValue) override;
 	virtual void OnStateEnter_Implementation() override;
 	virtual void OnStateExit_Implementation() override;
 
 	UFUNCTION()
 	void OnJumpLaunchedTriggered(enum EAnimEvt EventType);
 
+	UFUNCTION()
+	void OnJumpApexReached();
 };

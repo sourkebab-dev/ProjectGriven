@@ -16,6 +16,7 @@ class PROJECTGRIVENKA_API UInAirState : public UBaseState
 	
 public:
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
+	virtual void AxisHandler_Implementation(EActionList Action, float AxisValue) override;
 	virtual void OnStateEnter_Implementation() override;
 	virtual void OnStateExit_Implementation() override;
 };
