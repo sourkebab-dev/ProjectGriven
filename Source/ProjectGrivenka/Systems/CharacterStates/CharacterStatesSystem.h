@@ -37,6 +37,9 @@ struct FCrossStateData
 		bool IsParry = false;
 
 	UPROPERTY(BlueprintReadWrite)
+		bool IsInHyperArmor = false;
+
+	UPROPERTY(BlueprintReadWrite)
 		FDamageInfo DamageInfo;
 
 	UPROPERTY(BlueprintReadWrite)
@@ -71,10 +74,7 @@ public:
 	bool IsStaggeredOnEmptyFortitude = true; // Note: only affects when hit by an attack
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Knock  & Stagger")
-	TEnumAsByte<EDamageImpactType> HeavyKnockedByWhichImpact = DI_HIGH;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Knock  & Stagger")
-	TEnumAsByte<EDamageImpactType> LaunchByWhichImpact = DI_EXPLOSIVE;
+	TEnumAsByte<EDamageImpactType> MinimumImpactForKnockback = DI_MEDIUM;
 
 	FDamagedDelegate BlockHitDelegate;
 

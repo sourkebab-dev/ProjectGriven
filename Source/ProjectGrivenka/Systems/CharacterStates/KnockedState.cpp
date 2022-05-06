@@ -9,6 +9,7 @@
 #include "ProjectGrivenka/Systems/ContextSystem.h"
 #include "ProjectGrivenka/Interfaces/ContextAvailable.h"
 #include "ProjectGrivenka/VectorMathLib.h"
+#include "Curves/CurveVector.h"
 
 void UKnockedState::ActionHandler_Implementation(EActionList Action, EInputEvent EventType)
 {
@@ -21,9 +22,6 @@ void UKnockedState::ActionHandler_Implementation(EActionList Action, EInputEvent
 void UKnockedState::OnStateEnter_Implementation()
 {
 	Super::OnStateEnter_Implementation();
-	this->PooledTime = 0.0;
-	this->PushTargetLocation = FVector::ZeroVector;
-	this->PushStartLocation = FVector::ZeroVector;
 	this->StatesComp->CrossStateData.IsInterruptable = false;
 	if (!this->StatesComp->CompContext->CharacterAnim) { this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Pressed); return; }
 	this->StartHitReact();
@@ -31,40 +29,29 @@ void UKnockedState::OnStateEnter_Implementation()
 
 void UKnockedState::StartHitReact()
 {
-	float Degrees = UVectorMathLib::DegreesBetweenVectors(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->StatesComp->CrossStateData.DamageInstigator->GetActorForwardVector());
-	FVector StunDirection = this->StatesComp->CrossStateData.DamageInfo.DamageDirection.RotateAngleAxis(Degrees, FVector::UpVector);
-	StunDirection.Z *= -1;
+	this->CharMove = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
+	float DotValue = FVector::DotProduct(this->StatesComp->CompContext->CharacterActor->GetActorForwardVector(), this->StatesComp->CrossStateData.DamageInstigator->GetActorForwardVector());
+	EHitDirectionType KnockbackDirection = DotValue < 0.3 && this->InversionMap.FindRef(this->StatesComp->CrossStateData.DamageInfo.DamageDirection)
+		? this->InversionMap.FindRef(this->StatesComp->CrossStateData.DamageInfo.DamageDirection)
+		: this->StatesComp->CrossStateData.DamageInfo.DamageDirection;
 
-	if (FVector::DotProduct(StunDirection, FVector::LeftVector) >= DOTDIRECTIONTRESHOLD) {
-		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Left");
-		this->CurrentStunMontage = this->StatesComp->CrossStateData.DamageInfo.ImpactType >= this->StatesComp->HeavyKnockedByWhichImpact ? this->StunLeftMontage.HeavyMontage : this->StunLeftMontage.DefaultMontage;
-	}
-	else if (FVector::DotProduct(StunDirection, FVector::RightVector) >= DOTDIRECTIONTRESHOLD) {
-		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Right");
-		this->CurrentStunMontage = this->StatesComp->CrossStateData.DamageInfo.ImpactType >= this->StatesComp->HeavyKnockedByWhichImpact ? this->StunRightMontage.HeavyMontage : this->StunRightMontage.DefaultMontage;
-	}
-	else if (FVector::DotProduct(StunDirection, FVector::UpVector) >= DOTDIRECTIONTRESHOLD) {
-		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Up");
-		this->CurrentStunMontage = this->StatesComp->CrossStateData.DamageInfo.ImpactType >= this->StatesComp->HeavyKnockedByWhichImpact ? this->StunUpMontage.HeavyMontage : this->StunUpMontage.DefaultMontage;
-	}
-	else if (FVector::DotProduct(StunDirection, FVector::DownVector) >= DOTDIRECTIONTRESHOLD) {
-		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Down");
-		this->CurrentStunMontage = this->StatesComp->CrossStateData.DamageInfo.ImpactType >= this->StatesComp->HeavyKnockedByWhichImpact ? this->StunDownMontage.HeavyMontage : this->StunDownMontage.DefaultMontage;
-	}
-	else if (FVector::DotProduct(StunDirection, FVector::ForwardVector) >= DOTDIRECTIONTRESHOLD) {
-		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Front");
-		this->CurrentStunMontage = this->StatesComp->CrossStateData.DamageInfo.ImpactType >= this->StatesComp->HeavyKnockedByWhichImpact ? this->StunFrontMontage.HeavyMontage : this->StunFrontMontage.DefaultMontage;
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(41, 2, FColor::Yellow, "Back");
-		this->CurrentStunMontage = this->StatesComp->CrossStateData.DamageInfo.ImpactType >= this->StatesComp->HeavyKnockedByWhichImpact ? this->StunBackMontage.HeavyMontage : this->StunBackMontage.DefaultMontage;
-	}
-	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->CurrentStunMontage);
+	FKnockBackDataContainer KnockbackSets = this->KnockbackData.FindRef(KnockbackDirection);
+	int ImpactValue = this->ImpactModifier.FindRef(this->StatesComp->MinimumImpactForKnockback);
+	int ModifiedValue = this->StatesComp->CrossStateData.DamageInfo.ImpactType + ImpactValue;
+	EDamageImpactType ModifiedImpact = ModifiedValue > EDamageImpactType::DI_EXPLOSIVE ? EDamageImpactType::DI_EXPLOSIVE : static_cast<EDamageImpactType>(ModifiedValue);
+
+	TArray<FKnockBackData> ChosenKnockBackSet;
+	if (ModifiedImpact == EDamageImpactType::DI_MEDIUM) ChosenKnockBackSet = KnockbackSets.Standing;
+	else if (ModifiedImpact == EDamageImpactType::DI_HIGH) ChosenKnockBackSet = KnockbackSets.FarPush;
+	else  ChosenKnockBackSet = KnockbackSets.Launch;
+
+	this->CurrentKnockbackData = ChosenKnockBackSet[FMath::RandRange(0, ChosenKnockBackSet.Num() - 1)];
+	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->CurrentKnockbackData.KnockBackMontage);
 
 	FOnMontageEnded EndAttackDelegate;
 	EndAttackDelegate.BindUObject(this, &UKnockedState::OnHitReactEnd);
-	this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->CurrentStunMontage);
-	//this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentStunMontage);
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, this->CurrentKnockbackData.KnockBackMontage);
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetBlendingOutDelegate(EndAttackDelegate, this->CurrentKnockbackData.KnockBackMontage);
 
 
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->HitPauseTimer, FTimerDelegate::CreateLambda([&] {
@@ -77,24 +64,95 @@ void UKnockedState::StartHitReact()
 		this->StatesComp->LockAnimation(this->StatesComp->CrossStateData.DamageInfo.ImpactType, FHitStopFinishDelegate::CreateLambda([&] {
 			UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
 			if (!MovementComp) return;
-			FVector KnockBackDir = this->StatesComp->CrossStateData.DamageInstigator->GetActorForwardVector();
-			KnockBackDir.Normalize();
-			KnockBackDir.Z = 0;
-			this->PushStartLocation = this->StatesComp->CompContext->CharacterActor->GetActorLocation();
-			this->PushTargetLocation = this->StatesComp->CompContext->CharacterActor->GetActorLocation() + (KnockBackDir * this->PushDistanceMultiplier);
+			if (this->CurrentKnockbackData.ApexType == EDirectionType::VERTICAL) {
+				this->CharMove->SetMovementMode(EMovementMode::MOVE_Flying);
+			}
+			else if (this->CurrentKnockbackData.ApexType == EDirectionType::HORIZONTAL) {
+				this->CharMove->BrakingDecelerationWalking = this->CurrentKnockbackData.NewBrakingDeceleration;
+				this->CharMove->BrakingFrictionFactor = this->CurrentKnockbackData.NewFrictionFactor;
+			}
+			float min;
+			this->CurrentKnockbackData.ForceCurve->GetTimeRange(min, this->ApexTime);
+			if (this->CurrentKnockbackData.KnockBackMontage->GetSectionIndex("Launch") != INDEX_NONE) {
+				float LaunchAnimDuration = this->CurrentKnockbackData.KnockBackMontage->GetSectionLength(this->CurrentKnockbackData.KnockBackMontage->GetSectionIndex("Launch"));
+				float NewPlayRate = LaunchAnimDuration / this->ApexTime;
+				this->StatesComp->CompContext->CharacterAnim->Montage_SetPlayRate(this->CurrentKnockbackData.KnockBackMontage, NewPlayRate);
+			}
+
+			if (this->StatesComp->CrossStateData.DamageInstigator) this->ForceDirection = this->StatesComp->CompContext->CharacterActor->GetActorLocation() - this->StatesComp->CrossStateData.DamageInstigator->GetActorLocation();
+			else this->ForceDirection = this->StatesComp->CompContext->CharacterActor->GetActorForwardVector() * -1;
+			this->ForceDirection.Normalize();
+
+
+			this->IsLandingPartitioned = this->CurrentKnockbackData.KnockBackMontage->GetSectionIndex("Landing") != INDEX_NONE;
+			this->IsFallingPartitioned = this->CurrentKnockbackData.KnockBackMontage->GetSectionIndex("Falling") != INDEX_NONE;
+			this->IsProcessKnockback = true;
 		}));
 
 	}), 0.005, false);
 }
 
+
+void UKnockedState::Tick_Implementation(float DeltaTime)
+{
+	Super::Tick_Implementation(DeltaTime);
+	if (this->IsProcessKnockback) {
+		this->PooledTime += DeltaTime;
+		if (this->PooledTime <= this->ApexTime) {
+			FVector ForceValue = this->CurrentKnockbackData.ForceCurve->GetVectorValue(this->PooledTime);
+			FVector FinalVelocity = FVector(1, 1, 1);
+			FinalVelocity = this->ForceDirection * ForceValue.X;
+			FinalVelocity.Z = ForceValue.Z;
+			this->CharMove->Velocity = FinalVelocity;
+		}
+		else {
+			this->CharMove->SetMovementMode(EMovementMode::MOVE_Falling);
+			this->IsProcessKnockback = false;
+			this->IsCurveEnd = true;
+
+
+			if (this->IsFallingPartitioned) {
+				//Note: Calculate playrate on falling
+				FFindFloorResult Floor;
+				this->CharMove->ComputeFloorDist(this->StatesComp->CompContext->CharacterActor->GetActorLocation(), 10000, 10000, Floor, 10.0f);
+				float ToFloorHeight = Floor.GetDistanceToFloor();
+				float GravityZ = FMath::Abs(this->CharMove->GetGravityZ());
+				float TimeToGround = (-this->CharMove->Velocity.Z + FMath::Sqrt(this->CharMove->Velocity.Z + 2 * ToFloorHeight * GravityZ)) / GravityZ;
+				float LaunchAnimDuration = this->CurrentKnockbackData.KnockBackMontage->GetSectionLength(this->CurrentKnockbackData.KnockBackMontage->GetSectionIndex("Falling"));
+				float NewPlayRate = LaunchAnimDuration / TimeToGround;
+				this->StatesComp->CompContext->CharacterAnim->Montage_SetPlayRate(this->CurrentKnockbackData.KnockBackMontage, NewPlayRate);
+			}
+		}
+	}
+
+	if (this->IsCurveEnd && this->CharMove->MovementMode == EMovementMode::MOVE_Walking) {
+		this->StatesComp->CompContext->CharacterAnim->Montage_SetPlayRate(this->CurrentKnockbackData.KnockBackMontage, 1.0f);
+		if (this->IsLandingPartitioned) {
+			this->StatesComp->CompContext->CharacterAnim->Montage_JumpToSection("Landing", this->CurrentKnockbackData.KnockBackMontage);
+		}
+		this->IsCurveEnd = false;
+	}
+}
+
+
 void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
 {
+	if (this->IsInvalidated) return;
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 
 	if (!bInterrupted) {
+
+		this->IsInvalidated = true;
 		this->StatesComp->CrossStateData.DamageInstigator = nullptr;
 		this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
-		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, EInputEvent::IE_Released);
+
+		if (this->CurrentKnockbackData.KnockDownMontage) {
+			this->StatesComp->CrossStateData.KnockDownMontage = this->CurrentKnockbackData.KnockDownMontage;
+			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockedDown"), EActionList::ActionNone, IE_Pressed);
+		}
+		else {
+			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, EInputEvent::IE_Released);
+		}
 	}
 }
 
@@ -102,22 +160,8 @@ void UKnockedState::OnStateExit_Implementation()
 {
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 	this->StatesComp->CrossStateData.IsInterruptable = true;
-	if (!this->StatesComp->CompContext->CharacterAnim) return;
-	FAnimMontageInstance* AnimMontageInstance = this->StatesComp->CompContext->CharacterAnim->GetActiveInstanceForMontage(this->CurrentStunMontage);
-	if (AnimMontageInstance) {
-		AnimMontageInstance->OnMontageEnded.Unbind();
-		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
-	}
 	this->StatesComp->CompContext->CharacterAnim->Montage_Stop(0.25);
+	this->CharMove->BrakingDecelerationWalking = DEFAULTGROUNDFRICTION;
+	this->CharMove->BrakingFrictionFactor = DEFAULTBRAKINGDECELERATION;
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetPlayRate(this->CurrentKnockbackData.KnockBackMontage, 1.0f);
 }
-
-void UKnockedState::Tick_Implementation(float DeltaTime)
-{
-	Super::Tick_Implementation(DeltaTime);
-	if (this->PushTargetLocation.IsZero() || this->PooledTime >= this->TotalPushTime) return;
-	this->PooledTime += DeltaTime;
-	FVector InterpVector = FMath::Lerp(this->PushStartLocation, this->PushTargetLocation, this->PooledTime / this->TotalPushTime);
-	this->StatesComp->CompContext->CharacterActor->SetActorLocation(InterpVector, true);
-}
-
-

@@ -163,7 +163,7 @@ void UKnockLaunch::OnHitWall()
 	this->HitWallDelegate.Clear();
 	//sponge: probably shitty code
 	FDamageInfo Damage;
-	Damage.DamageDirection = FVector::ForwardVector;
+	Damage.DamageDirection = EHitDirectionType::FRONT;
 	Damage.HitType = UNINSTIGATED;
 	Damage.IsFixed = true;
 	Damage.ImpactType = DI_EXPLOSIVE;

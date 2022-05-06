@@ -129,9 +129,10 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 		this->BlockHitDelegate.Broadcast(HitInstigator, InDamageInfo);
 	}
 
+	if (InDamageInfo.IsAbsorbed && this->CrossStateData.IsParry == true) return;
+
 	if (this->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>()) {
 		ICharacterSystemAvailable::Execute_InitEffectReceiveHit(this->CompContext->CharacterActor, HitInstigator, InDamageInfo);
-
 		if (ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Health) <= 0) {
 			if (this->CompContext->Controller) {
 				this->CompContext->Controller->UnPossess();
@@ -139,30 +140,23 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 			this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Death"), EActionList::ActionNone, EInputEvent::IE_Released);
 			return;
 		}
-
-		if (!this->CrossStateData.IsParry) {
-			ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->CompContext->CharacterActor, HitInstigator, InDamageInfo);
-			float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
-			float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
+		
+		ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->CompContext->CharacterActor, HitInstigator, InDamageInfo);
+		float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
+		float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
 			
-			GLog->Log("Here?");
-			//Note: if actor is launched && launchavailable -> skip stagger & knock
-			if (InDamageInfo.ImpactType >= this->LaunchByWhichImpact 
-				&& this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockedLaunch"), EActionList::ActionNone, EInputEvent::IE_Released)) {
-				return;
-			}
-
-
-			if (CurrentFortitude <= 0 && ( this->IsStaggeredOnEmptyFortitude || InDamageInfo.HitType != EDamageHitType::DEFAULT)) {
-				this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Staggered"), EActionList::ActionNone, EInputEvent::IE_Released);
-			}
-			else if (CurrentFortitude / MaxFortitude < 0.6 && InDamageInfo.HitType != EDamageHitType::PARRY) {
+		if (CurrentFortitude > 0 && !InDamageInfo.IsAbsorbed && InDamageInfo.HitType != EDamageHitType::PARRY) {
+			if (InDamageInfo.ImpactType >= this->MinimumImpactForKnockback && (!this->CrossStateData.IsInHyperArmor || (this->CrossStateData.IsInHyperArmor && CurrentFortitude < MaxFortitude / 2))) {
 				this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked"), EActionList::ActionNone, EInputEvent::IE_Released);
 			}
 			else {
-				//Sponge: need to add jitter effect
+				//Sponge: jitter
 			}
 		}
+		else if (CurrentFortitude <= 0 && this->IsStaggeredOnEmptyFortitude) {
+			this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Staggered"), EActionList::ActionNone, EInputEvent::IE_Released);
+		}
+
 	}
 	else {
 		this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked"), EActionList::ActionNone, EInputEvent::IE_Released);

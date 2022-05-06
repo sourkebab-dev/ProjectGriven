@@ -22,6 +22,8 @@ public:
 	FGameplayTagContainer ActionTag;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTagContainer BlockedTag;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsInvalidated = false;
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

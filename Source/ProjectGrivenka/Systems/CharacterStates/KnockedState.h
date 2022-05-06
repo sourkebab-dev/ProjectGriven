@@ -10,18 +10,20 @@
  * 
  */
 
-static const float DOTDIRECTIONTRESHOLD = 0.8;
-
 USTRUCT(BlueprintType)
-struct FStunMontage
+struct FKnockBackDataContainer
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* DefaultMontage;
+	TArray<FKnockBackData> Standing;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* HeavyMontage;
+	TArray<FKnockBackData> FarPush;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FKnockBackData> Launch;
+
 };
 
 UCLASS(Blueprintable)
@@ -32,32 +34,38 @@ class PROJECTGRIVENKA_API UKnockedState : public UBaseState
 
 	FTimerHandle HitPauseTimer;
 
-	FVector PushStartLocation;
-	FVector PushTargetLocation;
-	float PooledTime = 0.0;
-	float LastZpos = 0.0;
+	TMap<TEnumAsByte<EHitDirectionType>, EHitDirectionType> InversionMap = {
+		{ EHitDirectionType::LEFT, EHitDirectionType::RIGHT },
+		{ EHitDirectionType::RIGHT, EHitDirectionType::LEFT },
+		{ EHitDirectionType::BOTTOMRIGHT, EHitDirectionType::BACK },
+		{ EHitDirectionType::BOTTOMLEFT, EHitDirectionType::BACK },
+		{ EHitDirectionType::FRONT, EHitDirectionType::BACK },
+	};
+
+	TMap<TEnumAsByte<EDamageImpactType>, int> ImpactModifier = {
+		{ EDamageImpactType::DI_LOW, 1 },
+		{ EDamageImpactType::DI_MEDIUM, 0 },
+		{ EDamageImpactType::DI_HIGH, -1 },
+		{ EDamageImpactType::DI_EXPLOSIVE, -2 },
+	};
+
+	float PooledTime = 0.0f;
 
 public:
+	bool IsFallingPartitioned = false;
+	bool IsLandingPartitioned = false;
+	bool IsCurveEnd = false;
+	bool IsProcessKnockback = false;
+	float ApexTime;
+	float LaunchPlayRate = 1.0;
+	FVector ForceDirection;
+
+	UPROPERTY(BlueprintReadWrite)
+	class UCharacterMovementComponent* CharMove;
+	UPROPERTY(BlueprintReadWrite)
+	FKnockBackData CurrentKnockbackData;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool IsStaggeredOnEmptyFortitude;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float TotalPushTime = 0.25;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float PushDistanceMultiplier = 100;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UAnimMontage* CurrentStunMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FStunMontage StunLeftMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FStunMontage StunRightMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FStunMontage StunFrontMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FStunMontage StunBackMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FStunMontage StunUpMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FStunMontage StunDownMontage;
+	TMap<TEnumAsByte<EHitDirectionType>, FKnockBackDataContainer> KnockbackData;
 
 public:
 	virtual void Tick_Implementation(float DeltaTime);

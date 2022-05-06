@@ -10,8 +10,6 @@
  * 
  */
 //sponge: probably need to make this a dynamic (changeable in engine)
-static const float DEFAULTGROUNDFRICTION = 2.0f;
-static const float DEFAULTBRAKINGDECELERATION = 2048.0f;
 static const float TERMINALVELOCITY = 1100.0f;
 static const float MINSLIDEVELOCITY = 300.0f;
 

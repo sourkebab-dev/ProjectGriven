@@ -7,6 +7,8 @@
 #include "GlobalDefinitions.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FSimpleDynamicDelegate);
+static const float DEFAULTGROUNDFRICTION = 2.0f;
+static const float DEFAULTBRAKINGDECELERATION = 2048.0f;
 
 
 UENUM(BlueprintType)
@@ -74,6 +76,50 @@ enum EAICommandType {
     INTERACT,
 };
 
+UENUM(BlueprintType)
+enum EHitDirectionType {
+    TOP,
+    TOPLEFT,
+    TOPRIGHT,
+    BOTTOM,
+    BOTTOMLEFT,
+    BOTTOMRIGHT,
+    LEFT,
+    RIGHT,
+    FRONT,
+    BACK,
+};
+
+UENUM(BlueprintType)
+enum EDirectionType {
+    VERTICAL,
+    HORIZONTAL
+};
+
+USTRUCT(BlueprintType)
+struct FKnockBackData
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UAnimMontage* KnockBackMontage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EDirectionType> ApexType;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UCurveVector* ForceCurve;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float NewBrakingDeceleration = 1000;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float NewFrictionFactor = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UAnimMontage* KnockDownMontage;
+};
+
 USTRUCT(BlueprintType)
 struct FCommandInfo
 {
@@ -113,7 +159,7 @@ struct FAttackValues
     TEnumAsByte<EDamageImpactType> ImpactType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector AttackDirection;
+    TEnumAsByte<EHitDirectionType> AttackDirection;
 };
 
 USTRUCT(BlueprintType)
@@ -147,7 +193,7 @@ struct FDamageInfo
     TEnumAsByte<EDamageElementType> ElementType;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FVector DamageDirection; // 0.0.0 for radial
+    TEnumAsByte<EHitDirectionType> DamageDirection;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     FVector DamageSourceOverride = FVector::ZeroVector; // Used for damages that are instigated by empty actors (wall damage & so on)
