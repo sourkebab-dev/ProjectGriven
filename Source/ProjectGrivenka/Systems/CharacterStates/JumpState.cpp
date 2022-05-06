@@ -52,7 +52,7 @@ void UJumpState::OnStateExit_Implementation()
 
 void UJumpState::OnJumpApexReached()
 {
-	this->BlockedTag.RemoveAllTags();
+	this->StatesComp->BlockedTags.RemoveAllTags();
 	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.InAir"), EActionList::ActionNone, IE_Released);
 }
 

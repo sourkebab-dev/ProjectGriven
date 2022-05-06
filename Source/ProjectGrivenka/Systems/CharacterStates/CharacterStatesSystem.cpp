@@ -122,7 +122,7 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 	this->CrossStateData.DamageInfo = InDamageInfo;
 	this->CrossStateData.DamageInstigator = HitInstigator;
 
-	if (this->CurrentState->ActionTag.HasTag(FGameplayTag::RequestGameplayTag("ActionStates.Block")) 
+	if (this->CurrentState->ActionTag.HasTagExact(FGameplayTag::RequestGameplayTag("ActionStates.Block")) 
 		&& UVectorMathLib::CheckBlockDirection(HitInstigator->GetActorLocation(), this->CompContext->CharacterActor->GetActorLocation(), this->CompContext->CharacterActor->GetActorForwardVector())) {
 		GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "Blocked");
 		InDamageInfo.IsAbsorbed = true;
@@ -144,9 +144,11 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 		ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->CompContext->CharacterActor, HitInstigator, InDamageInfo);
 		float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
 		float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
-			
-		if (CurrentFortitude > 0 && !InDamageInfo.IsAbsorbed && InDamageInfo.HitType != EDamageHitType::PARRY) {
+		GLog->Log("xxxss");
+		if ((CurrentFortitude > 0 || !this->IsStaggeredOnEmptyFortitude ) && !InDamageInfo.IsAbsorbed && InDamageInfo.HitType != EDamageHitType::PARRY) {
+			GLog->Log("whatevffa");
 			if (InDamageInfo.ImpactType >= this->MinimumImpactForKnockback && (!this->CrossStateData.IsInHyperArmor || (this->CrossStateData.IsInHyperArmor && CurrentFortitude < MaxFortitude / 2))) {
+				GLog->Log("whatevffa2asd");
 				this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked"), EActionList::ActionNone, EInputEvent::IE_Released);
 			}
 			else {

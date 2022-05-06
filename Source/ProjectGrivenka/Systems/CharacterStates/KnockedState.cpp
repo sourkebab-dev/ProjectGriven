@@ -24,6 +24,7 @@ void UKnockedState::OnStateEnter_Implementation()
 	Super::OnStateEnter_Implementation();
 	this->StatesComp->CrossStateData.IsInterruptable = false;
 	if (!this->StatesComp->CompContext->CharacterAnim) { this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Pressed); return; }
+	this->StatesComp->CompContext->EventBus->AnimDelegate.AddDynamic(this, &UKnockedState::OnProcessAnimRate);
 	this->StartHitReact();
 }
 
@@ -76,7 +77,7 @@ void UKnockedState::StartHitReact()
 			if (this->CurrentKnockbackData.KnockBackMontage->GetSectionIndex("Launch") != INDEX_NONE) {
 				float LaunchAnimDuration = this->CurrentKnockbackData.KnockBackMontage->GetSectionLength(this->CurrentKnockbackData.KnockBackMontage->GetSectionIndex("Launch"));
 				float NewPlayRate = LaunchAnimDuration / this->ApexTime;
-				this->StatesComp->CompContext->CharacterAnim->Montage_SetPlayRate(this->CurrentKnockbackData.KnockBackMontage, NewPlayRate);
+				this->CachedAnimRate = NewPlayRate;
 			}
 
 			if (this->StatesComp->CrossStateData.DamageInstigator) this->ForceDirection = this->StatesComp->CompContext->CharacterActor->GetActorLocation() - this->StatesComp->CrossStateData.DamageInstigator->GetActorLocation();
@@ -89,7 +90,7 @@ void UKnockedState::StartHitReact()
 			this->IsProcessKnockback = true;
 		}));
 
-	}), 0.005, false);
+	}), 0.05, false);
 }
 
 
@@ -120,7 +121,9 @@ void UKnockedState::Tick_Implementation(float DeltaTime)
 				float TimeToGround = (-this->CharMove->Velocity.Z + FMath::Sqrt(this->CharMove->Velocity.Z + 2 * ToFloorHeight * GravityZ)) / GravityZ;
 				float LaunchAnimDuration = this->CurrentKnockbackData.KnockBackMontage->GetSectionLength(this->CurrentKnockbackData.KnockBackMontage->GetSectionIndex("Falling"));
 				float NewPlayRate = LaunchAnimDuration / TimeToGround;
-				this->StatesComp->CompContext->CharacterAnim->Montage_SetPlayRate(this->CurrentKnockbackData.KnockBackMontage, NewPlayRate);
+				GLog->Log("Falling");
+				GLog->Log(FString::SanitizeFloat(NewPlayRate));
+				this->CachedAnimRate = NewPlayRate;
 			}
 		}
 	}
@@ -140,12 +143,12 @@ void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
 	if (this->IsInvalidated) return;
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 
-	if (!bInterrupted) {
+	this->IsInvalidated = true;
 
-		this->IsInvalidated = true;
+	if (!bInterrupted) {
 		this->StatesComp->CrossStateData.DamageInstigator = nullptr;
 		this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
-
+		this->StatesComp->BlockedTags.RemoveAllTags();
 		if (this->CurrentKnockbackData.KnockDownMontage) {
 			this->StatesComp->CrossStateData.KnockDownMontage = this->CurrentKnockbackData.KnockDownMontage;
 			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockedDown"), EActionList::ActionNone, IE_Pressed);
@@ -154,10 +157,19 @@ void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
 			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, EInputEvent::IE_Released);
 		}
 	}
+
+	
+}
+
+void UKnockedState::OnProcessAnimRate(EAnimEvt EventType)
+{
+	if (EventType != EAnimEvt::PROCESS_ANIMRATE) return;
+	this->StatesComp->CompContext->CharacterAnim->Montage_SetPlayRate(this->CurrentKnockbackData.KnockBackMontage, this->CachedAnimRate);
 }
 
 void UKnockedState::OnStateExit_Implementation()
 {
+	this->StatesComp->CompContext->EventBus->AnimDelegate.RemoveDynamic(this, &UKnockedState::OnProcessAnimRate);
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HitPauseTimer);
 	this->StatesComp->CrossStateData.IsInterruptable = true;
 	this->StatesComp->CompContext->CharacterAnim->Montage_Stop(0.25);

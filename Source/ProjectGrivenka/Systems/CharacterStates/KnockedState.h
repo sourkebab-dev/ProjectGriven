@@ -37,8 +37,8 @@ class PROJECTGRIVENKA_API UKnockedState : public UBaseState
 	TMap<TEnumAsByte<EHitDirectionType>, EHitDirectionType> InversionMap = {
 		{ EHitDirectionType::LEFT, EHitDirectionType::RIGHT },
 		{ EHitDirectionType::RIGHT, EHitDirectionType::LEFT },
-		{ EHitDirectionType::BOTTOMRIGHT, EHitDirectionType::BACK },
-		{ EHitDirectionType::BOTTOMLEFT, EHitDirectionType::BACK },
+		{ EHitDirectionType::BOTTOMRIGHT, EHitDirectionType::BOTTOMLEFT},
+		{ EHitDirectionType::BOTTOMLEFT, EHitDirectionType::BOTTOMRIGHT },
 		{ EHitDirectionType::FRONT, EHitDirectionType::BACK },
 	};
 
@@ -58,6 +58,7 @@ public:
 	bool IsProcessKnockback = false;
 	float ApexTime;
 	float LaunchPlayRate = 1.0;
+	float CachedAnimRate = 1.0;
 	FVector ForceDirection;
 
 	UPROPERTY(BlueprintReadWrite)
@@ -78,5 +79,7 @@ public:
 	void StartHitReact();
 	UFUNCTION(BlueprintCallable)
 	void OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted);
+	UFUNCTION()
+	void OnProcessAnimRate(enum EAnimEvt EventType);
 
 };

@@ -23,6 +23,7 @@ enum EAnimEvt {
 	DEATH,
 	BLOCK_PUSH,
 	LAUNCH_JUMP,
+	PROCESS_ANIMRATE,
 };
 
 DECLARE_DELEGATE(FHitStopFinishDelegate);
