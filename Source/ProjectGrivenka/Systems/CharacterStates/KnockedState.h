@@ -35,6 +35,8 @@ class PROJECTGRIVENKA_API UKnockedState : public UBaseState
 	FTimerHandle HitPauseTimer;
 
 	TMap<TEnumAsByte<EHitDirectionType>, EHitDirectionType> InversionMap = {
+		{ EHitDirectionType::TOPLEFT, EHitDirectionType::TOPRIGHT },
+		{ EHitDirectionType::TOPRIGHT, EHitDirectionType::TOPLEFT },
 		{ EHitDirectionType::LEFT, EHitDirectionType::RIGHT },
 		{ EHitDirectionType::RIGHT, EHitDirectionType::LEFT },
 		{ EHitDirectionType::BOTTOMRIGHT, EHitDirectionType::BOTTOMLEFT},

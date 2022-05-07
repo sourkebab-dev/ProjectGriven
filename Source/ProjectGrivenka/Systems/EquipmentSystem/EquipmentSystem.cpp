@@ -104,7 +104,7 @@ FAttackValues UEquipmentSystem::GetNextAttackValue(TEnumAsByte<EAttackMovementTy
 			AtkIndex = InCurrentAttack.NextHeavyPointer;
 			break;
 		case EAttackMovementType::AM_CHARGED:
-			AttackList = this->WeaponR->ChargedHeavyComboItems;
+			AttackList = this->WeaponR->HeavyComboItems;
 			AtkIndex = InCurrentAttack.NextHeavyPointer;
 			break;
 		case EAttackMovementType::AM_LUNGE:

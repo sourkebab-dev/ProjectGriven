@@ -144,11 +144,8 @@ void UCharacterStatesSystem::OnHit(AActor* HitInstigator, FDamageInfo InDamageIn
 		ICharacterSystemAvailable::Execute_InitEffectFortitudeDamage(this->CompContext->CharacterActor, HitInstigator, InDamageInfo);
 		float CurrentFortitude = ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
 		float MaxFortitude = ICharacterSystemAvailable::Execute_GetAttributeMaxValue(this->CompContext->CharacterActor, EAttributeCode::ATT_Fortitude);
-		GLog->Log("xxxss");
 		if ((CurrentFortitude > 0 || !this->IsStaggeredOnEmptyFortitude ) && !InDamageInfo.IsAbsorbed && InDamageInfo.HitType != EDamageHitType::PARRY) {
-			GLog->Log("whatevffa");
 			if (InDamageInfo.ImpactType >= this->MinimumImpactForKnockback && (!this->CrossStateData.IsInHyperArmor || (this->CrossStateData.IsInHyperArmor && CurrentFortitude < MaxFortitude / 2))) {
-				GLog->Log("whatevffa2asd");
 				this->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Knocked"), EActionList::ActionNone, EInputEvent::IE_Released);
 			}
 			else {

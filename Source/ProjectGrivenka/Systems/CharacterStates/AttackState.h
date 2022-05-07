@@ -9,7 +9,7 @@
 /**
  * 
  */
-static const float HEAVYATTACKTRESHOLD = 0.35;
+static const float HEAVYATTACKTRESHOLD = 0.25;
 static const float CHARGEATTACKTRESHOLD = 0.75;
 
 UCLASS(Blueprintable)
@@ -21,7 +21,6 @@ class PROJECTGRIVENKA_API UAttackState : public UBaseState
 	bool isCharged = false;
 	FTimerHandle HeavyTimer;
 	FTimerHandle ChargeTimer;
-	FTimerHandle QueueTimer;
 
 public:
 	virtual bool StateValidation_Implementation() override;
@@ -36,7 +35,5 @@ public:
 	void StartAttack();
 	void OnHeavyAttackActivated();
 	void OnChargeAttackActivated();
-	void QueueNextAttack(TEnumAsByte<EAttackMovementType> AttackType);
-	void DoAttack();
-
+	void DoAttack(TEnumAsByte<EAttackMovementType> AttackType);
 };

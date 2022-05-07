@@ -53,9 +53,6 @@ public:
 	TArray<FAttackValues> HeavyComboItems;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FAttackValues> ChargedHeavyComboItems;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FAttackValues> LungeAttacks;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

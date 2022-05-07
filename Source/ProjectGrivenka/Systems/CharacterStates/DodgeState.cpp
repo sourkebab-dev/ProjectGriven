@@ -98,7 +98,6 @@ void UDodgeState::OnStateExit_Implementation()
 void UDodgeState::OnDodging(float InterpValue) {
 	FVector Interpolation = FMath::Lerp(this->TempCurrentLocation, this->DodgeTargetLocation, InterpValue);
 	this->StatesComp->CompContext->MovementComp->AddInputVector(Interpolation - this->StatesComp->CompContext->CharacterActor->GetActorLocation());
-	GLog->Log("OnDodging");
 }
 
 void UDodgeState::OnFinishDodging() {
@@ -106,7 +105,6 @@ void UDodgeState::OnFinishDodging() {
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->LungeTimer, this, &UDodgeState::DeactivateLunge, 0.2, false, -1.0f);
 	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::END_DODGE);
 	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
-	GLog->Log("FinishDodge");
 }
 
 void UDodgeState::DeactivateLunge()
