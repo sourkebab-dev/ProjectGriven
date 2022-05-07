@@ -182,7 +182,9 @@ void UCharacterStatesSystem::LockAnimation(EDamageImpactType InDamageImpactTime,
 {
 	if (this->CrossStateData.IsHitStopped) return;
 	this->CrossStateData.IsHitStopped = true;
-	this->CompContext->CharacterAnim->Montage_Pause(this->CompContext->CharacterAnim->GetCurrentActiveMontage());
+	if (this->CompContext->CharacterAnim && this->CompContext->CharacterAnim->GetCurrentActiveMontage()) {
+		this->CompContext->CharacterAnim->Montage_Pause(this->CompContext->CharacterAnim->GetCurrentActiveMontage());
+	}
 	TMap<EDamageImpactType, float> LockTimeMap = {
 		{ EDamageImpactType::DI_LOW, 0.07 },
 		{ EDamageImpactType::DI_MEDIUM, 0.1 },
@@ -195,6 +197,8 @@ void UCharacterStatesSystem::LockAnimation(EDamageImpactType InDamageImpactTime,
 		this->CrossStateData.IsHitStopped = false;
 		this->BlockedTags.RemoveTag(FGameplayTag::RequestGameplayTag("ActionStates.Knocked.Stand"));
 		OnHitFinish.ExecuteIfBound();
-		this->CompContext->CharacterAnim->Montage_Resume(this->CompContext->CharacterAnim->GetCurrentActiveMontage());
+		if (this->CompContext->CharacterAnim && this->CompContext->CharacterAnim->GetCurrentActiveMontage()) {
+			this->CompContext->CharacterAnim->Montage_Resume(this->CompContext->CharacterAnim->GetCurrentActiveMontage());
+		}
 	}), LockTime, false);
 }
