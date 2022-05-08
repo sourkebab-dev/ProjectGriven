@@ -40,12 +40,6 @@ void UCharacterStatesSystem::RemoveAction(TSubclassOf<class UBaseState> InGrante
 void UCharacterStatesSystem::AnimEventsHandler(EAnimEvt InAnimEvent)
 {
 	switch (InAnimEvent) {
-		case EAnimEvt::ACTIVATE_COMBO:
-			this->CrossStateData.IsComboActive = true;
-			break;
-		case EAnimEvt::DISABLE_COMBO:
-			this->CrossStateData.IsComboActive = false;
-			break;
 		case EAnimEvt::ACTIVATE_INTERRUPTION:
 			this->CrossStateData.IsInterruptable = true;
 			break;

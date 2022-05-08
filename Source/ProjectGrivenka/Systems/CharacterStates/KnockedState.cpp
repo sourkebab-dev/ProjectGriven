@@ -121,8 +121,6 @@ void UKnockedState::Tick_Implementation(float DeltaTime)
 				float TimeToGround = (-this->CharMove->Velocity.Z + FMath::Sqrt(this->CharMove->Velocity.Z + 2 * ToFloorHeight * GravityZ)) / GravityZ;
 				float LaunchAnimDuration = this->CurrentKnockbackData.KnockBackMontage->GetSectionLength(this->CurrentKnockbackData.KnockBackMontage->GetSectionIndex("Falling"));
 				float NewPlayRate = LaunchAnimDuration / TimeToGround;
-				GLog->Log("Falling");
-				GLog->Log(FString::SanitizeFloat(NewPlayRate));
 				this->CachedAnimRate = NewPlayRate;
 			}
 		}

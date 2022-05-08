@@ -130,6 +130,15 @@ void UControlSystem::AnimHandler(EAnimEvt InAnimEvt)
 {
 	switch (InAnimEvt)
 	{
+	case ACTIVATE_INTERRUPTION:
+		this->ProcessBufferedActions();
+		break;
+	case ENABLE_INPUT_BUFFER:
+		this->IsBuffering = true;
+		break;
+	case DISABLE_INPUT_BUFFER:
+		this->IsBuffering = false;
+		break;
 	case FULL_ROTATION:
 		this->RotationRate = 8;
 		break;
@@ -173,6 +182,37 @@ void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
 	//GameInstance->SetControlledCrewId(this->CharacterId);
 }
 
+void UControlSystem::BufferAction(FBufferedAction InBufferedAction)
+{
+	bool IsClearBuffer = false;
+	bool IsSaveAction = true;
+	for (int i = 0; i < this->BufferedActions.Num(); i++) {
+		// Check for different action, if so, replace old inputs
+		if (this->BufferedActions[i].Action != InBufferedAction.Action) {
+			IsClearBuffer = true;
+			break;
+		}
+
+		// Check for duplicate input
+		if (this->BufferedActions[i].Action == InBufferedAction.Action && this->BufferedActions[i].EventType == InBufferedAction.EventType) {
+			IsSaveAction = false;
+			break;
+		}
+	}
+
+	if (IsClearBuffer) this->BufferedActions.Empty();
+	if (IsSaveAction) this->BufferedActions.Add(InBufferedAction);
+}
+
+void UControlSystem::ProcessBufferedActions()
+{
+	this->IsBuffering = false;
+	for (int i = 0; i < this->BufferedActions.Num(); i++) {
+		this->CompContext->EventBus->StateActionDelegate.Broadcast(this->BufferedActions[i].Action, this->BufferedActions[i].EventType);
+	}
+	this->BufferedActions.Empty();
+}
+
 void UControlSystem::ControlCycleItem(float Value)
 {
 }
@@ -210,12 +250,28 @@ void UControlSystem::ControlMoveRight(float Value)
 void UControlSystem::ControlAttack()
 {
 	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "Attack");
-	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
+	if (this->IsBuffering) {
+		FBufferedAction BA;
+		BA.Action = EActionList::ActionAttack;
+		BA.EventType = IE_Pressed;
+		this->BufferAction(BA);
+	}
+	else {
+		this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Pressed);
+	}
 }
 
 void UControlSystem::ControlAttackRelease()
 {
-	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
+	if (this->IsBuffering) {
+		FBufferedAction BA;
+		BA.Action = EActionList::ActionAttack;
+		BA.EventType = IE_Released;
+		this->BufferAction(BA);
+	}
+	else {
+		this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionAttack, IE_Released);
+	}
 }
 
 void UControlSystem::ControlBlock()
@@ -245,7 +301,15 @@ void UControlSystem::ControlVentAmp()
 
 void UControlSystem::ControlDodge()
 {
-	this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionDodge, IE_Pressed);
+	if (this->IsBuffering) {
+		FBufferedAction BA;
+		BA.Action = EActionList::ActionDodge;
+		BA.EventType = IE_Pressed;
+		this->BufferAction(BA);
+	}
+	else {
+		this->CompContext->EventBus->StateActionDelegate.Broadcast(EActionList::ActionDodge, IE_Pressed);
+	}
 }
 
 void UControlSystem::ControlInteract()

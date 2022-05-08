@@ -22,7 +22,7 @@ void UAttackState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 	bool IsStaminaAllowed = this->StatesComp->CompContext->CharacterActor->Implements<UCharacterSystemAvailable>() 
 		? ICharacterSystemAvailable::Execute_GetAttributeCurrentValue(this->StatesComp->CompContext->CharacterActor,EAttributeCode::ATT_Stamina) > 0 : true;
 
-	if (Action == EActionList::ActionAttack && EventType == IE_Pressed && IsStaminaAllowed && this->StatesComp->CrossStateData.IsComboActive) {
+	if (Action == EActionList::ActionAttack && EventType == IE_Pressed && IsStaminaAllowed && this->StatesComp->CrossStateData.IsInterruptable) {
 		this->StartAttack();
 	}
 
@@ -31,8 +31,7 @@ void UAttackState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 		this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->ChargeTimer);
 
 		if (this->isCharged || this->isHeavy) {
-			this->StatesComp->CrossStateData.IsInterruptable = true;
-			this->StatesComp->CrossStateData.IsComboActive = false;
+			this->StatesComp->CrossStateData.IsInterruptable = false;
 		}
 
 		if (this->isCharged) {
@@ -41,9 +40,8 @@ void UAttackState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 		else if (this->isHeavy) {
 			this->DoAttack(EAttackMovementType::AM_HEAVY);
 		}
-		else if (this->StatesComp->CrossStateData.IsComboActive) {
-			this->StatesComp->CrossStateData.IsInterruptable = true;
-			this->StatesComp->CrossStateData.IsComboActive = false;
+		else if (this->StatesComp->CrossStateData.IsInterruptable) {
+			this->StatesComp->CrossStateData.IsInterruptable = false;
 			this->DoAttack(EAttackMovementType::AM_DEFAULT);
 		}
 	}
@@ -68,7 +66,6 @@ void UAttackState::OnStateExit_Implementation()
 {
 	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::FULL_ROTATION);
 	this->StatesComp->CompContext->CombatModule.CurrentAttack = FAttackValues();
-	this->StatesComp->CrossStateData.IsComboActive = true;
 	this->StatesComp->CrossStateData.IsInterruptable = true;
 	this->StatesComp->CompContext->CharacterAnim->StopAllMontages(0.25);
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->HeavyTimer);

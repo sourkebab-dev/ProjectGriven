@@ -29,8 +29,8 @@ void ULungeAttackState::ActionHandler_Implementation(EActionList Action, EInputE
 void ULungeAttackState::OnStateEnter_Implementation()
 {
 	Super::OnStateEnter_Implementation();
-	this->StatesComp->CrossStateData.IsInterruptable = true;
-	this->StatesComp->CrossStateData.IsComboActive = false;
+
+	this->StatesComp->CrossStateData.IsInterruptable = false;
 	IEquipmentSystemAvailable::Execute_GetNextMainAttack(this->StatesComp->CompContext->CharacterActor, EAttackMovementType::AM_LUNGE, FAttackValues(), this->StatesComp->CompContext->CombatModule.CurrentAttack);
 	UAnimMontage* LungeMontage = this->StatesComp->CompContext->CombatModule.CurrentAttack.AttackMontage;
 	float MontageLength = this->StatesComp->CompContext->CharacterAnim->Montage_Play(LungeMontage);
@@ -62,7 +62,6 @@ void ULungeAttackState::OnStateExit_Implementation()
 		AnimMontageInstance->OnMontageBlendingOutStarted.Unbind();
 	}
 	this->StatesComp->CompContext->CombatModule.CurrentAttack = FAttackValues();
-	this->StatesComp->CrossStateData.IsComboActive = true;
 	this->StatesComp->CrossStateData.IsInterruptable = true;
 	this->StatesComp->CompContext->CharacterAnim->StopAllMontages(0.25);
 	if (this->StatesComp->CompContext->CharacterActor->Implements<UEquipmentSystemAvailable>()) {

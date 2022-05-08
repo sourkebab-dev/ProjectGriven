@@ -10,6 +10,22 @@
 /**
  * 
  */
+
+USTRUCT(BlueprintType)
+struct FBufferedAction
+{
+	GENERATED_BODY()
+
+
+	UPROPERTY(BlueprintReadWrite)
+		TEnumAsByte<EActionList> Action;
+
+	UPROPERTY(BlueprintReadWrite)
+		TEnumAsByte<EInputEvent> EventType;
+
+};
+
+
 UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class PROJECTGRIVENKA_API UControlSystem : public UBaseContextableComponent
 {
@@ -30,6 +46,10 @@ public:
 	class UBaseGameInstance* GI;
 	UPROPERTY(BlueprintReadWrite)
 	AActor* LockedActor;
+	UPROPERTY(BlueprintReadWrite)
+	TArray<FBufferedAction> BufferedActions;
+	UPROPERTY(BlueprintReadWrite)
+	bool IsBuffering = false;
 
 	float RotationRate = 20;
 
@@ -70,4 +90,7 @@ public:
 	void ControlSystemDisable(AController* OldController);
 	UFUNCTION(BlueprintCallable)
 	void ControlSystemPossess(AActor* PossessInstigator);
+	void BufferAction(FBufferedAction InBufferedAction);
+	void ProcessBufferedActions();
+
 };
