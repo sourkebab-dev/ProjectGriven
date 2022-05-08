@@ -13,11 +13,10 @@ UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UBlockPushState : public UBaseState
 {
 	GENERATED_BODY()
-	
-public:
-	UFUNCTION()
-	void OnPushEnd(UAnimMontage* Montage, bool bInterrupted);
 
+	FTimerHandle PushTimer;
+
+public:
 	virtual bool StateValidation_Implementation() override;
 	virtual void OnStateEnter_Implementation() override;
 	virtual void OnStateExit_Implementation() override;

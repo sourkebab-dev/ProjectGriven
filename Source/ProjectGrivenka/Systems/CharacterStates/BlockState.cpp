@@ -2,6 +2,7 @@
 
 
 #include "BlockState.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterStates/CharacterStatesSystem.h"
@@ -61,7 +62,10 @@ void UBlockState::OnStateExit_Implementation()
 	if (this->StatesComp->CompContext->MovementComp) {
 		UCharacterMovementComponent* CharMove = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
 		CharMove->MaxWalkSpeed = this->TempMaxWalkSpeed;
+		CharMove->BrakingFrictionFactor = DEFAULTGROUNDFRICTION;
+		CharMove->BrakingDecelerationWalking = DEFAULTBRAKINGDECELERATION;
 	}
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->SkidTimer);
 	this->StatesComp->BlockHitDelegate.RemoveDynamic(this, &UBlockState::OnReceiveHit);
 	this->StatesComp->CompContext->CharacterAnim->StopAllMontages(0.1);
 	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->ParryTimer);
@@ -80,8 +84,11 @@ void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo
 	float DamageAbsorption;
 	IEquipmentSystemAvailable::Execute_GetBlockInfo(this->StatesComp->CompContext->CharacterActor, BlockInfo, DamageAbsorption);
 
+
 	if (this->StatesComp->CrossStateData.IsParry) {
-		this->StatesComp->CompContext->CharacterAnim->Montage_JumpToSection("Parry", BlockInfo.BlockMontage);
+		FName ParrySectionName = this->ParryMap.FindRef(this->DamageInfo.DamageDirection);
+		if (ParrySectionName.IsNone()) ParrySectionName = FMath::RandBool() ? "ParryLeft" : "ParryRight";
+		this->StatesComp->CompContext->CharacterAnim->Montage_JumpToSection(ParrySectionName, BlockInfo.BlockMontage);
 
 		auto InstigatorCtx = IContextAvailable::Execute_GetContext(this->HitInstigator);
 		if (!InstigatorCtx->EventBus) return;
@@ -94,6 +101,29 @@ void UBlockState::OnReceiveHit(AActor* InHitInstigator, FDamageInfo InDamageInfo
 	else {
 		this->StatesComp->CompContext->CharacterAnim->Montage_JumpToSection("Hit", BlockInfo.BlockMontage);
 	}
+
+	auto CharMove = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
+	auto CharActor = Cast<ACharacter>(this->StatesComp->CompContext->CharacterActor);
+	CharMove->BrakingFrictionFactor = 0;
+	CharMove->BrakingDecelerationWalking = this->Deceleration;
+	FVector ForceDir = this->StatesComp->CompContext->CharacterActor->GetActorLocation() - this->HitInstigator->GetActorLocation();
+	ForceDir.Normalize();
+	float PushForce;
+
+
+	if (this->StatesComp->CrossStateData.IsParry || this->DamageInfo.ImpactType == EDamageImpactType::DI_LOW) PushForce = this->LowImpactLaunchForce;
+	else if (this->DamageInfo.ImpactType == EDamageImpactType::DI_MEDIUM) PushForce = this->MediumImpactLaunchForce;
+	else if (this->DamageInfo.ImpactType == EDamageImpactType::DI_HIGH) PushForce = this->HighImpactLaunchForce;
+	else PushForce = this->ExplosiveImpactLaunchForce;
+
+	float SkidTime = PushForce / this->Deceleration;
+	CharMove->AddImpulse(ForceDir * PushForce, true);
+
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->SkidTimer, FTimerDelegate::CreateLambda([CharMove] {
+		CharMove->BrakingFrictionFactor = DEFAULTGROUNDFRICTION;
+		CharMove->BrakingDecelerationWalking = DEFAULTBRAKINGDECELERATION;
+	}), SkidTime, false);
+
 }
 
 void UBlockState::InvalidateParry()

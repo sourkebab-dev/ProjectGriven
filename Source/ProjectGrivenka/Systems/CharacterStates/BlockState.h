@@ -18,6 +18,15 @@ class PROJECTGRIVENKA_API UBlockState : public UBaseState
 {
 	GENERATED_BODY()
 
+	TMap<TEnumAsByte<EHitDirectionType>, FName> ParryMap = {
+		{ EHitDirectionType::TOPLEFT, "ParryRight" },
+		{ EHitDirectionType::TOPRIGHT, "ParryLeft" },
+		{ EHitDirectionType::LEFT, "ParryRight" },
+		{ EHitDirectionType::RIGHT, "ParryLeft"},
+		{ EHitDirectionType::BOTTOMRIGHT, "ParryLeft"},
+		{ EHitDirectionType::BOTTOMLEFT, "ParryRight" },
+	};
+
 public:
 	float TempMaxWalkSpeed;
 
@@ -25,8 +34,19 @@ public:
 	AActor* HitInstigator;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FDamageInfo DamageInfo;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float LowImpactLaunchForce = 500.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MediumImpactLaunchForce = 1000.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float HighImpactLaunchForce = 2000.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ExplosiveImpactLaunchForce = 3000.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Deceleration = 1000.0f;
 
 	FTimerHandle ParryTimer;
+	FTimerHandle SkidTimer;
 
 public:
 	UFUNCTION(BlueprintCallable)

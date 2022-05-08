@@ -27,16 +27,16 @@ void UBlockPushState::OnStateEnter_Implementation()
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
 		return;
 	}
-	FOnMontageEnded EndAttackDelegate;
-	EndAttackDelegate.BindUObject(this, &UBlockPushState::OnPushEnd);
-	this->StatesComp->CompContext->CharacterAnim->Montage_SetEndDelegate(EndAttackDelegate, BlockInfo.BlockPushMontage);
-	this->StatesComp->CompContext->CharacterAnim->Montage_Play(BlockInfo.BlockPushMontage);
-
+	float MontageLength = this->StatesComp->CompContext->CharacterAnim->Montage_Play(BlockInfo.BlockPushMontage);
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().SetTimer(this->PushTimer, FTimerDelegate::CreateLambda([&] {
+		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
+	}), MontageLength, false);
 	this->StatesComp->CompContext->EventBus->AnimDelegate.AddDynamic(this, &UBlockPushState::OnBlockPushTriggered);
 }
 
 void UBlockPushState::OnStateExit_Implementation()
 {
+	this->StatesComp->CompContext->CharacterActor->GetWorldTimerManager().ClearTimer(this->PushTimer);
 	this->StatesComp->CompContext->EventBus->AnimDelegate.RemoveDynamic(this, &UBlockPushState::OnBlockPushTriggered);
 }
 
@@ -49,8 +49,8 @@ void UBlockPushState::OnBlockPushTriggered(EAnimEvt EventType)
 	TArray<FHitResult> OutResults;
 	ActorsToIgnore.Add(this->StatesComp->CompContext->CharacterActor);
 
-	if (UKismetSystemLibrary::SphereTraceMulti(this->GetWorld(), this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->StatesComp->CompContext->CharacterActor->GetActorLocation(), 200.0f,
-		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::None, OutResults, true)) {
+	if (UKismetSystemLibrary::SphereTraceMulti(this->GetWorld(), this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->StatesComp->CompContext->CharacterActor->GetActorLocation(), 100.0f,
+		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutResults, true)) {
 		for (int i = 0; i < OutResults.Num(); i++) {
 			AActor* HitActor = OutResults[i].Actor.Get();
 			if (!HitActor 
@@ -62,16 +62,12 @@ void UBlockPushState::OnBlockPushTriggered(EAnimEvt EventType)
 
 
 			FDamageInfo StaggerDamage;
-			StaggerDamage.ImpactType = EDamageImpactType::DI_HIGH;
+			StaggerDamage.ImpactType = EDamageImpactType::DI_MEDIUM;
 			StaggerDamage.HitType = EDamageHitType::PUSH;
+			StaggerDamage.DamageDirection = EHitDirectionType::FRONT;
 			InstigatorCtx->EventBus->HitDelegate.Broadcast(this->StatesComp->CompContext->CharacterActor, StaggerDamage);
 		}
 	}
 
-
-}
-
-void UBlockPushState::OnPushEnd(UAnimMontage* Montage, bool bInterrupted)
-{
-	this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Default"), EActionList::ActionNone, IE_Released);
+	GLog->Log("xxPoo");
 }

@@ -41,7 +41,6 @@ class PROJECTGRIVENKA_API UKnockedState : public UBaseState
 		{ EHitDirectionType::RIGHT, EHitDirectionType::LEFT },
 		{ EHitDirectionType::BOTTOMRIGHT, EHitDirectionType::BOTTOMLEFT},
 		{ EHitDirectionType::BOTTOMLEFT, EHitDirectionType::BOTTOMRIGHT },
-		{ EHitDirectionType::FRONT, EHitDirectionType::BACK },
 	};
 
 	TMap<TEnumAsByte<EDamageImpactType>, int> ImpactModifier = {
