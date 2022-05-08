@@ -45,6 +45,8 @@ void USlideState::Tick_Implementation(float DeltaTime)
 	}
 
 
+	if (!this->IsLaunched) return;
+
 	TArray<AActor*> ActorsToIgnore;
 	TArray<FHitResult> OutResults;
 	ActorsToIgnore.Add(this->StatesComp->CompContext->CharacterActor);
@@ -69,6 +71,12 @@ void USlideState::Tick_Implementation(float DeltaTime)
 
 }
 
+void USlideState::OnSlidePush(EAnimEvt AnimEvt)
+{
+	if (AnimEvt != EAnimEvt::BLOCK_PUSH) return;
+	this->IsLaunched = true;
+}
+
 void USlideState::OnStateEnter_Implementation()
 {
 	this->CharMove = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
@@ -77,10 +85,14 @@ void USlideState::OnStateEnter_Implementation()
 	this->StatesComp->CompContext->CharacterAnim->Montage_Play(this->SlideMontage);
 	FVector LaunchVelocity = this->StatesComp->CompContext->CharacterActor->GetActorForwardVector() * 1500.0f;
 	this->CharMove->AddImpulse(LaunchVelocity, true);
+	this->StatesComp->CompContext->EventBus->AnimDelegate.AddDynamic(this, &USlideState::OnSlidePush);
+
 }
 
 void USlideState::OnStateExit_Implementation()
 {
+	this->StatesComp->CompContext->CharacterAnim->StopAllMontages(0.25);
 	this->CharMove->GroundFriction = DEFAULTGROUNDFRICTION;
 	this->CharMove->BrakingDecelerationWalking = DEFAULTBRAKINGDECELERATION;
+	this->StatesComp->CompContext->EventBus->AnimDelegate.RemoveDynamic(this, &USlideState::OnSlidePush);
 }

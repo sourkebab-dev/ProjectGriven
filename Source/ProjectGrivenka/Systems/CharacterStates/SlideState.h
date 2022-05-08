@@ -28,10 +28,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<AActor*> HitList;
 
+	bool IsLaunched = false;
 public:
 	virtual bool StateValidation_Implementation() override;
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;
 	virtual void Tick_Implementation(float DeltaTime);
 	virtual void OnStateEnter_Implementation() override;
 	virtual void OnStateExit_Implementation() override;
+	UFUNCTION()
+	void OnSlidePush(enum EAnimEvt AnimEvt);
 };

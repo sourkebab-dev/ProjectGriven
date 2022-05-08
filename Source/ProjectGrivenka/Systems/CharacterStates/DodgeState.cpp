@@ -41,15 +41,25 @@ void UDodgeState::ActionHandler_Implementation(EActionList Action, EInputEvent E
 void UDodgeState::OnStateEnter_Implementation()
 {
 	Super::OnStateEnter_Implementation();
-	this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir = this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir.IsZero()
-		? this->StatesComp->CompContext->CharacterActor->GetActorForwardVector() * -1 : this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir;
+	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
+
+	if (this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir.IsZero()) {
+		if (MovementComp->Velocity.IsZero()) {
+			this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir = this->StatesComp->CompContext->CharacterActor->GetActorForwardVector() * -1;
+		}
+		else {
+			this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir = MovementComp->Velocity.GetSafeNormal();
+		}
+	}
+	else {
+		this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir = this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir;
+	}
 	this->TempCurrentLocation = this->StatesComp->CompContext->CharacterActor->GetActorLocation();
 	this->DodgeTargetLocation = this->TempCurrentLocation + this->StatesComp->CompContext->MovementModule.WorldSpaceTargetDir * 250.0;
 	this->DodgeTimeline.PlayFromStart();
 	this->StatesComp->CompContext->EventBus->AnimDelegate.Broadcast(EAnimEvt::START_DODGE);
 
 	//SPONGE: i should probably adjust this setting but it works anyway lol
-	UCharacterMovementComponent* MovementComp = Cast<UCharacterMovementComponent>(this->StatesComp->CompContext->MovementComp);
 	this->TempWalkSpeed = MovementComp->MaxWalkSpeed;
 	this->TempGroundFriction = MovementComp->BrakingDecelerationWalking;
 	this->TempAcceleration = MovementComp->MaxAcceleration;
