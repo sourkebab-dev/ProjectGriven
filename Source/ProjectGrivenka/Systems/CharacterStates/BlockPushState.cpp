@@ -49,6 +49,7 @@ void UBlockPushState::OnBlockPushTriggered(EAnimEvt EventType)
 	TArray<FHitResult> OutResults;
 	ActorsToIgnore.Add(this->StatesComp->CompContext->CharacterActor);
 
+	//sponge: Tracechannel probably wrong
 	if (UKismetSystemLibrary::SphereTraceMulti(this->GetWorld(), this->StatesComp->CompContext->CharacterActor->GetActorLocation(), this->StatesComp->CompContext->CharacterActor->GetActorLocation(), 100.0f,
 		UEngineTypes::ConvertToTraceType(ECC_GameTraceChannel1), false, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutResults, true)) {
 		for (int i = 0; i < OutResults.Num(); i++) {

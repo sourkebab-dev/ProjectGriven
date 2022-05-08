@@ -25,6 +25,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* SlideMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<AActor*> HitList;
+
 public:
 	virtual bool StateValidation_Implementation() override;
 	virtual void ActionHandler_Implementation(EActionList Action, EInputEvent EventType) override;

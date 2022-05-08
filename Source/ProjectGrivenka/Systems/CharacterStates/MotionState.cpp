@@ -47,6 +47,11 @@ void UMotionState::ActionHandler_Implementation(EActionList Action, EInputEvent 
 	if (Action == EActionList::ActionJump && EventType == IE_Pressed) {
 		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Jump"), EActionList::ActionJump, IE_Pressed);
 	}
+
+
+	if (Action == EActionList::ActionCrouch && EventType == IE_Pressed) {
+		this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.Slide"), EActionList::ActionCrouch , IE_Pressed);
+	}
 }
 
 void UMotionState::AxisHandler_Implementation(EActionList Action, float AxisValue)
