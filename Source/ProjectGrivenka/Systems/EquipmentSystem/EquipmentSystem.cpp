@@ -2,6 +2,7 @@
 
 
 #include "EquipmentSystem.h"
+#include "Animation/MorphTarget.h"
 #include "GameplayTagContainer.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 #include "ProjectGrivenka/Equipments/Weapons/BaseWeapon.h"

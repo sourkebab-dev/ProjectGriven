@@ -2,6 +2,7 @@
 
 
 #include "BlockState.h"
+#include "MorphToolsFunctions.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
@@ -18,6 +19,7 @@ void UBlockState::OnStateEnter_Implementation()
 {
 	Super::OnStateEnter_Implementation();
 	this->StatesComp->BlockHitDelegate.AddDynamic(this, &UBlockState::OnReceiveHit);
+
 
 	FBlockInfo BlockInfo;
 	float DamageAbsorption;

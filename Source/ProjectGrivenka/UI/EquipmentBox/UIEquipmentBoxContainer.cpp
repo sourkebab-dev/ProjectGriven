@@ -23,9 +23,10 @@ void UUIEquipmentBoxContainer::NativeDestruct()
 
 void UUIEquipmentBoxContainer::OnArmorTabClick()
 {
-	if (this->CurrentEqType == EEquipmentType::Armor) return;
-	this->CurrentEqType = EEquipmentType::Armor;
-	this->DataSetup();
+	//sponge craft armor
+	//if (this->CurrentEqType == EEquipmentType::Armor) return;
+	//this->CurrentEqType = EEquipmentType::Armor;
+	//this->DataSetup();
 }
 
 void UUIEquipmentBoxContainer::OnWeaponTabClick()
@@ -52,11 +53,11 @@ void UUIEquipmentBoxContainer::DataSetup()
 	}
 	
 	TArray<FEquipmentBoxItem> SelectedBox;
-	if (this->CurrentEqType == EEquipmentType::Armor) {
-		SelectedBox = GameInstance->ArmorBox;
+	if (this->CurrentEqType == EEquipmentType::Weapon) {
+		SelectedBox = GameInstance->WeaponBox;
 	}
 	else {
-		SelectedBox = GameInstance->WeaponBox;
+		SelectedBox = GameInstance->ArmorBox;
 	}
 
 

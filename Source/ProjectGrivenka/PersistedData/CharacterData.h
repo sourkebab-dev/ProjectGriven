@@ -7,26 +7,9 @@
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 #include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
+#include "ProjectGrivenka/Systems/ModularAppearanceSystem/ModularAppearanceSystemAvailable.h"
 #include "CharacterData.generated.h"
 
-
-USTRUCT(BlueprintType)
-struct FPersistedCharacterAppearance
-{
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FName SkeletalMeshId;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName MaterialId;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AActor> CharClass;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    TSubclassOf<UAnimInstance> AnimClass;
-};
 
 USTRUCT(BlueprintType)
 struct FPersistedCharacterBehavior
@@ -45,6 +28,9 @@ struct FPersistedCharacterInfo
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGuid CharacterId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int Gender;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CharacterName;

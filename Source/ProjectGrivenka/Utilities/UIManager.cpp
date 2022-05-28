@@ -210,7 +210,7 @@ void UUIManager::OnSmithEQBoxChosen(FPersistedEquipmentItem EquipmentInfo, EEqui
 			EquipmentTree = WeaponPrefab->WeaponInfo.GeneralInfo.EquipmentTree;
 
 		}
-		else if (InEquipmentType == EEquipmentType::Armor) {
+		else {
 			GEngine->AddOnScreenDebugMessage(12, 2, FColor::Yellow, "Armor Not Yet Implemented");
 			return;
 		}

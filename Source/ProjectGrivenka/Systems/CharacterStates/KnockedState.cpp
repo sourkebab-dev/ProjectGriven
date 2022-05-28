@@ -146,7 +146,7 @@ void UKnockedState::OnHitReactEnd(UAnimMontage* Montage, bool bInterrupted)
 	if (!bInterrupted) {
 		this->StatesComp->CrossStateData.DamageInstigator = nullptr;
 		this->StatesComp->CrossStateData.DamageInfo = FDamageInfo();
-		this->StatesComp->BlockedTags.RemoveAllTags();
+		this->StatesComp->BlockedTags.Reset();
 		if (this->CurrentKnockbackData.KnockDownMontage) {
 			this->StatesComp->CrossStateData.KnockDownMontage = this->CurrentKnockbackData.KnockDownMontage;
 			this->StatesComp->ChangeState(FGameplayTag::RequestGameplayTag("ActionStates.KnockedDown"), EActionList::ActionNone, IE_Pressed);

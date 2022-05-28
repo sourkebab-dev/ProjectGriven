@@ -32,11 +32,12 @@ void USmithSystem::OnSmithFinished(EEquipmentType InEquipmentType, EEquipmentTre
 	auto GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
 	
 	TArray<FEquipmentBoxItem>* SelectedEqBox = nullptr;
-	if (InEquipmentType == EEquipmentType::Armor) {
-		SelectedEqBox = &GI->ArmorBox;
-	}
-	else if (InEquipmentType == EEquipmentType::Weapon) {
+	if (InEquipmentType == EEquipmentType::Weapon) {
 		SelectedEqBox = &GI->WeaponBox;
+
+	}
+	else {
+		SelectedEqBox = &GI->ArmorBox;
 	}
 
 	for (int i = 0; i < SelectedEqBox->Num(); i++) {

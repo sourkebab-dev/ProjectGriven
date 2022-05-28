@@ -7,6 +7,7 @@
 #include "ProjectGrivenka/Systems/CharacterSystem/CharacterSystemAvailable.h"
 #include "ProjectGrivenka/Systems/EquipmentSystem/EquipmentSystemAvailable.h"
 #include "ProjectGrivenka/Systems/InventorySystem/CharacterInventoryAvailable.h"
+#include "ProjectGrivenka/Systems/ModularAppearanceSystem/ModularAppearanceSystemAvailable.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 
 void UCharacterPersistanceSystem::LoadData(FPersistedCharacterData InCharacterData)
@@ -32,17 +33,27 @@ void UCharacterPersistanceSystem::LoadData(FPersistedCharacterData InCharacterDa
 	if (!AssetsData) return;
 
 	//Appearance Load
-	FCommonSkeletalMesh* SKMeshStruct = AssetsData->SKMeshData->FindRow<FCommonSkeletalMesh>(InCharacterData.Appearance.SkeletalMeshId, "");
-	FCommonMaterial* MaterialStruct = AssetsData->MaterialData->FindRow<FCommonMaterial>(InCharacterData.Appearance.MaterialId, "");
-	if (!this->CompContext->SkeletalMeshComp) { GLog->Log("NOMESH"); return; }
-	if (!SKMeshStruct) { GLog->Log("nomesk found"); return; }
-
-	this->CompContext->SkeletalMeshComp->SetSkeletalMesh(SKMeshStruct->Mesh);
-	this->CompContext->SkeletalMeshComp->SetMaterial(0, MaterialStruct->Material.MaterialInterface);
-
-	if (InCharacterData.Appearance.AnimClass) {
-		this->CompContext->SkeletalMeshComp->SetAnimInstanceClass(InCharacterData.Appearance.AnimClass);
+	if (this->CompContext->CharacterActor->Implements<UModularAppearanceSystemAvailable>()) {
+		IModularAppearanceSystemAvailable::Execute_LoadAppearance(this->CompContext->CharacterActor, InCharacterData.Appearance, InCharacterData.Equipments, InCharacterData.Info.Gender);
 	}
+	else {
+		// probably need to add case if its a premade character or maybe a single bp is enough?
+		/*
+		FCommonSkeletalMesh* SKMeshStruct = AssetsData->SKMeshData->FindRow<FCommonSkeletalMesh>(InCharacterData.Appearance.SkeletalMeshId, "");
+		FCommonMaterial* MaterialStruct = AssetsData->MaterialData->FindRow<FCommonMaterial>(InCharacterData.Appearance.MaterialId, "");
+		if (!this->CompContext->SkeletalMeshComp) { GLog->Log("NOMESH"); return; }
+		if (!SKMeshStruct) { GLog->Log("nomesk found"); return; }
+
+		this->CompContext->SkeletalMeshComp->SetSkeletalMesh(SKMeshStruct->Mesh);
+		this->CompContext->SkeletalMeshComp->SetMaterial(0, MaterialStruct->Material.MaterialInterface);
+
+		if (InCharacterData.Appearance.AnimClass) {
+			this->CompContext->SkeletalMeshComp->SetAnimInstanceClass(InCharacterData.Appearance.AnimClass);
+		}
+		*/
+	}
+
+
 
 
 	//AI Load
