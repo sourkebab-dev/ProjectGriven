@@ -6,6 +6,9 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Engine/SkeletalMesh.h"
 #include "Animation/Skeleton.h"
+#include "ProjectGrivenka/Systems/ContextSystem.h"
+#include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
+
 
 static void ToMergeParams(const TArray<FSkelMeshMergeSectionMapping_BP>& InSectionMappings, TArray<FSkelMeshMergeSectionMapping>& OutSectionMappings)
 {
@@ -125,6 +128,92 @@ USkeletalMesh* UModularAppearanceSystem::MergeMeshes(const FSkeletalMeshMergePar
     return BaseMesh;
 }
 
+void UModularAppearanceSystem::Init_Implementation()
+{
+    Super::Init_Implementation();
+
+    if (!this->GetOwner()->Implements<UModularAppearanceSystemAvailable>()) {
+        GLog->Log(this->GetOwner()->GetFullName());
+        UE_LOG(LogTemp, Error, TEXT("Modular Appearance Initiation Failure"), *GetNameSafe(this));
+        return;
+    }
+
+    IModularAppearanceSystemAvailable::Execute_GetModularParts(this->CompContext->CharacterActor, this->ModularParts);
+}
+
 void UModularAppearanceSystem::SaveAppearance(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender)
 {
+}
+
+void UModularAppearanceSystem::SetModularPartsMeshes(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender)
+{
+    //sponge: need to do hiddenby/replacedby
+    UGrivenkaDataSingleton* GrivenkaSingleton = UGrivenkaSingletonLibrary::GetGrivenkaData();
+    USkeletalMesh* HeadWearableMesh = GrivenkaSingleton->GetWearableInfo(InEquipments.HeadWearable.VariantId).GeneralInfo.EquipmentMesh;
+    USkeletalMesh* OuterTorsoWearableMesh = GrivenkaSingleton->GetWearableInfo(InEquipments.OuterTorsoWearable.VariantId).GeneralInfo.EquipmentMesh;
+    USkeletalMesh* TorsoWearableMesh = GrivenkaSingleton->GetWearableInfo(InEquipments.TorsoWearable.VariantId).GeneralInfo.EquipmentMesh;
+    USkeletalMesh* LegsWearableMesh = GrivenkaSingleton->GetWearableInfo(InEquipments.LegsWearable.VariantId).GeneralInfo.EquipmentMesh;
+    USkeletalMesh* HandsWearableMesh = GrivenkaSingleton->GetWearableInfo(InEquipments.HandsWearable.VariantId).GeneralInfo.EquipmentMesh;
+    USkeletalMesh* FootWearableMesh = GrivenkaSingleton->GetWearableInfo(InEquipments.FootWearable.VariantId).GeneralInfo.EquipmentMesh;
+    USkeletalMesh* Acc1WearableMesh = GrivenkaSingleton->GetWearableInfo(InEquipments.Accessories1Wearable.VariantId).GeneralInfo.EquipmentMesh;
+    USkeletalMesh* Acc2WearableMesh = GrivenkaSingleton->GetWearableInfo(InEquipments.Accessories2Wearable.VariantId).GeneralInfo.EquipmentMesh;
+    USkeletalMesh* Acc3WearableMesh = GrivenkaSingleton->GetWearableInfo(InEquipments.Accessories3Wearable.VariantId).GeneralInfo.EquipmentMesh;
+
+    if (HeadWearableMesh) {
+        this->ModularParts.HeadWear->SetSkeletalMesh(HeadWearableMesh);
+    }
+
+    if (OuterTorsoWearableMesh) {
+        this->ModularParts.OuterTorso->SetSkeletalMesh(OuterTorsoWearableMesh);
+    }
+
+    if (TorsoWearableMesh) {
+        this->ModularParts.Torso->SetSkeletalMesh(TorsoWearableMesh);
+    }
+    else {
+        //sponge: static id bad
+        FName MeshId = InGender == 0 ? "MALE_TORSO_DEFAULT" : "FEMALE_TORSO_DEFAULT"; 
+        USkeletalMesh* TorsoBodyMesh = GrivenkaSingleton->GetBodyInfo(MeshId).Mesh;
+        this->ModularParts.Torso->SetSkeletalMesh(TorsoBodyMesh);
+    }
+
+    if (LegsWearableMesh) {
+        this->ModularParts.Legs->SetSkeletalMesh(LegsWearableMesh);
+    }
+    else {
+        FName MeshId = InGender == 0 ? "MALE_LEGS_DEFAULT" : "FEMALE_LEGS_DEFAULT";
+        USkeletalMesh* LegsBodyMesh = GrivenkaSingleton->GetBodyInfo(MeshId).Mesh;
+        this->ModularParts.Torso->SetSkeletalMesh(LegsBodyMesh);
+    }
+
+    if (HandsWearableMesh) {
+        this->ModularParts.Hands->SetSkeletalMesh(HandsWearableMesh);
+    }
+    else {
+        FName MeshId = InGender == 0 ? "MALE_HANDS_DEFAULT" : "FEMALE_HANDS_DEFAULT";
+        USkeletalMesh* HandsBodyMesh = GrivenkaSingleton->GetBodyInfo(MeshId).Mesh;
+        this->ModularParts.Torso->SetSkeletalMesh(HandsBodyMesh);
+    }
+
+    if (FootWearableMesh) {
+        this->ModularParts.Feet->SetSkeletalMesh(FootWearableMesh);
+    }
+    else {
+        FName MeshId = InGender == 0 ? "MALE_FOOT_DEFAULT" : "FEMALE_FOOT_DEFAULT";
+        USkeletalMesh* FootBodyMesh = GrivenkaSingleton->GetBodyInfo(MeshId).Mesh;
+        this->ModularParts.Torso->SetSkeletalMesh(FootBodyMesh);
+    }
+
+    if (Acc1WearableMesh) {
+        this->ModularParts.Acc1->SetSkeletalMesh(Acc1WearableMesh);
+    }
+
+    if (Acc2WearableMesh) {
+        this->ModularParts.Acc2->SetSkeletalMesh(Acc2WearableMesh);
+    }
+
+    if (Acc3WearableMesh) {
+        this->ModularParts.Acc3->SetSkeletalMesh(Acc3WearableMesh);
+    }
+
 }

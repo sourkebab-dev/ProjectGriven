@@ -86,14 +86,20 @@ struct FSkeletalMeshMergeParams
 UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UModularAppearanceSystem : public UBaseContextableComponent
 {
-	GENERATED_BODY()
-	
+    GENERATED_BODY()
+        
+public:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FModularParts ModularParts;
 
 public:
+    virtual void Init_Implementation() override;
     UFUNCTION(BlueprintCallable, Category = "Mesh Merge", meta = (UnsafeDuringActorConstruction = "true"))
     static class USkeletalMesh* MergeMeshes(const FSkeletalMeshMergeParams& Params);
     UFUNCTION(BlueprintCallable)
     void SaveAppearance(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender);
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void LoadAppearance(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender);
+    UFUNCTION(BlueprintCallable)
+    void SetModularPartsMeshes(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender);
 };

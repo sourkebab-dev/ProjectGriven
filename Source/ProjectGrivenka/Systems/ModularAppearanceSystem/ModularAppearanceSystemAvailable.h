@@ -11,6 +11,18 @@ USTRUCT(BlueprintType)
 struct FModularParts
 {
     GENERATED_BODY()
+    
+   UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        USkeletalMeshComponent* Hair;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        USkeletalMeshComponent* HeadWear;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        USkeletalMeshComponent* FacialHair;
+
+   UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        USkeletalMeshComponent* OuterTorso;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         USkeletalMeshComponent* Torso;
@@ -23,6 +35,32 @@ struct FModularParts
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         USkeletalMeshComponent* Feet;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        USkeletalMeshComponent* Acc1;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        USkeletalMeshComponent* Acc2;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        USkeletalMeshComponent* Acc3;
+
+};
+
+USTRUCT(BlueprintType)
+struct FBodyInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FName BodyId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        USkeletalMesh* Mesh;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        UTexture2D* TextureSlots;
+
 };
 
 

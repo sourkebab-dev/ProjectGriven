@@ -45,4 +45,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Quest")
 	UBountyList* BountyList;
 
+public:
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Getters")
+	FBodyInfo GetBodyInfo(FName BodyId);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Getters")
+	FWearableInfo GetWearableInfo(FName WearableId);
+
 };

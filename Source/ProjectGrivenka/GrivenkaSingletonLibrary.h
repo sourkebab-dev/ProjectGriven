@@ -11,7 +11,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UGrivenkaSingletonLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
@@ -20,6 +20,4 @@ public:
 	UFUNCTION(BlueprintPure, Category="Singleton Getter")
 	static UGrivenkaDataSingleton* GetGrivenkaData();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Singleton Getter")
-	FWearableInfo GetWearableInfo(FName WearableId);
 };
