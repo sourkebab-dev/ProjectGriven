@@ -52,4 +52,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Getters")
 	FWearableInfo GetWearableInfo(FName WearableId);
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Getters")
+	FSkinColor GetSkinColor(FName SkinColorId);
+
 };

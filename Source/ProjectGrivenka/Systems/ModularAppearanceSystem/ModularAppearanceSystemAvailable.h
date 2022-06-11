@@ -56,11 +56,35 @@ struct FBodyInfo
         FName BodyId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FName BodyName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FText Descriptions;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
         USkeletalMesh* Mesh;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        UTexture2D* TextureSlots;
+        TMap<FName, UTexture2D*> TextureVariants;
 
+};
+
+USTRUCT(BlueprintType)
+struct FSkinColor
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FLinearColor MainSkinColor;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FLinearColor SecondarySkinColor;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FLinearColor TertiarySkinColor;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FLinearColor OutlineSkinColor;
 };
 
 
@@ -70,13 +94,13 @@ struct FPersistedCharacterAppearance
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FName SkinColorId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
         FName HairId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         FName FacialHairId;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        FName BodySkinId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         FName HeadSkinId;
@@ -88,7 +112,10 @@ struct FPersistedCharacterAppearance
         FName EyeSkinId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        FName PupilSkinId;
+        FName LPupilSkinId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FName RPupilSkinId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         TMap<FName, float> ShapeKeyValues;

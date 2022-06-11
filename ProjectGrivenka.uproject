@@ -26,6 +26,11 @@
 			"Name": "MorphTools",
 			"Enabled": true,
 			"MarketplaceURL": "https://www.unrealengine.com/marketplace/en-US/slug/8ac556332b374a81b190c524bafd847f"
+		},
+		{
+			"Name": "RuntimeCopyMorphTools",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/06ae55a387b2401e9049d7c295272930"
 		}
 	]
 }

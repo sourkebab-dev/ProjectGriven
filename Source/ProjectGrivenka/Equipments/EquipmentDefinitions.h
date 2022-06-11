@@ -24,8 +24,6 @@ UENUM(BlueprintType)
 enum EEquipmentType
 {
     Weapon UMETA(DisplayName = "Weapon Equipment"),
-    Hair UMETA(DisplayName = "Hair Equipment"),
-    FacialHair UMETA(DisplayName = "Facial Hair Equipment"),
     Head       UMETA(DisplayName = "Head Equipment"),
     OuterTorso       UMETA(DisplayName = "Outer Torso Equipment"),
     Torso       UMETA(DisplayName = "Torso Equipment"),
@@ -140,6 +138,7 @@ struct FWearableInfo
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "General Info")
     FEquipmentInfo GeneralInfo;
 
+    //might be able to use index 1 as a specular map/roughnessmap and so on
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     TArray<UTexture2D*> TextureSlots;
 

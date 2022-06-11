@@ -78,7 +78,7 @@ struct FSkeletalMeshMergeParams
         uint32 bSkeletonBefore : 1;
     // Skeleton that will be used for the merged mesh.
     // Leave empty if the generated skeleton is OK.
-    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
         class USkeleton* Skeleton;
 };
 
@@ -92,6 +92,12 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     FModularParts ModularParts;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UMaterialInterface* MasterMaterial;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    UMaterialInstanceDynamic* MaterialIns;
+
 public:
     virtual void Init_Implementation() override;
     UFUNCTION(BlueprintCallable, Category = "Mesh Merge", meta = (UnsafeDuringActorConstruction = "true"))
@@ -101,5 +107,5 @@ public:
     UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
     void LoadAppearance(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender);
     UFUNCTION(BlueprintCallable)
-    void SetModularPartsMeshes(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender);
+    void InitiateAppearance(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender);
 };
