@@ -232,12 +232,14 @@ void UModularAppearanceSystem::InitiateAppearance(FPersistedCharacterAppearance 
 
     if (!OuterTorsoWearable.GeneralInfo.EquipmentId.IsNone()) {
         this->MaterialIns->SetTextureParameterValue("OuterShirt", OuterTorsoWearable.TextureSlots[0]);
-        this->ModularParts.HeadWear->SetSkeletalMesh(OuterTorsoWearable.GeneralInfo.EquipmentMesh);
+        this->ModularParts.OuterTorso->SetSkeletalMesh(OuterTorsoWearable.GeneralInfo.EquipmentMesh);
+        if (!TorsoWearable.GeneralInfo.EquipmentId.IsNone()) {
+            this->MaterialIns->SetTextureParameterValue("Shirt", TorsoWearable.TextureSlots[0]);
+        }
     }
-
-    if (!TorsoWearable.GeneralInfo.EquipmentId.IsNone()) {
+    else if (!TorsoWearable.GeneralInfo.EquipmentId.IsNone()) {
         this->MaterialIns->SetTextureParameterValue("Shirt", TorsoWearable.TextureSlots[0]);
-        this->ModularParts.HeadWear->SetSkeletalMesh(TorsoWearable.GeneralInfo.EquipmentMesh);
+        this->ModularParts.Torso->SetSkeletalMesh(TorsoWearable.GeneralInfo.EquipmentMesh);
     }
     else {
         this->ModularParts.Torso->SetSkeletalMesh(Torso.Mesh);
@@ -245,7 +247,7 @@ void UModularAppearanceSystem::InitiateAppearance(FPersistedCharacterAppearance 
 
     if (!LegsWearable.GeneralInfo.EquipmentId.IsNone()) {
         this->MaterialIns->SetTextureParameterValue("Pants", LegsWearable.TextureSlots[0]);
-        this->ModularParts.HeadWear->SetSkeletalMesh(LegsWearable.GeneralInfo.EquipmentMesh);
+        this->ModularParts.Legs->SetSkeletalMesh(LegsWearable.GeneralInfo.EquipmentMesh);
     }
     else {
         this->ModularParts.Legs->SetSkeletalMesh(Legs.Mesh);
@@ -253,7 +255,7 @@ void UModularAppearanceSystem::InitiateAppearance(FPersistedCharacterAppearance 
 
     if (!HandsWearable.GeneralInfo.EquipmentId.IsNone()) {
         this->MaterialIns->SetTextureParameterValue("Gloves", HandsWearable.TextureSlots[0]);
-        this->ModularParts.HeadWear->SetSkeletalMesh(HandsWearable.GeneralInfo.EquipmentMesh);
+        this->ModularParts.Hands->SetSkeletalMesh(HandsWearable.GeneralInfo.EquipmentMesh);
     }
     else {
         this->ModularParts.Hands->SetSkeletalMesh(Hands.Mesh);
@@ -261,7 +263,7 @@ void UModularAppearanceSystem::InitiateAppearance(FPersistedCharacterAppearance 
 
     if (!FootWearable.GeneralInfo.EquipmentId.IsNone()) {
         this->MaterialIns->SetTextureParameterValue("Shoes", FootWearable.TextureSlots[0]);
-        this->ModularParts.HeadWear->SetSkeletalMesh(FootWearable.GeneralInfo.EquipmentMesh);
+        this->ModularParts.Feet->SetSkeletalMesh(FootWearable.GeneralInfo.EquipmentMesh);
     }
     else {
         this->ModularParts.Feet->SetSkeletalMesh(Foot.Mesh);
@@ -269,17 +271,17 @@ void UModularAppearanceSystem::InitiateAppearance(FPersistedCharacterAppearance 
 
     if (!Acc1Wearable.GeneralInfo.EquipmentId.IsNone()) {
         this->MaterialIns->SetTextureParameterValue("Acc_Head", Acc1Wearable.TextureSlots[0]);
-        this->ModularParts.HeadWear->SetSkeletalMesh(Acc1Wearable.GeneralInfo.EquipmentMesh);
+        this->ModularParts.Acc1->SetSkeletalMesh(Acc1Wearable.GeneralInfo.EquipmentMesh);
     }
 
     if (!Acc2Wearable.GeneralInfo.EquipmentId.IsNone()) {
         this->MaterialIns->SetTextureParameterValue("Acc_Body", Acc2Wearable.TextureSlots[0]);
-        this->ModularParts.HeadWear->SetSkeletalMesh(Acc2Wearable.GeneralInfo.EquipmentMesh);
+        this->ModularParts.Acc2->SetSkeletalMesh(Acc2Wearable.GeneralInfo.EquipmentMesh);
     }
 
     if (!Acc3Wearable.GeneralInfo.EquipmentId.IsNone()) {
         this->MaterialIns->SetTextureParameterValue("Acc_Legs", Acc3Wearable.TextureSlots[0]);
-        this->ModularParts.HeadWear->SetSkeletalMesh(Acc3Wearable.GeneralInfo.EquipmentMesh);
+        this->ModularParts.Acc3->SetSkeletalMesh(Acc3Wearable.GeneralInfo.EquipmentMesh);
     }
 
 }
