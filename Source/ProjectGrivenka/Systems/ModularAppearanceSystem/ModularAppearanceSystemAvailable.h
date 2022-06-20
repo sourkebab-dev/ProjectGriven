@@ -11,39 +11,14 @@ USTRUCT(BlueprintType)
 struct FModularParts
 {
     GENERATED_BODY()
-    
-   UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* Hair;
+
+    // Is used to transfer a baked normal to the morphed ones
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    USkeletalMeshComponent* TempBakedMesh;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* HeadWear;
+        TMap<FName, USkeletalMeshComponent*> Partitions;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* FacialHair;
-
-   UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* OuterTorso;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* Torso;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* Legs;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* Hands;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* Feet;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* Acc1;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* Acc2;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        USkeletalMeshComponent* Acc3;
 
 };
 
@@ -56,17 +31,40 @@ struct FBodyInfo
         FName BodyId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        FName BodyName;
+        FName Name;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        FText Descriptions;
+        FName Description;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         USkeletalMesh* Mesh;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         TMap<FName, UTexture2D*> TextureVariants;
+};
 
+USTRUCT(BlueprintType)
+struct FBodyTypeData
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FBodyInfo Head;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FBodyInfo Torso;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FBodyInfo Legs;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FBodyInfo Hands;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FBodyInfo Feet;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    USkeleton* Skeleton;
 };
 
 USTRUCT(BlueprintType)

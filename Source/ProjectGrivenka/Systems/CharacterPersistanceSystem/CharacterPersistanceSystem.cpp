@@ -53,6 +53,10 @@ void UCharacterPersistanceSystem::LoadData(FPersistedCharacterData InCharacterDa
 		*/
 	}
 
+	if (InCharacterData.Appearance.AnimClass) {
+		this->CompContext->SkeletalMeshComp->SetAnimInstanceClass(InCharacterData.Appearance.AnimClass);
+	}
+
 
 
 

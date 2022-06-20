@@ -98,14 +98,34 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
     UMaterialInstanceDynamic* MaterialIns;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FPersistedCharacterAppearance LoadedAppearance;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    FPersistedEquipments LoadedEquipments;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    int Gender;
+    
+    int FinishedBakeCounter = 0;
+
 public:
     virtual void Init_Implementation() override;
     UFUNCTION(BlueprintCallable, Category = "Mesh Merge", meta = (UnsafeDuringActorConstruction = "true"))
     static class USkeletalMesh* MergeMeshes(const FSkeletalMeshMergeParams& Params);
     UFUNCTION(BlueprintCallable)
     void SaveAppearance(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender);
-    UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+    UFUNCTION(BlueprintCallable)
     void LoadAppearance(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender);
     UFUNCTION(BlueprintCallable)
-    void InitiateAppearance(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender);
+    void InitiateAppearance();
+    UFUNCTION(BlueprintCallable)
+    void ApplyAndBakeMorphTargets();
+    UFUNCTION(BlueprintCallable)
+    void OnBakeFinished();
+    UFUNCTION(BlueprintImplementableEvent)
+    void OnMergeFinished();
+
+    //void OnCopyMorphFinished();
+    //void ComputeNormals(USkeletalMesh* Mesh);
 };

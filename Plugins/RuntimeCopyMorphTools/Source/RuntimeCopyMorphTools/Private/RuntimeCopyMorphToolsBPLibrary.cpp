@@ -31,6 +31,7 @@ void UInitMorphsAndResourcesUtility::InitMorphsAndResources()
 	//UE_LOG(LogTemp, Warning, TEXT("testInitMorphsAndResources"));
 	
 	//FSuspendRenderingThread suspend = FSuspendRenderingThread(true);
+
 	UE_LOG(LogTemp, Warning, TEXT("StartInitMorphsAndResources"));
 
 
@@ -84,7 +85,7 @@ void UInitMorphsAndResourcesUtility::InitMorphsAndResources()
 		FlushRenderingCommands();
 		TargetMesh->InitResources();
 
-		UE_LOG(LogTemp, Warning, TEXT("XXXeeraaKONTOLAE"));
+		UE_LOG(LogTemp, Warning, TEXT("rere"));
 
 
 		//TargetMesh->InvalidateDeriveDataCacheGUID();

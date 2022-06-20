@@ -46,8 +46,12 @@ public:
 	UBountyList* BountyList;
 
 public:
+	// usually for hairs and shit
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Getters")
 	FBodyInfo GetBodyInfo(FName BodyId);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Getters")
+	FBodyTypeData GetBodyTypeData(int TypeId);
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Getters")
 	FWearableInfo GetWearableInfo(FName WearableId);
