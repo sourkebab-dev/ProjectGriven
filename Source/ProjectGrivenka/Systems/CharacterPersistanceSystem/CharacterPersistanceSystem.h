@@ -16,6 +16,30 @@ class PROJECTGRIVENKA_API UCharacterPersistanceSystem : public UBaseContextableC
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsGenerated = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FPersistedCharacterData CharacterInitializer;
+
+public:
+	void Init_Implementation() override;
+
+	void GenerateWearables();
+
+	void GenerateBody();
+
+	FName GetRandomEquipmentVariants(TArray<FEquipmentChance> InEquipmentPack);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	FBodyMorphPacks GetBodyMorphPacks();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	FEquipmentPacks GetEquipmentPacks();
+
+	UFUNCTION(BlueprintCallable)
+	void GenerateCharacter();
+
 	UFUNCTION(BlueprintCallable)
 	void LoadData(FPersistedCharacterData InCharacterData);
 

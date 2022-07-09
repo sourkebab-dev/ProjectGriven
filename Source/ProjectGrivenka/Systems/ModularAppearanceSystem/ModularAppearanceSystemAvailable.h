@@ -7,19 +7,61 @@
 #include "ProjectGrivenka/Equipments/EquipmentDefinitions.h"
 #include "ModularAppearanceSystemAvailable.generated.h"
 
+UENUM(BlueprintType)
+enum EBodyGroup
+{
+    EBG_BODYTYPE UMETA(DisplayName = "Body Types"),
+    EBG_HEAD UMETA(DisplayName = "Head Size Types"),
+    EBG_NOSE       UMETA(DisplayName = "Nose Types"),
+    EBG_CHEEK       UMETA(DisplayName = "Cheek Types"),
+    EBG_CHIN       UMETA(DisplayName = "Chin Types"),
+    EBG_JAW       UMETA(DisplayName = "Jaw Types"),
+    EBG_MOUTH  UMETA(DisplayName = "Mouth Types"),
+    EBG_MOUTHSIZE UMETA(DisplayName = "Mouth Size"),
+    EBG_MOUTHPOSITION UMETA(DisplayName = "Mouth Position"),
+    EBG_HEADSIZE UMETA(DisplayName = "Head Size"),
+};
+
+USTRUCT(BlueprintType)
+struct FMorphsGroupData
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TMap<FName, float> MorphValues;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TEnumAsByte<EBodyGroup> BodyGroupType;
+};
+
+USTRUCT(BlueprintType)
+struct FMorphGroupNames
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FName> MorphIds;
+};
+
+USTRUCT(BlueprintType)
+struct FBodyMorphPacks
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TMap<TEnumAsByte<EBodyGroup>, FMorphGroupNames> GroupMorphs;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FName> HairIds;
+};
+
 USTRUCT(BlueprintType)
 struct FModularParts
 {
     GENERATED_BODY()
 
-    // Is used to transfer a baked normal to the morphed ones
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    USkeletalMeshComponent* TempBakedMesh;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-        TMap<FName, USkeletalMeshComponent*> Partitions;
-
-
+    TMap<FName, USkeletalMeshComponent*> Partitions;
 };
 
 USTRUCT(BlueprintType)

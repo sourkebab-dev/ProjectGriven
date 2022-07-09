@@ -59,4 +59,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Getters")
 	FSkinColor GetSkinColor(FName SkinColorId);
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintPure, Category = "Getters")
+	TMap<FName, float> GetMorphGroupValues(FName MorphGroupId);
 };

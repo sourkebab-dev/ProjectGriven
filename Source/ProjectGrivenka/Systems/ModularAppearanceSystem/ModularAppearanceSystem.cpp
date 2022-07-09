@@ -158,10 +158,13 @@ void UModularAppearanceSystem::LoadAppearance(FPersistedCharacterAppearance InAp
 
     this->InitiateAppearance();
     this->ApplyAndBakeMorphTargets();
+    
 }
 
 void UModularAppearanceSystem::InitiateAppearance()
 {
+    this->CompContext->SkeletalMeshComp->SetVisibility(false);
+
     //sponge: need to do hiddenby/replacedby
     UGrivenkaDataSingleton* GrivenkaSingleton = UGrivenkaSingletonLibrary::GetGrivenkaData();
     FWearableInfo HeadWearable = GrivenkaSingleton->GetWearableInfo(this->LoadedEquipments.HeadWearable.VariantId);
@@ -190,6 +193,7 @@ void UModularAppearanceSystem::InitiateAppearance()
     }
 
     //Set Body Textures
+    
     if (!Head.BodyId.IsNone()) {
         this->ModularParts.Partitions.FindRef("Head")->SetSkeletalMesh(Head.Mesh);
         if (!this->LoadedAppearance.HeadSkinId.IsNone()) this->MaterialIns->SetTextureParameterValue("Head", Head.TextureVariants.FindRef(this->LoadedAppearance.HeadSkinId));
@@ -203,6 +207,7 @@ void UModularAppearanceSystem::InitiateAppearance()
         if (!this->LoadedAppearance.RPupilSkinId.IsNone()) this->MaterialIns->SetTextureParameterValue("Pupil_R", Head.TextureVariants.FindRef(this->LoadedAppearance.RPupilSkinId));
         else this->MaterialIns->SetTextureParameterValue("Pupil_R", Head.TextureVariants.FindRef("Pupil_Default"));
     }
+
 
     if (!this->LoadedAppearance.HairId.IsNone()) {
         FBodyInfo Hair = GrivenkaSingleton->GetBodyInfo(this->LoadedAppearance.HairId);
@@ -327,6 +332,7 @@ void UModularAppearanceSystem::OnBakeFinished()
     TArray<FName> ModularPartsKeys;
      this->ModularParts.Partitions.GetKeys(ModularPartsKeys);
      if (FinishedBakeCounter < ModularPartsKeys.Num()) return;
+
      //this->ComputeNormals(this->CompContext->SkeletalMeshComp->SkeletalMesh);
 
      UGrivenkaDataSingleton* GrivenkaSingleton = UGrivenkaSingletonLibrary::GetGrivenkaData();
@@ -348,6 +354,7 @@ void UModularAppearanceSystem::OnBakeFinished()
      this->CompContext->SkeletalMeshComp->SetMaterial(0, this->MaterialIns);
      this->CompContext->CharacterAnim = this->CompContext->SkeletalMeshComp->GetAnimInstance();
      this->OnMergeFinished();
+     this->CompContext->SkeletalMeshComp->SetVisibility(true);
 }
 
 /*

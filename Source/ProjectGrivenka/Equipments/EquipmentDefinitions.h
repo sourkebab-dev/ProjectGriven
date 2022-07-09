@@ -186,6 +186,57 @@ struct FWeaponInfo
 };
 
 USTRUCT(BlueprintType)
+struct FEquipmentChance
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName EquipmentId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Chance;
+};
+
+USTRUCT(BlueprintType)
+struct FEquipmentPacks
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName PackId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName PackName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FEquipmentChance> OuterTorsoIds;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FEquipmentChance> InnerTorsoIds;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FEquipmentChance> PantsIds;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FEquipmentChance> HeadWearableIds;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FEquipmentChance> GlovesIds;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FEquipmentChance> ShoesIds;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FEquipmentChance> AccHeadIds;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FEquipmentChance> AccLegsIds;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FEquipmentChance> AccBodyIds;
+};
+
+USTRUCT(BlueprintType)
 struct FEquipmentBoxItem
 {
     GENERATED_BODY()
