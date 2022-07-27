@@ -35,7 +35,6 @@ void ABaseAIController::OnPossess(APawn* PossesedPawn)
 {
 	Super::OnPossess(PossesedPawn);
 
-	
 	this->OnMountedDelegate.BindDynamic(this, &ABaseAIController::OnContextSetup);
 	IContextAvailable::Execute_SubscribeToMountedFunction(this->GetPawn(), this->OnMountedDelegate);
 }
@@ -44,6 +43,7 @@ void ABaseAIController::OnUnPossess()
 {
 	if (!this->ActorCtx) return;
 
+	this->OnMountedDelegate.Unbind();
 	this->ActorCtx->EventBus->HitDelegate.RemoveDynamic(this, &ABaseAIController::OnHit);
 	this->ActorCtx->EventBus->AnimDelegate.RemoveDynamic(this, &ABaseAIController::SetRotationRate);
 	this->ActorCtx->CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);

@@ -165,14 +165,12 @@ void UControlSystem::ControlSystemSwitchPossess(AActor* PossessInstigator)
 	if (!OwnerPawn) return;
 
 	this->GetWorld()->GetFirstPlayerController()->UnPossess();
-	OwnerPawn->GetController()->UnPossess();
-	if(OwnerPawn->GetController()) OwnerPawn->GetController()->Destroy();
+	auto OwnerController = OwnerPawn->GetController();
+	OwnerController->UnPossess();
+	if(OwnerController) OwnerController->Destroy();
 
-	if (PossessInstigator) {
-		//auto InstigatorCtx = IContextAvailable::Execute_GetContext(PossessInstigator);
-		auto InstigatorPawn = Cast<APawn>(PossessInstigator);
-		InstigatorPawn->SpawnDefaultController();
-	}
+	auto InstigatorPawn = Cast<APawn>(PossessInstigator);
+	InstigatorPawn->SpawnDefaultController();
 
 	this->GetWorld()->GetFirstPlayerController()->Possess(OwnerPawn);
 	this->GI->PartyInstance.Empty();
