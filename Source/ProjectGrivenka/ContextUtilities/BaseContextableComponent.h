@@ -14,7 +14,7 @@ class PROJECTGRIVENKA_API UBaseContextableComponent : public UActorComponent
 
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UContextSystem* CompContext;
+	class UContextSystem* CompContext = nullptr;
 
 protected:
 	UBaseContextableComponent();
@@ -23,4 +23,11 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void Init();
 	virtual void Init_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void Mounted();
+	virtual void Mounted_Implementation();
+
+	UFUNCTION()
+	void InternalEventHandler(enum EGenericEvt InEvt);
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "ProjectGrivenka/GlobalDefinitions.h"
 #include "ContextAvailable.generated.h"
 
 
@@ -29,5 +30,11 @@ class PROJECTGRIVENKA_API IContextAvailable
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	class UContextSystem* GetContext();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SubscribeToMountedFunction(const FSimpleDynamicDelegate& InDelegate);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void UnsubToMountedFunction(const FSimpleDynamicDelegate& InDelegate);
 
 };

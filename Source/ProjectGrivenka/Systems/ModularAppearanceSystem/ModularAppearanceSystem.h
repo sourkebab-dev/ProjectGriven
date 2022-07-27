@@ -82,7 +82,7 @@ struct FSkeletalMeshMergeParams
         class USkeleton* Skeleton;
 };
 
-
+//sponge: need to set up a fallback if this is not available
 UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UModularAppearanceSystem : public UBaseContextableComponent
 {

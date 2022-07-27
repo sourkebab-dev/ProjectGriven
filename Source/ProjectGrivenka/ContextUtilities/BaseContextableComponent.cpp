@@ -21,6 +21,36 @@ void UBaseContextableComponent::Init_Implementation()
 	}
 	
 	this->CompContext = IContextAvailable::Execute_GetContext(this->GetOwner());
+	if (!this->CompContext) {
+		GLog->Log(this->GetOwner()->GetFullName());
+		UE_LOG(LogTemp, Error, TEXT("Context Initiated yet not set"), *GetNameSafe(this));
+		return;
+	}
+
+	if (!this->CompContext->EventBus) {
+		GLog->Log(this->GetOwner()->GetFullName());
+		UE_LOG(LogTemp, Error, TEXT("Event Bus Initiation Failure"), *GetNameSafe(this));
+		return;
+	}
+	
+	
+	this->CompContext->EventBus->GenericDelegate.AddDynamic(this, &UBaseContextableComponent::InternalEventHandler);
+
+	GLog->Log(this->GetOwner()->GetFullName());
+	UE_LOG(LogTemp, Error, TEXT("Context set"), *GetNameSafe(this));
+
+	
+}
+
+void UBaseContextableComponent::Mounted_Implementation()
+{
+
+}
+
+void UBaseContextableComponent::InternalEventHandler(EGenericEvt InEvt)
+{
+	if (InEvt != EGenericEvt::GEN_ALL_COMP_MOUNTED) return;
+	this->Mounted_Implementation();
 }
 
 

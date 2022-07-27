@@ -26,19 +26,18 @@ void UControlSystem::Init_Implementation()
 	if (!this->CompContext->EventBus) {
 		UE_LOG(LogTemp, Error, TEXT("Eventbus Initiation Failure"), *GetNameSafe(this)); return;
 	}
-	this->CompContext->EventBus->PossessionDelegate.AddDynamic(this, &UControlSystem::ControlSystemSetup);
-	this->CompContext->EventBus->UnpossesionDelegate.AddDynamic(this, &UControlSystem::ControlSystemDisable);
 	this->CompContext->EventBus->AnimDelegate.AddDynamic(this, &UControlSystem::AnimHandler);
 	APawn* ActorPawn = Cast<APawn>(this->CompContext->CharacterActor);
 	if (!ActorPawn || !this->CompContext->CharacterActor->Implements<UControllable>()) {
 		UE_LOG(LogTemp, Error, TEXT("ControlSystem Initiation Failure (Owner must be a pawn) & Implements IControllable"), *GetNameSafe(this)); return;
 	}
-	this->ControlSystemSetup(ActorPawn->GetController());
+
 	this->GI = Cast<UBaseGameInstance>(this->GetWorld()->GetGameInstance());
 	this->SpringArm = IControllable::Execute_GetCameraSpringArm(this->CompContext->CharacterActor);
 	this->CameraMain = IControllable::Execute_GetMainCamera(this->CompContext->CharacterActor);
 }
 
+//Note: Called on Pawn Possessed
 void UControlSystem::ControlSystemSetup(AController* NewController)
 {	
 	if (!NewController || !NewController->IsPlayerController() || (!this->GetOwner()->InputComponent && !NewController->InputComponent)) {
@@ -74,6 +73,7 @@ void UControlSystem::ControlSystemSetup(AController* NewController)
 
 }
 
+//Note: Called on Pawn UnPossessed
 void UControlSystem::ControlSystemDisable(AController* OldController)
 {
 	if (!OldController || !OldController->IsPlayerController() || (!this->GetOwner()->InputComponent && !OldController->InputComponent)) return;
@@ -159,19 +159,19 @@ void UControlSystem::UpdateWorldSpaceVectors() {
 	this->CompContext->MovementModule.WorldSpaceTargetDir = TempRotator.RotateVector(this->RawInput);
 }
 
-void UControlSystem::ControlSystemPossess(AActor* PossessInstigator)
+void UControlSystem::ControlSystemSwitchPossess(AActor* PossessInstigator)
 {
 	APawn* OwnerPawn = Cast<APawn>(this->CompContext->CharacterActor);
 	if (!OwnerPawn) return;
-
 
 	this->GetWorld()->GetFirstPlayerController()->UnPossess();
 	OwnerPawn->GetController()->UnPossess();
 	if(OwnerPawn->GetController()) OwnerPawn->GetController()->Destroy();
 
 	if (PossessInstigator) {
-		auto InstigatorCtx = IContextAvailable::Execute_GetContext(PossessInstigator);
-		Cast<APawn>(PossessInstigator)->SpawnDefaultController();
+		//auto InstigatorCtx = IContextAvailable::Execute_GetContext(PossessInstigator);
+		auto InstigatorPawn = Cast<APawn>(PossessInstigator);
+		InstigatorPawn->SpawnDefaultController();
 	}
 
 	this->GetWorld()->GetFirstPlayerController()->Possess(OwnerPawn);
@@ -249,7 +249,6 @@ void UControlSystem::ControlMoveRight(float Value)
 
 void UControlSystem::ControlAttack()
 {
-	GEngine->AddOnScreenDebugMessage(FMath::Rand(), 1, FColor::Cyan, "Attack");
 	if (this->IsBuffering) {
 		FBufferedAction BA;
 		BA.Action = EActionList::ActionAttack;

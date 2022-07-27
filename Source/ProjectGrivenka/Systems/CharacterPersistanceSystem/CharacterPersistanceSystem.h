@@ -23,7 +23,7 @@ public:
 	FPersistedCharacterData CharacterInitializer;
 
 public:
-	void Init_Implementation() override;
+	void Mounted_Implementation() override;
 
 	void GenerateWearables();
 

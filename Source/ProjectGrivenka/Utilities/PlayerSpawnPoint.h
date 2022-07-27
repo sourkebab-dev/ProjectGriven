@@ -22,7 +22,7 @@ protected:
 
 public:	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	AActor* SpawnPlayer(FPersistedCharacterData CharacterData);
-	virtual AActor* SpawnPlayer_Implementation(FPersistedCharacterData CharacterData);
+	AActor* SpawnPlayer(FPersistedCharacterData CharacterData, bool IsSpawnedAsNpc = false);
+	virtual AActor* SpawnPlayer_Implementation(FPersistedCharacterData CharacterData, bool IsSpawnedAsAI = false);
 
 };

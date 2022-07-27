@@ -10,8 +10,8 @@
 #include "ProjectGrivenka/Systems/ModularAppearanceSystem/ModularAppearanceSystemAvailable.h"
 #include "ProjectGrivenka/GrivenkaSingletonLibrary.h"
 
-void UCharacterPersistanceSystem::Init_Implementation() {
-	Super::Init_Implementation();
+void UCharacterPersistanceSystem::Mounted_Implementation() {
+	Super::Mounted_Implementation();
 
 	if (!this->IsGenerated) return;
 	 this->GenerateCharacter();

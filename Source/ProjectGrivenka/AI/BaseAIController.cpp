@@ -19,6 +19,7 @@ void ABaseAIController::BeginPlay()
 	Super::BeginPlay();
 	this->BTStart();
 	this->BlackboardComp = this->GetBlackboardComponent();
+
 }
 
 //sponge: Might need to move this ai rotation func to somewhere else
@@ -27,19 +28,22 @@ void ABaseAIController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (!this->AggroTarget || !this->ActorCtx) return;
 	UVectorMathLib::RotateActorToTargetVector(this->ActorCtx->CharacterActor, this->AggroTarget->GetActorLocation(), this->RotationRate, DeltaTime);
+	
 }
 
 void ABaseAIController::OnPossess(APawn* PossesedPawn)
 {
 	Super::OnPossess(PossesedPawn);
-	this->GetWorldTimerManager().SetTimer(this->SightRefreshTimer, this, &ABaseAIController::SightRefresh, 0.5, true);
 
-	//Note: This is for char switching, (actor already spawned and controlled by player, but later switched as npc)
-	this->OnContextSetup();
+	
+	this->OnMountedDelegate.BindDynamic(this, &ABaseAIController::OnContextSetup);
+	IContextAvailable::Execute_SubscribeToMountedFunction(this->GetPawn(), this->OnMountedDelegate);
 }
 
 void ABaseAIController::OnUnPossess()
 {
+	if (!this->ActorCtx) return;
+
 	this->ActorCtx->EventBus->HitDelegate.RemoveDynamic(this, &ABaseAIController::OnHit);
 	this->ActorCtx->EventBus->AnimDelegate.RemoveDynamic(this, &ABaseAIController::SetRotationRate);
 	this->ActorCtx->CharacterActor->GetWorldTimerManager().ClearTimer(this->AggroRefreshTimer);
@@ -51,15 +55,16 @@ void ABaseAIController::OnUnPossess()
 	Super::OnUnPossess();
 }
 
-//sponge: might be a better way to catch the context initialization
-//Right now it's currently being called in each BP Class after context init
 void ABaseAIController::OnContextSetup()
 {
+	if (!this->GetPawn()) {
+		GLog->Log("NoPawneaae");
+		GLog->Log(this->ActorCtx->GetFullName());
+		return;
+	}
+	this->GetWorldTimerManager().SetTimer(this->SightRefreshTimer, this, &ABaseAIController::SightRefresh, 0.5, true);
 	this->ActorCtx = IContextAvailable::Execute_GetContext(this->GetPawn());
-	if (!this->ActorCtx) return;
 	this->ActorCtx->Controller = this;
-
-	if (!this->ActorCtx || !this->ActorCtx->EventBus) return;
 	this->ActorCtx->EventBus->HitDelegate.AddDynamic(this, &ABaseAIController::OnHit);
 	this->ActorCtx->EventBus->AnimDelegate.AddDynamic(this, &ABaseAIController::SetRotationRate);
 }
@@ -84,6 +89,7 @@ void ABaseAIController::SetRotationRate(EAnimEvt InAnimEvt)
 
 void ABaseAIController::SightRefresh()
 {
+
 	TArray<AActor*> ActorsToIgnore;
 	TArray<FHitResult> OutResults;
 	ActorsToIgnore.Add(this->GetPawn());
@@ -161,7 +167,6 @@ void ABaseAIController::OnActorSeen(AActor* SeenActor)
 		if (this->AggroMap.Num() == 0) this->SetAggroTarget(SeenActor);
 		this->AddAggroActor(SeenActor , 0);
 		this->ChangeAIState(EAIStateType::COMBAT);
-
 		//sponge: might be a gank source
 		FCommandInfo Command;
 		Command.CommandTargetActor = SeenActor;
@@ -229,6 +234,7 @@ void ABaseAIController::RemoveActorFromAggroList(AActor* AggroInstigator)
 
 void ABaseAIController::BTStart() {
 	if (this->BTree) {
+		this->AggroMap.Empty();
 		this->RunBehaviorTree(this->BTree);
 	}
 }

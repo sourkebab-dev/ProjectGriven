@@ -28,7 +28,9 @@ void UDialogueSystem::StartDefaultDialogue()
 
 	GameInstance->UIManager->OpenDialogueBox();
 	auto AIController = Cast<AAIController>(this->CompContext->Controller);
+	GLog->Log(this->CompContext->Controller->GetFullName().Append("apaansihngentot"));
 	if (!AIController) return;
+	GLog->Log("this runs");
 	AIController->RunBehaviorTree(this->DefaultDialogueTree);
 }
 
@@ -37,9 +39,13 @@ void UDialogueSystem::StopDialogue()
 	UBaseGameInstance* GameInstance = Cast<UBaseGameInstance>(UGameplayStatics::GetGameInstance(this->GetWorld()));
 	if (!GameInstance || !this->CompContext->Controller) return;
 	GameInstance->UIManager->CloseDialogueBox();
-	ABaseAIController* AIController = Cast<ABaseAIController>(this->CompContext->Controller);
-	if (!AIController) return;
-	AIController->BTStart();
+	auto AIC = Cast<ABaseAIController>(this->CompContext->Controller);
+	if (!this->CompContext->Controller->IsA(ABaseAIController::StaticClass())) {
+		GLog->Log("NOT A BASE AI");
+		return;
+	}
+
+	AIC->BTStart();
 	FInputModeGameOnly InputMode;
 	InputMode.SetConsumeCaptureMouseDown(false);
 	this->GetWorld()->GetFirstPlayerController()->SetInputMode(InputMode);
@@ -48,7 +54,7 @@ void UDialogueSystem::StopDialogue()
 	//sponge: shit code tightcoupling
 	if (this->PendingAction == EDialoguePendingActions::SWITCH) {
 		auto CtrlSys = IControllable::Execute_GetControlSystemComp(this->CompContext->CharacterActor);
-		CtrlSys->ControlSystemPossess(this->GetWorld()->GetFirstPlayerController()->GetPawn());
+		CtrlSys->ControlSystemSwitchPossess(this->GetWorld()->GetFirstPlayerController()->GetPawn());
 	}
 	else if (this->PendingAction == EDialoguePendingActions::INVITE) {
 		FCommandInfo CmdInfo;

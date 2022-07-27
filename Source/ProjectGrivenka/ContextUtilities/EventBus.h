@@ -28,7 +28,13 @@ enum EAnimEvt {
 	DISABLE_INPUT_BUFFER,
 };
 
+UENUM(BlueprintType)
+enum EGenericEvt {
+	GEN_ALL_COMP_MOUNTED,
+};
+
 DECLARE_DELEGATE(FHitStopFinishDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGenericDelegate, EGenericEvt, EventType);
 DECLARE_DELEGATE_TwoParams(FHitStopStartDelegate, EDamageImpactType, FHitStopFinishDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLatentInteractionDelegate);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAnimDelegate, EAnimEvt, EventType);
@@ -36,8 +42,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDamagedDelegate, AActor*, DamageIn
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemUsageDelegate, AActor*, UsageInstigator, class UEffectPrefab*, EffectPrefab);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStateAxisDelegate, EActionList, InActionType, float, InValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStateActionDelegate, EActionList, InActionType, EInputEvent, InEventType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPossessionDelegate, AController*, NewController);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnpossessionDelegate,  AController*, OldController);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAICommandDelegate, AActor*, CommandInstigator, FCommandInfo, CommandInfo );
 
 UCLASS(Blueprintable)
@@ -68,13 +72,10 @@ public:
 	FStateAxisDelegate StateAxisDelegate;
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FPossessionDelegate PossessionDelegate;
-
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FUnpossessionDelegate UnpossesionDelegate;
-
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FAnimDelegate AnimDelegate;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FGenericDelegate GenericDelegate;
 
 	FHitStopStartDelegate HitStopDelegate;
 };

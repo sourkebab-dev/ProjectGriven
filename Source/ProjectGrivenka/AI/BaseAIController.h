@@ -46,6 +46,8 @@ public:
 	FTimerHandle AggroRefreshTimer;
 	FTimerHandle SightRefreshTimer;
 
+	FSimpleDynamicDelegate OnMountedDelegate;
+
 	virtual void OnPossess(APawn* PossesedPawn) override;
 	virtual void OnUnPossess() override;
 

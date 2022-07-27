@@ -142,6 +142,11 @@ void UModularAppearanceSystem::Init_Implementation()
         return;
     }
 
+    if (!this->CompContext) {
+        UE_LOG(LogTemp, Error, TEXT("man wtf"), *GetNameSafe(this));
+        return;
+    }
+
     IModularAppearanceSystemAvailable::Execute_GetModularParts(this->CompContext->CharacterActor, this->ModularParts);
     this->MaterialIns = this->CompContext->SkeletalMeshComp->CreateDynamicMaterialInstance(0, this->MasterMaterial);
 }
@@ -152,6 +157,15 @@ void UModularAppearanceSystem::SaveAppearance(FPersistedCharacterAppearance InAp
 
 void UModularAppearanceSystem::LoadAppearance(FPersistedCharacterAppearance InAppearance, FPersistedEquipments InEquipments, int InGender)
 {
+    if (!this->CompContext) {
+        UE_LOG(LogTemp, Error, TEXT("Context Initiation Failed"), *GetNameSafe(this));
+        return;
+    }
+    if (!this->CompContext->SkeletalMeshComp) {
+        UE_LOG(LogTemp, Error, TEXT("No SkelemeshComp"), *GetNameSafe(this));
+        return;
+    }
+
     this->LoadedAppearance = InAppearance;
     this->LoadedEquipments = InEquipments;
     this->Gender = InGender;

@@ -9,7 +9,7 @@
 #include "ProjectGrivenka/Systems/AIContextSystem/AIContextSystemAvailable.h"
 #include "ProjectGrivenka/AI/BaseAIController.h"
 
-
+//Affiliation Strategy
 void UAIContextSystem::Init_Implementation()
 {
 	Super::Init_Implementation();

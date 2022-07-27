@@ -81,15 +81,15 @@ protected:
 
 public:
 	void Init_Implementation() override;
-	UFUNCTION()
-	void ControlSystemSetup(AController* NewController);
 	void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction);
 	UFUNCTION()
 	void AnimHandler(EAnimEvt InAnimEvt);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
+	void ControlSystemSetup(AController* NewController);
+	UFUNCTION(BlueprintCallable)
 	void ControlSystemDisable(AController* OldController);
 	UFUNCTION(BlueprintCallable)
-	void ControlSystemPossess(AActor* PossessInstigator);
+	void ControlSystemSwitchPossess(AActor* PossessInstigator);
 	void BufferAction(FBufferedAction InBufferedAction);
 	void ProcessBufferedActions();
 

@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "ProjectGrivenka/GlobalDefinitions.h"
 #include "ContextHelperLib.generated.h"
 
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class PROJECTGRIVENKA_API UContextHelperLib : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
